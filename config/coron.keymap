@@ -10,10 +10,9 @@
 #define SYM 2
 #define L3  3
 #define FUN 4
-#define MOU 5
-#define BTL 6
-#define AMS 7   /* auto-mouse: trans-only + click buttons */
-#define SCR 8   /* scroll passthrough: all trans */
+#define BTL 5
+#define AMS 6   /* auto-mouse: trans-only + click buttons */
+#define SCR 7   /* scroll passthrough: all trans */
 
 &mt {
     flavor = "balanced";
@@ -26,8 +25,8 @@
 };
 
 &trackball {
-    automouse-layer = <AMS>;
-    scroll-layers = <SCR>;
+    automouse-layer = <6>;
+    scroll-layers = <7>;
 };
 
 / {
@@ -182,9 +181,7 @@
 
             sensor-bindings = <&inc_dec_kp C_VOL_DN C_VOL_UP &inc_dec_kp K_SCROLL_UP K_SCROLL_DOWN>;
         };
-
-        /* ===== Layer 5: MOUSE (Vial layer 5, manual via &lt MOU INT_HENKAN) ===== */
-        /* ===== Layer 6: BT / system (Vial layer 9) ===== */
+        /* ===== Layer 5: BT / system (Vial layer 9) ===== */
 
         bt_layer {
             bindings = <
@@ -195,7 +192,7 @@
             >;
         };
 
-        /* ===== Layer 7: AMS auto-mouse (mirrors main's MOUSE layer) ===== */
+        /* ===== Layer 6: AMS auto-mouse (mirrors main's MOUSE layer) ===== */
 
         amouse_layer {
             bindings = <
@@ -206,7 +203,7 @@
             >;
         };
 
-        /* ===== Layer 8: SCR scroll passthrough (all trans) ===== */
+        /* ===== Layer 7: SCR scroll passthrough (all trans) ===== */
 
         scroll_layer {
             bindings = <
