@@ -41,30 +41,85 @@
          * Row3 (11): 40..50  = NewL,L0..L3,LthL,LthR, RthL,RthR,Rout,NewR
          */
 
-        combo_esc    { bindings = <&kp ESC>;    key-positions = <0 1>;   timeout-ms = <40>; };  /* TAB+Q */
-        combo_f14    { bindings = <&kp F14>;    key-positions = <14 15>; timeout-ms = <40>; };  /* S+D */
-        combo_f13    { bindings = <&kp F13>;    key-positions = <15 16>; timeout-ms = <40>; };  /* D+F */
-        combo_minus  { bindings = <&kp MINUS>;  key-positions = <16 17>; timeout-ms = <40>; };  /* F+G */
-        combo_f15    { bindings = <&kp F15>;    key-positions = <21 22>; timeout-ms = <40>; };  /* J+K */
-        combo_f16    { bindings = <&kp F16>;    key-positions = <22 23>; timeout-ms = <40>; };  /* K+L */
-        combo_f18    { bindings = <&kp F18>;    key-positions = <29 30>; timeout-ms = <40>; };  /* C+V */
-        combo_f19    { bindings = <&kp F19>;    key-positions = <35 36>; timeout-ms = <40>; };  /* M+, */
-        combo_f20    { bindings = <&kp F20>;    key-positions = <4 5>;   timeout-ms = <40>; };  /* R+T */
-        combo_rshift { bindings = <&kp RSHFT>;  key-positions = <38 39>; timeout-ms = <40>; };  /* UP+RCTRL */
+        combo_esc {
+            bindings = <&kp ESC>;
+            key-positions = <0 1>;
+            timeout-ms = <40>;
+        };  /* TAB+Q */
+        combo_f14 {
+            bindings = <&kp F14>;
+            key-positions = <14 15>;
+            timeout-ms = <40>;
+        };  /* S+D */
+        combo_f13 {
+            bindings = <&kp F13>;
+            key-positions = <15 16>;
+            timeout-ms = <40>;
+        };  /* D+F */
+        combo_minus {
+            bindings = <&kp MINUS>;
+            key-positions = <16 17>;
+            timeout-ms = <40>;
+        };  /* F+G */
+        combo_f15 {
+            bindings = <&kp F15>;
+            key-positions = <21 22>;
+            timeout-ms = <40>;
+        };  /* J+K */
+        combo_f16 {
+            bindings = <&kp F16>;
+            key-positions = <22 23>;
+            timeout-ms = <40>;
+        };  /* K+L */
+        combo_f18 {
+            bindings = <&kp F18>;
+            key-positions = <29 30>;
+            timeout-ms = <40>;
+        };  /* C+V */
+        combo_f19 {
+            bindings = <&kp F19>;
+            key-positions = <35 36>;
+            timeout-ms = <40>;
+        };  /* M+, */
+        combo_f20 {
+            bindings = <&kp F20>;
+            key-positions = <4 5>;
+            timeout-ms = <40>;
+        };  /* R+T */
+        combo_rshift {
+            bindings = <&kp RSHFT>;
+            key-positions = <38 39>;
+            timeout-ms = <40>;
+        };  /* UP+RCTRL */
     };
 
     macros {
         /* Vial M0: hold LALT, tap SPACE, release LALT */
+
         m_alt_space: m_alt_space {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&macro_press &kp LALT>, <&macro_tap &kp SPACE>, <&macro_release &kp LALT>;
+            bindings =
+                <&macro_press>,
+                <&kp LALT>,
+                <&macro_tap>,
+                <&kp SPACE>,
+                <&macro_release>,
+                <&kp LALT>;
         };
+
         /* Vial M1: hold LCTRL, tap ENTER, release LCTRL */
+
         m_ctl_enter: m_ctl_enter {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&macro_press &kp LCTRL>, <&macro_tap &kp ENTER>, <&macro_release &kp LCTRL>;
+            bindings =
+                <&macro_press>,
+                <&kp LCTRL>,
+                <&macro_tap>,
+                <&kp ENTER>,
+                <&macro_release>,
+                <&kp LCTRL>;
         };
     };
 
@@ -72,98 +127,105 @@
         compatible = "zmk,keymap";
 
         /* ===== Layer 0: DEFAULT (Vial layer 0) ===== */
+
         default_layer {
             bindings = <
-&kp TAB    &kp Q    &kp W    &kp E    &kp R    &kp T                                                       &kp Y     &kp U    &kp I     &kp O    &kp P     &kp BSPC
-&kp CAPS   &kp A    &kp S    &kp D    &kp F    &kp G        &kp K_SCROLL_UP        &sl BTL                  &kp H     &kp J    &kp K     &kp L    &kp LBKT  &kp ENTER
-&kp LSHFT  &kp Z    &kp X    &kp C    &kp V    &kp B        &to DEF                &kp K_SCROLL_DOWN        &kp N     &kp M    &kp COMMA &kp DOT  &kp UP    &kp RCTRL
-&kp LCTRL  &kp LGUI &kp LALT &kp LALT &lt FUN INT_MUHENKAN &kp SPACE &none                            &lt MOU INT_HENKAN  &lt SYM SPACE  &kp LEFT  &kp RIGHT
+&kp TAB    &kp Q     &kp W     &kp E          &kp R            &kp T               &kp Y            &kp U              &kp I               &kp O     &kp P      &kp BSPC
+&kp CAPS   &kp A     &kp S     &kp D          &kp F            &kp G               &kp K_SCROLL_UP  &sl BTL            &kp H               &kp J     &kp K      &kp L     &kp LBKT      &kp ENTER
+&kp LSHFT  &kp Z     &kp X     &kp C          &kp V            &kp B               &to DEF          &kp K_SCROLL_DOWN  &kp N               &kp M     &kp COMMA  &kp DOT   &kp QUESTION  &kp RCTRL
+&kp LCTRL  &kp LGUI  &kp LALT  &kp LA(SPACE)  &lt 1 LC(ENTER)  &lt 3 INT_MUHENKAN  &kp SPACE        &lt 4 SPACE        &lt SYM INT_HENKAN  &kp LEFT  &kp RIGHT
             >;
-
-            sensor-bindings = <&inc_dec_kp PG_DN PG_UP &inc_dec_kp K_SCROLL_UP K_SCROLL_DOWN>;
         };
 
         /* ===== Layer 1: NUM (Vial layer 1) ===== */
+
         num_layer {
             bindings = <
-&kp ESC    &kp N1     &kp N2     &kp N3     &kp N4     &kp N5                                              &kp N6        &kp N7   &kp N8   &kp N9    &kp N0      &kp DEL
-&trans     &kp LA(N1) &kp LA(N2) &kp LA(N3) &kp LA(N4) &trans          &trans     &trans                   &kp LS(SLASH) &kp SEMI &kp SQT  &kp EQUAL &kp MINUS   &kp ENTER
-&kp LSHFT  &trans     &trans     &trans     &trans     &kp LS(SLASH)   &to DEF    &trans                   &kp LS(N1)    &kp COMMA &kp DOT &kp SLASH &kp INT_YEN &kp INT_RO
-&kp LCTRL  &kp LGUI   &kp LALT   &trans     &trans     &trans     &trans                                   &trans        &trans   &trans   &trans
+&kp ESC    &kp N1      &kp N2      &kp N3      &kp N4      &kp N5         &kp N6   &kp N7  &kp N8         &kp N9     &kp N0   &kp DEL
+&trans     &kp LA(N1)  &kp LA(N2)  &kp LA(N3)  &kp LA(N4)  &trans         &trans   &trans  &kp LS(SLASH)  &kp SEMI   &kp SQT  &kp EQUAL  &kp MINUS    &kp ENTER
+&kp LSHFT  &trans      &trans      &trans      &trans      &kp LS(SLASH)  &to DEF  &trans  &kp LS(N1)     &kp COMMA  &kp DOT  &kp SLASH  &kp INT_YEN  &kp INT_RO
+&kp LCTRL  &kp LGUI    &kp LALT    &trans      &trans      &trans         &trans   &trans  &trans         &trans     &trans
             >;
         };
 
         /* ===== Layer 2: SYM (Vial layer 2) ===== */
+
         sym_layer {
             bindings = <
-&kp ESC    &kp LS(N1) &kp LS(N2) &kp LS(N3) &kp LS(N4) &kp LS(N5)                                       &kp LS(N6) &kp LS(N7) &kp LS(N8) &kp LS(N9) &kp LS(MINUS) &kp DEL
-&trans     &trans     &trans     &kp SEMI   &kp SQT    &kp MINUS    &trans     &trans                   &trans     &kp NON_US_HASH &trans &trans     &trans        &kp ENTER
-&trans     &kp N1     &kp N2     &kp N3     &kp N4     &kp N5       &to DEF    &trans                   &kp N6     &kp N7     &kp N8     &kp N9     &kp N0        &kp RSHFT
-&kp RCTRL  &trans     &trans     &trans     &trans     &trans     &trans                                &trans     &trans     &trans     &trans
+&kp ESC    &kp LS(N1)  &kp LS(N2)  &kp LS(N3)  &kp LS(N4)  &kp LS(N5)  &kp LS(N6)  &kp LS(N7)  &kp LS(N8)  &kp LS(N9)       &kp LS(MINUS)  &kp DEL
+&trans     &trans      &trans      &kp SEMI    &kp SQT     &kp MINUS   &trans      &trans      &trans      &kp NON_US_HASH  &trans         &trans   &trans  &kp ENTER
+&trans     &kp N1      &kp N2      &kp N3      &kp N4      &kp N5      &to DEF     &trans      &kp N6      &kp N7           &kp N8         &kp N9   &kp N0  &kp RSHFT
+&kp RCTRL  &trans      &trans      &trans      &trans      &trans      &trans      &trans      &trans      &trans           &trans
             >;
         };
 
         /* ===== Layer 3: blank (Vial layer 3) ===== */
+
         l3_layer {
             bindings = <
-&trans &trans &trans &trans &trans &trans                                &trans &trans &trans &trans &trans &trans
-&trans &trans &trans &trans &trans &trans  &trans   &trans               &trans &trans &trans &trans &trans &trans
-&trans &trans &trans &trans &trans &trans  &to DEF  &trans               &trans &trans &trans &trans &trans &trans
-&trans &trans &trans &trans &trans &trans &trans                         &trans &trans &trans &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &trans   &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &trans   &trans  &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &to DEF  &trans  &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &trans   &trans  &trans  &trans  &trans
             >;
         };
 
         /* ===== Layer 4: FUNCTION (Vial layer 4) ===== */
+
         func_layer {
             bindings = <
-&kp ESC    &kp F1     &kp F2    &kp F3   &kp F4    &kp F5                                          &kp F6    &kp F7   &kp F8    &kp F9     &kp F10   &kp F11
-&trans     &trans     &trans    &trans   &kp SEMI  &kp MINUS    &trans      &kp MB5                &trans    &trans   &trans    &trans     &kp F11   &kp F12
-&trans     &trans     &trans    &trans   &trans    &trans       &to DEF     &kp PG_DN              &trans    &trans   &trans    &kp NON_US_HASH &kp RBKT &trans
-&trans     &trans     &trans    &trans   &trans    &kp ENTER &trans                                &kp ENTER &trans   &kp PG_UP &kp MB4
+&kp ESC  &kp F1  &kp F2  &kp F3  &kp F4    &kp F5     &kp F6   &kp F7     &kp F8  &kp F9     &kp F10  &kp F11
+&trans   &trans  &trans  &trans  &kp SEMI  &kp MINUS  &trans   &trans     &trans  &trans     &trans   &trans           &kp F11   &kp F12
+&trans   &trans  &trans  &trans  &trans    &trans     &to DEF  &kp PG_DN  &trans  &trans     &trans   &kp NON_US_HASH  &kp RBKT  &trans
+&trans   &trans  &trans  &trans  &trans    &kp ENTER  &trans   &kp ENTER  &trans  &kp PG_UP  &kp MB4
             >;
 
             sensor-bindings = <&inc_dec_kp C_VOL_DN C_VOL_UP &inc_dec_kp K_SCROLL_UP K_SCROLL_DOWN>;
         };
 
         /* ===== Layer 5: MOUSE (Vial layer 5, manual via &lt MOU INT_HENKAN) ===== */
+
         mouse_layer {
             bindings = <
-&kp ESC     &kp F1   &kp F2   &kp F3   &kp F4   &kp F5                                       &kp F6   &kp F7   &kp F8    &kp F9    &kp F10  &kp F11
-&trans      &trans   &trans   &trans   &trans   &trans    &trans      &kp MB5                &kp LEFT &kp DOWN &kp UP    &kp RIGHT &kp MB3  &kp F12
-&kp LSHFT   &trans   &trans   &trans   &trans   &trans    &to DEF     &kp PG_DN              &trans   &trans   &trans    &trans    &trans   &kp RSHFT
-&kp LCTRL   &trans   &trans   &trans   &trans   &trans    &trans                             &trans   &trans   &kp PG_UP &kp MB4
+&kp ESC    &kp F1  &kp F2  &kp F3  &kp F4  &kp F5  &kp F6   &kp F7     &kp F8    &kp F9     &kp F10  &kp F11
+&trans     &trans  &trans  &trans  &trans  &trans  &trans   &kp MB5    &kp LEFT  &kp DOWN   &kp UP   &kp RIGHT  &kp MB3  &kp F12
+&kp LSHFT  &trans  &trans  &trans  &trans  &trans  &to DEF  &kp PG_DN  &trans    &trans     &trans   &trans     &trans   &kp RSHFT
+&kp LCTRL  &trans  &trans  &trans  &trans  &trans  &trans   &trans     &trans    &kp PG_UP  &kp MB4
             >;
 
             sensor-bindings = <&inc_dec_kp C_VOL_DN C_VOL_UP &inc_dec_kp K_SCROLL_UP K_SCROLL_DOWN>;
         };
 
         /* ===== Layer 6: BT / system (Vial layer 9) ===== */
+
         bt_layer {
             bindings = <
-&trans       &trans       &trans       &trans      &trans     &trans                                      &trans &trans &trans &trans          &trans &trans
-&bt BT_SEL 0 &trans       &trans       &trans      &trans     &trans     &trans     &trans                &trans &trans &trans &trans          &trans &trans
-&bt BT_SEL 1 &trans       &trans       &trans      &trans     &trans     &to DEF    &trans                &trans &trans &trans &trans          &trans &bt BT_CLR
-&bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4 &bootloader &sys_reset &trans     &trans                           &trans &trans &trans &bt BT_CLR_ALL
+&trans        &trans        &trans        &trans       &trans      &trans  &trans   &trans  &trans  &trans  &trans          &trans
+&bt BT_SEL 0  &trans        &trans        &trans       &trans      &trans  &trans   &trans  &trans  &trans  &trans          &trans  &trans  &trans
+&bt BT_SEL 1  &trans        &trans        &trans       &trans      &trans  &to DEF  &trans  &trans  &trans  &trans          &trans  &trans  &bt BT_CLR
+&bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4  &bootloader  &sys_reset  &trans  &trans   &trans  &trans  &trans  &bt BT_CLR_ALL
             >;
         };
 
         /* ===== Layer 7: AMS auto-mouse (mirrors main's MOUSE layer) ===== */
+
         amouse_layer {
             bindings = <
-&trans  &trans  &trans  &trans  &trans  &trans                                     &trans     &trans     &trans     &trans     &trans  &trans
-&trans  &trans  &trans  &trans  &trans  &trans  &trans     &trans                  &trans     &trans     &mkp MB1   &mkp MB3   &mkp MB2 &trans
-&trans  &trans  &trans  &trans  &trans  &trans  &trans     &trans                  &trans     &trans     &trans     &trans     &trans  &trans
-&trans  &trans  &trans  &trans  &trans  &trans  &trans                             &trans     &trans     &trans     &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans    &trans    &trans    &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &mkp MB4  &mkp MB1  &mkp MB3  &mkp MB2  &mkp MB5  &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans    &trans    &trans    &trans    &trans    &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans    &trans    &trans
             >;
         };
 
         /* ===== Layer 8: SCR scroll passthrough (all trans) ===== */
+
         scroll_layer {
             bindings = <
-&trans  &trans  &trans  &trans  &trans  &trans                          &trans  &trans  &trans  &trans  &trans  &trans
-&trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans          &trans  &trans  &trans  &trans  &trans  &trans
-&trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans          &trans  &trans  &trans  &trans  &trans  &trans
-&trans  &trans  &trans  &trans  &trans  &trans  &trans                  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans
             >;
         };
     };
