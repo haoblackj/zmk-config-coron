@@ -26,9 +26,7 @@
     quick-tap-ms = <0>;
 };
 
-&trackball {
-    automouse-layer = <6>;
-};
+&trackball { automouse-layer = <6>; };
 
 &trackball_listener {
     scroller {
@@ -140,6 +138,13 @@
                 <&kp ENTER>,
                 <&macro_release>,
                 <&kp LCTRL>;
+        };
+
+        CtrlD: CtrlD {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LC(D)>;
+            label = "CTRLD";
         };
     };
 
