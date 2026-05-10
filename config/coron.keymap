@@ -101,39 +101,7 @@
 
     macros {
         /* Vial M0: hold LALT, tap SPACE, release LALT */
-
-        m_alt_space: m_alt_space {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings =
-                <&macro_press>,
-                <&kp LALT>,
-                <&macro_tap>,
-                <&kp SPACE>,
-                <&macro_release>,
-                <&kp LALT>;
-        };
-
         /* Vial M1: hold LCTRL, tap ENTER, release LCTRL */
-
-        m_ctl_enter: m_ctl_enter {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings =
-                <&macro_press>,
-                <&kp LCTRL>,
-                <&macro_tap>,
-                <&kp ENTER>,
-                <&macro_release>,
-                <&kp LCTRL>;
-        };
-
-        CtrlD: CtrlD {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings = <&kp LC(D)>;
-            label = "CTRLD";
-        };
     };
 
     keymap {
@@ -213,7 +181,7 @@
             bindings = <
 &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans    &trans    &trans    &trans
 &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &mkp MB4  &mkp MB1  &mkp MB3  &mkp MB2  &mkp MB5  &trans
-&trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans    &trans    &CtrlD    &trans    &trans    &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans    &trans    &kp F24   &trans    &trans    &trans
 &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans    &trans    &trans
             >;
         };
