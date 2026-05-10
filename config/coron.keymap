@@ -1,11 +1,11 @@
 /* coron.keymap — converted from Vial layout (JIS) */
 
+#include <input/processors.dtsi>
+#include <dt-bindings/zmk/input_transform.h>
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/bt.h>
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/pointing.h>
-#include <input/processors.dtsi>
-#include <dt-bindings/zmk/input_transform.h>
 
 #define DEF 0
 #define NUM 1
@@ -15,7 +15,6 @@
 #define BTL 5
 #define AMS 6   /* auto-mouse: trans-only + click buttons */
 #define SCR 7   /* scroll passthrough: all trans */
-
 
 &trackball_listener {
     scroller {
@@ -169,10 +168,10 @@
 
         sym_layer {
             bindings = <
-&kp ESC    &kp LS(N1)  &kp LS(N2)  &kp LS(N3)  &kp LS(N4)  &kp LS(N5)  &kp LS(N6)  &kp LS(N7)  &kp LS(N8)  &kp LS(N9)       &kp LS(MINUS)  &kp DEL
-&trans     &trans      &trans      &kp SEMI    &kp SQT     &kp MINUS   &trans      &trans      &trans      &kp NON_US_HASH  &trans         &trans   &kp F21  &kp ENTER
-&trans     &kp N1      &kp N2      &kp N3      &kp N4      &kp N5      &to 0       &trans      &kp N6      &kp N7           &kp N8         &kp N9   &kp N0   &kp RSHFT
-&kp RCTRL  &trans      &trans      &trans      &trans      &trans      &trans      &trans      &trans      &trans           &kp RCTRL
+&kp ESC    &kp LS(N1)  &kp LS(N2)  &kp LS(N3)  &kp LS(N4)  &kp LS(N5)  &kp LS(N6)  &kp LS(N7)  &kp LS(N8)      &kp LS(N9)  &kp LS(MINUS)  &kp DEL
+&trans     &trans      &trans      &kp SEMI    &kp SQT     &kp MINUS   &trans      &trans      &kp LEFT_ARROW  &kp DOWN    &kp UP_ARROW   &kp RIGHT  &kp F21  &kp ENTER
+&trans     &kp N1      &kp N2      &kp N3      &kp N4      &kp N5      &to 0       &trans      &kp N6          &kp N7      &kp N8         &kp N9     &kp N0   &kp RSHFT
+&kp RCTRL  &trans      &trans      &trans      &trans      &trans      &trans      &trans      &trans          &trans      &kp RCTRL
             >;
         };
 
