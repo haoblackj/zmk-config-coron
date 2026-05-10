@@ -16,16 +16,6 @@
 #define AMS 6   /* auto-mouse: trans-only + click buttons */
 #define SCR 7   /* scroll passthrough: all trans */
 
-&trackball_listener {
-    scroller {
-        layers = <7>;
-        input-processors = <
-            &zip_xy_to_scroll_mapper
-            &zip_scroll_transform INPUT_TRANSFORM_Y_INVERT
-        >;
-    };
-};
-
 &mt {
     flavor = "balanced";
     quick-tap-ms = <0>;
