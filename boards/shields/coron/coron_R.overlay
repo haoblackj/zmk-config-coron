@@ -29,16 +29,22 @@
 };
 
 / {
+    /omit-if-no-ref/ zip_wheel_y_scaler: zip_wheel_y_scaler {
+        compatible = "zmk,input-processor-scaler";
+        #input-processor-cells = <2>;
+        type = <INPUT_EV_REL>;
+        codes = <INPUT_REL_WHEEL>;
+        track-remainders;
+    };
+
     trackball_listener {
         scroller {
             layers = <7>;
+            /* Y 方向のみ独立減速。ドライバ側 SCROLL_TICK と組合せて最終速度を決める。
+             *   1 1 = 素通り, 1 2 = 50%, 1 4 = 25%, 1 8 = 12.5%, 1 16 = 6.25%
+             */
             input-processors = <
-                &zip_xy_to_scroll_mapper
-                /* スクロール速度調整: <multiplier> <divisor> で乗算→除算
-                 *   3 4 = 75% (現在), 1 2 = 50%, 1 3 = 33%, 1 4 = 25%, 1 1 = 等倍
-                 *   multiplier / divisor とも 1〜16 の範囲で調整可
-                 */
-                &zip_scroll_scaler 2 5
+                &zip_wheel_y_scaler 1 4
                 &zip_scroll_transform INPUT_TRANSFORM_Y_INVERT
             >;
         };
@@ -85,5 +91,6 @@
         reg = <0>;
         spi-max-frequency = <2000000>;
         irq-gpios = <&gpio0 2 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        scroll-layers = <7>;
     };
 };
