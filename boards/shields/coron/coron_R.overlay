@@ -48,13 +48,17 @@
             input-processors = <
                 &zip_wheel_y_scaler 1 3
                 &zip_scroll_transform INPUT_TRANSFORM_Y_INVERT
+                &scroll_runtime_input_processor
             >;
         };
         status = "okay";
         compatible = "zmk,input-listener";
         device = <&trackball>;
 
-        input-processors = <&zip_temp_layer 6 1000>;
+        input-processors = <
+            &mouse_runtime_input_processor
+            &zip_temp_layer 6 1000
+        >;
     };
 };
 
