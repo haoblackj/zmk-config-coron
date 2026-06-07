@@ -31,6 +31,13 @@
 };
 
 / {
+    deadzone_processor: deadzone_processor {
+        compatible = "zmk,input-processor-deadzone";
+        #input-processor-cells = <0>;
+        threshold = <10>;
+        timeout-ms = <300>;
+    };
+
     /omit-if-no-ref/ zip_wheel_y_scaler: zip_wheel_y_scaler {
         compatible = "zmk,input-processor-scaler";
         #input-processor-cells = <2>;
@@ -46,6 +53,7 @@
              *   1 1 = 素通り, 1 2 = 50%, 1 4 = 25%, 1 8 = 12.5%, 1 16 = 6.25%
              */
             input-processors = <
+                &deadzone_processor
                 &zip_xy_to_scroll_mapper
                 &zip_wheel_y_scaler 1 3
                 &zip_scroll_transform INPUT_TRANSFORM_Y_INVERT
@@ -57,6 +65,7 @@
         device = <&trackball>;
 
         input-processors = <
+            &deadzone_processor
             &mouse_runtime_input_processor
             &zip_temp_layer 6 1000
         >;
