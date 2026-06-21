@@ -21,20 +21,23 @@
 
 &zip_temp_layer {
     excluded-positions = <
-        20 // H
-        21 // J
-        22 // K
-        23 // L
-        24 // @
+        20 // H  → MB4
+        21 // J  → MB1
+        22 // K  → MB3
+        23 // L  → MB2
+        24 // @  → MB5
+        26 // LSHFT
+        39 // RCTRL
+        40 // LCTRL
     >;
-    require-prior-idle-ms = <200>;
+    require-prior-idle-ms = <500>;
 };
 
 / {
     deadzone_processor: deadzone_processor {
         compatible = "zmk,input-processor-deadzone";
         #input-processor-cells = <0>;
-        threshold = <10>;
+        threshold = <30>;
         timeout-ms = <300>;
     };
 
