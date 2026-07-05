@@ -66,9 +66,12 @@
         compatible = "zmk,input-listener";
         device = <&trackball>;
 
+        /* deadzone_processor はカーソル経路には入れない。
+         * 天頂部操作はセンサー生deltaが±1カウント/8〜300msしか出ない(実測)ため、
+         * marginぶんの吸収がそのまま体感の無反応/ジャンプになる。
+         * 誤タッチ抑制はスクロール経路(margin付き)のみで行う。 */
         input-processors = <
-            /* 診断用に一時撤去中: &deadzone_processor */
-            /* 診断用に一時撤去中(永続設定の影響を切り分けるため): &mouse_runtime_input_processor */
+            &mouse_runtime_input_processor
             &zip_temp_layer 6 1000
         >;
     };
