@@ -18,9 +18,10 @@
 #
 ---
 include:
- # 診断中はUSBログとCDC ACMが競合するためstudio-rpc-usb-uartを一時的に外している
+ # 診断中はUSBログ(zmk-usb-logging)がstudio-rpc-usb-uartとCDC ACMを取り合うため差し替えている
  - board: seeeduino_xiao_ble
    shield: coron_R
+   snippet: zmk-usb-logging
  - board: seeeduino_xiao_ble
    shield: coron_L
  - board: seeeduino_xiao_ble
