@@ -33,6 +33,13 @@
     require-prior-idle-ms = <500>;
 };
 
+/* モジュール既定の 1/60 だと、設定をリセットしたときにスクロールが動かなく見える。
+ * 既定は素通し（1/1）にして、速さは DYA Studio の Trackball タブで調整する。 */
+&scroll_runtime_input_processor {
+    scale-multiplier = <1>;
+    scale-divisor = <1>;
+};
+
 / {
     deadzone_processor: deadzone_processor {
         compatible = "zmk,input-processor-deadzone";
