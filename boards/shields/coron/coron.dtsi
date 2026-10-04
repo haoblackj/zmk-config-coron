@@ -141,6 +141,11 @@ RC(3,6) RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5) RC(3,9) RC(3,10)        
     };
 };
 
+/* P0.09 / P0.10 (NFC) を列と CS に使う。Zephyr 4.1 では Kconfig ではなくここで指定する */
+&uicr {
+    nfct-pins-as-gpios;
+};
+
 &spi0 {
     status = "disabled";
 
