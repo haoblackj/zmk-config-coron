@@ -1,0 +1,19 @@
+#include "../../config/coron.keymap"
+#include "../coron_test.h"
+
+&kscan {
+    rows = <1>;
+    columns = <51>;
+
+    events = <
+        /* サムキーなしで同時に押しても文字になる */
+        PRESS(POS_S, 10) PRESS(POS_D, 30) RELEASE(POS_S, 10) RELEASE(POS_D, 100)
+        PRESS(POS_D, 10) PRESS(POS_F, 30) RELEASE(POS_D, 10) RELEASE(POS_F, 100)
+        PRESS(POS_J, 10) PRESS(POS_K, 30) RELEASE(POS_J, 10) RELEASE(POS_K, 100)
+        PRESS(POS_K, 10) PRESS(POS_L, 30) RELEASE(POS_K, 10) RELEASE(POS_L, 100)
+        /* 変換のホールドでは発火しない (SYM レイヤーの s と ;) */
+        PRESS(POS_HENKAN, 300) PRESS(POS_S, 10) PRESS(POS_D, 30) RELEASE(POS_S, 10) RELEASE(POS_D, 30) RELEASE(POS_HENKAN, 100)
+        /* スペースをタップで離す前に S D を打つ (スペースを先に離す) → スペース, s, d */
+        PRESS(POS_SPACE_R, 30) PRESS(POS_S, 10) PRESS(POS_D, 10) RELEASE(POS_SPACE_R, 30) RELEASE(POS_S, 10) RELEASE(POS_D, 100)
+    >;
+};

@@ -1,0 +1,20 @@
+#include "../../config/coron.keymap"
+#include "../coron_test.h"
+
+&kscan {
+    rows = <1>;
+    columns = <51>;
+
+    events = <
+        /* ホールドが確定してから 4 つのコンボを順に押す */
+        PRESS(POS_MUHENKAN, 300)
+        PRESS(POS_S, 10) PRESS(POS_D, 30) RELEASE(POS_S, 10) RELEASE(POS_D, 100)
+        PRESS(POS_D, 10) PRESS(POS_F, 30) RELEASE(POS_D, 10) RELEASE(POS_F, 100)
+        PRESS(POS_J, 10) PRESS(POS_K, 30) RELEASE(POS_J, 10) RELEASE(POS_K, 100)
+        PRESS(POS_K, 10) PRESS(POS_L, 30) RELEASE(POS_K, 10) RELEASE(POS_L, 100)
+        RELEASE(POS_MUHENKAN, 300)
+        /* サムキーを押した直後にコンボを押し、コンボのキーを先に離す */
+        PRESS(POS_MUHENKAN, 20) PRESS(POS_S, 10) PRESS(POS_D, 30) RELEASE(POS_S, 10) RELEASE(POS_D, 10) RELEASE(POS_MUHENKAN, 300)
+        PRESS(POS_MUHENKAN, 20) PRESS(POS_K, 10) PRESS(POS_L, 30) RELEASE(POS_L, 10) RELEASE(POS_K, 10) RELEASE(POS_MUHENKAN, 100)
+    >;
+};

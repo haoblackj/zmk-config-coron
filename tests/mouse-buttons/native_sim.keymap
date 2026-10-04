@@ -1,0 +1,18 @@
+#include "../../config/coron.keymap"
+#include "../coron_test.h"
+
+&kscan {
+    rows = <1>;
+    columns = <51>;
+
+    events = <
+        /* 右スペースを長押しして H の位置 → MB4 */
+        PRESS(POS_SPACE_R, 300) PRESS(POS_H, 30) RELEASE(POS_H, 100)
+        /* 続けて @ の位置 → MB5 */
+        PRESS(POS_AT, 30) RELEASE(POS_AT, 30) RELEASE(POS_SPACE_R, 300)
+        /* 右スペースを押した直後に H の位置を押して離す → MB4 (スペースは出ない) */
+        PRESS(POS_SPACE_R, 20) PRESS(POS_H, 30) RELEASE(POS_H, 30) RELEASE(POS_SPACE_R, 300)
+        /* サムキーなしでは文字 */
+        PRESS(POS_H, 30) RELEASE(POS_H, 100) PRESS(POS_AT, 30) RELEASE(POS_AT, 100)
+    >;
+};

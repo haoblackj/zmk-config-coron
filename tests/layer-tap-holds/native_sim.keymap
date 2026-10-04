@@ -1,0 +1,20 @@
+#include "../../config/coron.keymap"
+#include "../coron_test.h"
+
+&kscan {
+    rows = <1>;
+    columns = <51>;
+
+    events = <
+        /* 右スペースを長押しして Q の位置 → FUN レイヤーの F1 */
+        PRESS(POS_SPACE_R, 300) PRESS(POS_Q, 30) RELEASE(POS_Q, 30) RELEASE(POS_SPACE_R, 100)
+        /* 変換を長押しして D の位置 → SYM レイヤーの ; */
+        PRESS(POS_HENKAN, 300) PRESS(POS_D, 30) RELEASE(POS_D, 30) RELEASE(POS_HENKAN, 100)
+        /* 無変換を長押しして S の位置 → 空のレイヤーなので s */
+        PRESS(POS_MUHENKAN, 300) PRESS(POS_S, 30) RELEASE(POS_S, 30) RELEASE(POS_MUHENKAN, 100)
+        /* 右スペースを押した直後に Q の位置を押して離す → ホールド確定で F1 */
+        PRESS(POS_SPACE_R, 30) PRESS(POS_Q, 30) RELEASE(POS_Q, 30) RELEASE(POS_SPACE_R, 100)
+        /* 長押ししただけで離す → 何も出ない */
+        PRESS(POS_MUHENKAN, 300) RELEASE(POS_MUHENKAN, 100)
+    >;
+};
