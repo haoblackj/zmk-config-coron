@@ -30,6 +30,13 @@
 - `boards/shields/coron/coron_L.conf` でも battery history、settings RPC、split relay event、settings 保存 debounce を有効化しています。
 - BLE 接続数とペアリング数を Studio 利用を前提に `5` に設定しました。
 
+### Bluetooth の安定化
+
+- PC が接続するたびにキー処理が止まる件、固まる件、つなぎ直しで確立の失敗が続く件に対処しています。経緯、根拠、退けた案は `docs/bluetooth-stability.md` にあります。
+- Zephyr は ZMK 本家の `zmkfirmware/zephyr` の `v4.1.0+zmk-fixes` を使います。DYA Studio の機能は cormoran 版の ZMK とモジュールが持っているので、変わりません。
+- `src/split_yield.c` は、PC と未接続のあいだだけ左手側との通信をゆっくりにします。**ZMK や Zephyr の版を上げるときは、`docs/bluetooth-stability.md` の確認項目を見てください。**
+- 確認の道具は `tools/bt-reconnect-check/` にあります。
+
 ### 依存モジュール
 
 - `zmk-module-ble-management` と `zmk-module-runtime-input-processor` は `zmk-v0.3.0.0` に固定しました。
