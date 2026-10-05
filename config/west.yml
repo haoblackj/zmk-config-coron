@@ -2,8 +2,8 @@ manifest:
   remotes:
     - name: cormoran
       url-base: https://github.com/cormoran
-    # - name: zmkfirmware
-    #   url-base: https://github.com/zmkfirmware
+    - name: zmkfirmware
+      url-base: https://github.com/zmkfirmware
     - name: keebJP
       url-base: https://github.com/keebJP
     - name: haoblackj
@@ -17,10 +17,13 @@ manifest:
       revision: main+dya
       import:
         file: app/west.yml
-    # Zephyr: DYA Studio 開発者ガイドが main+dya と組で指定している cormoran fork
+    # Zephyr: ZMK 本家の版（cormoran 版 ZMK の app/west.yml が指すものと同じ）。
+    # cormoran fork（v4.1.0+zmk-fixes+nrf-half-duplex-uart）との差は、Coron が使わない有線分割用の
+    # 半二重 UART ドライバと、本家に 2026-08-14 に入った Bluetooth コントローラの修正2件
+    # （分割セントラルが固まる件、接続パラメータ更新時にペリフェラルが落ちる件）だけ。
     - name: zephyr
-      remote: cormoran
-      revision: v4.1.0+zmk-fixes+nrf-half-duplex-uart
+      remote: zmkfirmware
+      revision: v4.1.0+zmk-fixes
       clone-depth: 1
       import:
         name-blocklist:
