@@ -1,19 +1,27 @@
 # Shared functions for the boot-instrument calibration scripts (dot-sourced).
 # Real mode talks to Windows (Get-PnpDevice, CIM disk chain, a child calib-io.ps1 per serial
 # exchange). Mock mode ($script:Scn, a scenario loaded from JSON) replays canned device states,
-# console texts, UF2 drives and copy results, so every decision path can be exercised without a
-# device. Reads the device tree only (Get-PnpDevice / CIM disk classes); never Win32_SerialPort.
+# UF2 drives, copy results and file hashes, and feeds the REAL calib-io.ps1 child a canned port
+# (-MockFile), so every decision path, including the child's send gate and a hanging child, can
+# be exercised without a device. Reads the device tree only (Get-PnpDevice / CIM disk classes);
+# never Win32_SerialPort.
 #
 # Contract for callers:
 #   Log/Check/Require/Abort write to $script:LogFile. Check records PASS/FAIL and continues;
 #   Require is Check + Abort on failure, used for every precondition of a device write, so a
 #   failed precondition stops before the write. Abort throws 'CALIB-ABORT'; the step runner
 #   catches it, logs "STOPPED before <next operation>", saves everything and exits 1.
-#   Every console exchange is saved verbatim (stdout, stderr, exit code) whether or not it looks
-#   like a dump. Missing values are never defaulted: Need() aborts when a field is absent.
+#   Every console exchange is saved verbatim (stdout, stderr, exit code, timeout) whether or not
+#   it looks like a dump. Missing values are never defaulted: Validate-Dump requires every line
+#   and key the firmware prints for each record, and Need() aborts when a field is absent.
+#   Console text is compared case-sensitively (-ceq/-cmatch): 'h' and 'H' are different
+#   commands (review #9, point 4). Windows PnP instance ids keep the case-insensitive -match.
+#   Children run through Invoke-Child with a deadline; a child that does not return is killed
+#   with its process tree and counted as a failure (review #9, point 5).
 
 $script:fails = 0
 $script:nextOp = 'start'
+$script:xn = 0
 
 function Log($m) {
     $line = (Get-Date).ToString('HH:mm:ss.fff') + " $m"
@@ -38,16 +46,20 @@ function NextOp([string]$op) { $script:nextOp = $op }
 function Pause-Ms([int]$ms) { if (-not $script:Scn) { Start-Sleep -Milliseconds $ms } }
 
 # ---- mock -----------------------------------------------------------------------------------
+# Throws when the file is missing or not JSON; the caller exits 4 before any device operation
+# (review #9, point 1).
 function Load-Mock([string]$path) {
+    if (-not (Test-Path -LiteralPath $path)) { throw "mock scenario file missing: $path" }
     $j = Get-Content -Path $path -Raw | ConvertFrom-Json
+    if ($null -eq $j) { throw "mock scenario file empty or invalid: $path" }
     $script:Scn = @{ states = @($j.states); si = 0; exchanges = @($j.exchanges); ei = 0; ports = @($j.ports);
-                      uf2 = $j.uf2; files = @{}; copies = @() }
+                      uf2 = $j.uf2; files = @{}; copies = @(); step_hang_s = [int]$j.step_hang_s }
     if ($j.files) { foreach ($p in $j.files.PSObject.Properties) { $script:Scn.files[$p.Name] = $p.Value } }
     Log "MOCK scenario $path"
 }
 function Mock-Next([string]$kind) {
     $m = $script:Scn
-    if ($kind -eq 'state') {
+    if ($kind -ceq 'state') {
         if ($m.si -lt $m.states.Count) { $v = $m.states[$m.si]; $m.si++ } else { $v = $m.states[$m.states.Count - 1] }
         return $v
     }
@@ -56,15 +68,34 @@ function Mock-Next([string]$kind) {
 # ---- files ----------------------------------------------------------------------------------
 function File-Md5([string]$path) {
     if ($script:Scn) { if ($script:Scn.files.ContainsKey($path)) { return $script:Scn.files[$path] } else { return $null } }
-    if (-not (Test-Path $path)) { return $null }
-    return (Get-FileHash -Path $path -Algorithm MD5).Hash.ToLower()
+    if (-not (Test-Path -LiteralPath $path)) { return $null }
+    return (Get-FileHash -LiteralPath $path -Algorithm MD5).Hash.ToLower()
 }
 # Every file the run will write to the device must exist and match its expected md5 BEFORE the
 # first device operation (review #8, point 6).
 function Require-File([string]$label, [string]$path, [string]$md5) {
     $h = File-Md5 $path
     Require "$label exists" ($null -ne $h) "$path"
-    Require "$label md5" ($h -eq $md5.ToLower()) "have=$h want=$($md5.ToLower())"
+    Require "$label md5" ($h -ceq $md5.ToLower()) "have=$h want=$($md5.ToLower())"
+}
+
+# ---- child processes ------------------------------------------------------------------------
+# Runs powershell.exe -File $file $argv with stdout/stderr redirected to files (written as the
+# child flushes, so a killed child leaves what it had) and a deadline. On the deadline the child
+# and its whole process tree are killed (taskkill /T /F). Returns @{ rc; timedOut }.
+function Invoke-Child([string]$file, [string[]]$argv, [int]$timeoutSec, [string]$outFile, [string]$errFile) {
+    $all = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $file) + $argv
+    $quoted = ($all | ForEach-Object { '"' + ([string]$_ -replace '"', '\"') + '"' }) -join ' '
+    $p = Start-Process -FilePath 'powershell.exe' -ArgumentList $quoted -RedirectStandardOutput $outFile -RedirectStandardError $errFile -NoNewWindow -PassThru
+    $null = $p.Handle
+    $done = $p.WaitForExit($timeoutSec * 1000)
+    if (-not $done) {
+        & taskkill.exe /PID $p.Id /T /F 2>&1 | Out-Null
+        try { $p.WaitForExit(5000) | Out-Null } catch {}
+        return @{ rc = $null; timedOut = $true }
+    }
+    $p.WaitForExit()
+    return @{ rc = $p.ExitCode; timedOut = $false }
 }
 
 # ---- USB state ------------------------------------------------------------------------------
@@ -91,7 +122,7 @@ function Wait-State([string]$want, [int]$seconds) {
     $t0 = Get-Date; $n = 0
     while ($true) {
         $s = Get-State; $script:lastState = $s
-        if ($s -eq $want -and ($want -ne 'app' -or (Get-DiagPorts))) { return $true }
+        if ($s -ceq $want -and ($want -cne 'app' -or (Get-DiagPorts))) { return $true }
         $n++
         if ($script:Scn) { if ($n -ge $seconds) { return $false } } elseif (((Get-Date) - $t0).TotalSeconds -ge $seconds) { return $false }
         Pause-Ms 300
@@ -102,7 +133,7 @@ function Wait-Leave-App([int]$seconds) {
     $t0 = Get-Date; $n = 0
     while ($true) {
         $s = Get-State; $script:lastState = $s
-        if ($s -ne 'app') { return $s }
+        if ($s -cne 'app') { return $s }
         $n++
         if ($script:Scn) { if ($n -ge $seconds) { return 'app' } } elseif (((Get-Date) - $t0).TotalSeconds -ge $seconds) { return 'app' }
         Pause-Ms 200
@@ -115,7 +146,7 @@ function Wait-Leave-App([int]$seconds) {
 # INFO_UF2.TXT. The caller copies only when exactly one letter comes back (review #8, point 3).
 function Get-Uf2DrivesOfSerial() {
     if ($script:Scn) {
-        return @($script:Scn.uf2.drives | Where-Object { $_.serial -eq $script:Serial } | ForEach-Object { $_.letter })
+        return @($script:Scn.uf2.drives | Where-Object { $_.serial -ceq $script:Serial } | ForEach-Object { $_.letter })
     }
     $out = @()
     $disks = Get-CimInstance Win32_DiskDrive -ErrorAction SilentlyContinue |
@@ -141,11 +172,11 @@ function Copy-Uf2([string]$src, [string]$letter) {
     if ($script:Scn) {
         $script:Scn.copies += @{ src = $src; letter = $letter }
         Log "DEVICE-OP copy (mock) $src -> ${letter}:"
-        if ($script:Scn.uf2.copy -eq 'fail') { Log "copy error (mock): The device is not ready"; return $false }
+        if ($script:Scn.uf2.copy -ceq 'fail') { Log "copy error (mock): The device is not ready"; return $false }
         return $true
     }
     try {
-        Copy-Item -Path $src -Destination (Join-Path ($letter + ':\') 'firmware.uf2') -Force -ErrorAction Stop
+        Copy-Item -LiteralPath $src -Destination (Join-Path ($letter + ':\') 'firmware.uf2') -Force -ErrorAction Stop
         Log "DEVICE-OP copied $src -> ${letter}:"
         return $true
     } catch {
@@ -166,55 +197,136 @@ function Wait-Uf2Gone([string]$letter, [int]$seconds) {
 }
 
 # ---- console --------------------------------------------------------------------------------
-# One exchange through calib-io.ps1 on each diag port of the serial. Everything the child printed
-# (stdout, stderr, exit code) is appended to the step log, dump or not. Returns the stdout text
-# of the first port that produced a dump, or $null (after logging) when none did.
+# One exchange through calib-io.ps1 on each diag port of the serial, with a deadline
+# ($ReadSeconds + 20 s; the child itself waits at most 1.5 + 4 + $ReadSeconds s). Everything the
+# child printed (stdout, stderr, exit code, timeout) is appended to the step log, dump or not.
+# Returns the stdout text of the first port that produced a dump (a 'ZDIAG begin' LINE; the child's
+# stamps are never matched as marks), or $null (after logging) when none did. Whether a command was actually written is known ONLY from the child's
+# "[calib-io] sent 'X'" stamp; see Send-Cmd.
 function Exchange([string]$Send = '', [int]$ReadSeconds = 0) {
-    if ($Send) { Log "DEVICE-OP console send '$Send'" }
-    if ($script:Scn) {
-        $m = $script:Scn
-        if ($m.ei -ge $m.exchanges.Count) { Log "MOCK: no exchange left for send='$Send'"; return $null }
-        $e = $m.exchanges[$m.ei]; $m.ei++
-        if ($e.send -ne $Send) { Log "MOCK: exchange order mismatch: script sent '$Send', scenario expected '$($e.send)'"; return $null }
-        Add-Content -Path $script:LogFile -Value ("----- console MOCK send='$Send' read=${ReadSeconds}s exit=$($e.exit) -----") -Encoding UTF8
-        Add-Content -Path $script:LogFile -Value $e.stdout -Encoding UTF8
-        if ($e.stderr) { Add-Content -Path $script:LogFile -Value ("[stderr] " + $e.stderr) -Encoding UTF8 }
-        Add-Content -Path $script:LogFile -Value '----- end console -----' -Encoding UTF8
-        if ($e.stdout -match 'ZDIAG begin') { return $e.stdout }
-        return $null
-    }
     $helper = Join-Path $PSScriptRoot 'calib-io.ps1'
+    $dir = Split-Path -Parent $script:LogFile
     $ports = @(Get-DiagPorts)
     if ($ports.Count -eq 0) { Log "no diag port for serial $script:Serial"; return $null }
     foreach ($com in $ports) {
-        $psa = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $helper, '-Com', $com, '-ReadSeconds', $ReadSeconds)
-        if ($Send) { $psa += @('-Send', $Send) }
-        $errFile = [System.IO.Path]::GetTempFileName()
-        $stdout = (& powershell.exe @psa 2>$errFile) -join "`n"
-        $rc = $LASTEXITCODE
-        $stderr = ''
-        if (Test-Path $errFile) { $stderr = (Get-Content -Path $errFile -Raw -ErrorAction SilentlyContinue); Remove-Item $errFile -ErrorAction SilentlyContinue }
-        Add-Content -Path $script:LogFile -Value ("----- console $com send='$Send' read=${ReadSeconds}s exit=$rc -----") -Encoding UTF8
+        $script:xn++
+        $base = Join-Path $dir (((Split-Path -Leaf $script:LogFile) -replace '\.log$', '') + "-io$($script:xn)")
+        $outFile = "$base.out"; $errFile = "$base.err"
+        $argv = @('-Com', $com, '-ReadSeconds', "$ReadSeconds")
+        if ($Send) { $argv += @('-Send', $Send) }
+        $timeout = $ReadSeconds + 20
+        if ($script:Scn) {
+            $m = $script:Scn
+            if ($m.ei -ge $m.exchanges.Count) { Log "MOCK: no exchange left for send='$Send'"; $script:fails++; return $null }
+            $e = $m.exchanges[$m.ei]; $m.ei++
+            if ([string]$e.send -cne $Send) { Log "MOCK: exchange order mismatch: script sent '$Send', scenario expected '$($e.send)'"; $script:fails++; return $null }
+            $mockPath = "$base.mock.json"
+            $e | ConvertTo-Json -Depth 4 | Set-Content -Path $mockPath -Encoding UTF8
+            $argv += @('-MockFile', $mockPath)
+            if ($e.io_timeout_s) { $timeout = [int]$e.io_timeout_s }
+        }
+        $res = Invoke-Child $helper $argv $timeout $outFile $errFile
+        $stdout = ''; $stderr = ''
+        if (Test-Path -LiteralPath $outFile) { $stdout = [string](Get-Content -LiteralPath $outFile -Raw -ErrorAction SilentlyContinue) }
+        if (Test-Path -LiteralPath $errFile) { $stderr = [string](Get-Content -LiteralPath $errFile -Raw -ErrorAction SilentlyContinue) }
+        $stdout = $stdout -replace "`r`n", "`n"
+        Add-Content -Path $script:LogFile -Value ("----- console $com send='$Send' read=${ReadSeconds}s exit=$($res.rc) timed_out=$($res.timedOut) deadline=${timeout}s -----") -Encoding UTF8
         Add-Content -Path $script:LogFile -Value $stdout -Encoding UTF8
         if ($stderr) { Add-Content -Path $script:LogFile -Value ("[stderr] " + $stderr) -Encoding UTF8 }
         Add-Content -Path $script:LogFile -Value '----- end console -----' -Encoding UTF8
-        if ($stdout -match 'ZDIAG begin') { return $stdout }
+        $sentStamp = ($Send -and ($stdout -cmatch ("\[calib-io\] sent '" + [regex]::Escape($Send) + "'")))
+        if ($res.timedOut) {
+            Log ("FAIL console child returned within ${timeout}s (timed out; killed with its process tree; sent stamp " + $(if ($sentStamp) { 'PRESENT' } else { 'absent' }) + ")")
+            $script:fails++
+            return $null
+        }
+        if ($Send) {
+            if ($sentStamp) { Log "DEVICE-OP console sent '$Send' (child stamp)" }
+            else { Log "console '$Send' NOT sent by the child (exit=$($res.rc))" }
+        }
+        if ($stdout -cmatch '(?m)^ZDIAG begin') { return $stdout }
     }
     return $null
 }
-# A dump for analysis: must have begin and end marks and the ring/addr/cur lines. Returns the
-# parsed table or aborts. #TRUNC lines are saved (already, verbatim) but make the dump unusable.
-function Read-Dump([string]$what) {
+# A command exchange whose verdict needs the command to have been written: the child's own
+# "sent" stamp is required (the child writes only after a complete, #TRUNC-free dump; review #9,
+# point 3). On a refusal nothing was written, so Abort reports the command as not performed.
+function Send-Cmd([string]$cmd, [int]$ReadSeconds) {
+    $t = Exchange $cmd $ReadSeconds
+    Require "'$cmd' written by the console child (its pre-send dump complete and without #TRUNC)" ($null -ne $t -and ($t -cmatch ("\[calib-io\] sent '" + [regex]::Escape($cmd) + "'"))) 'child stamp "sent"'
+    return $t
+}
+
+# ---- dump structure --------------------------------------------------------------------------
+# The lines and keys print_rec/diag_boot_print (diag_boot.c v4) emit for every record. A record
+# is complete only with all of them; the fire1..fire4 lines (exception frame, registers, USBD,
+# clocks) are printed when the net fired, so an incident must carry all four (review #9, point 4).
+$script:RecLines = @('a', 'b', 'entry1', 'entry2', 'us1', 'us2')
+$script:FireLines = @('fire1', 'fire2', 'fire3', 'fire4')
+$script:LineKeys = @{
+    a      = @('seq', 'tag', 'done', 'reason', 'phase', 'calib', 'stage', 'reset', 'reinit')
+    b      = @('fix', 'probes', 'feeds', 'loops', 'lastfeed_us')
+    entry1 = @('lfstat', 'lfrun', 'lfsrc', 'lfcopy', 'lfev')
+    entry2 = @('hfstat', 'hfrun', 'hfev', 'rtc1', 'usbreg', 'ficr130', 'ficr134')
+    us1    = @('hook', 'pk1', 'clk', 'pk1end', 'sysclk', 'post', 'app')
+    us2    = @('usb', 'applast', 'commit', 'mainexit', 'probed', 'running')
+    fire1  = @('exc', 'msp', 'psp', 'frame', 'pc', 'lr')
+    fire2  = @('xpsr', 'handler', 'thread', 'at_us')
+    fire3  = @('en', 'ec', 'pullup', 'usbreg')
+    fire4  = @('lfstat', 'lfrun', 'hfstat', 'hfrun', 'cc0')
+    ring   = @('count', 'slots', 'dropped', 'invalid', 'reinit', 'calib_live')
+    addr   = @('cur', 'last', 'ring', 'sysq', 'main', 'calib')
+}
+function Validate-Line($r, [string]$rec, [string]$line, [string]$what) {
+    Require "${what}:$rec $line line present" ($r[$rec].ContainsKey($line)) ("lines=" + (($r[$rec].Keys | Where-Object { $_ -cne '_lines' } | Sort-Object) -join ','))
+    foreach ($k in $script:LineKeys[$line]) {
+        Require "${what}:$rec $line.$k present" ($r[$rec][$line].ContainsKey($k)) (Raw $r $rec $line)
+    }
+}
+function Validate-Record($r, [string]$rec, [string]$what, [bool]$fireRequired) {
+    Require "${what}:$rec present" ($r.ContainsKey($rec)) "keys=$(($r.Keys | Sort-Object) -join ',')"
+    foreach ($ln in $script:RecLines) { Validate-Line $r $rec $ln $what }
+    $nf = @($script:FireLines | Where-Object { $r[$rec].ContainsKey($_) }).Count
+    if ($fireRequired) { Require "${what}:$rec fire1..fire4 (exception frame, registers, USBD, clocks) present" ($nf -eq 4) "fire lines=$nf" }
+    else { Require "${what}:$rec fire lines all-or-none" ($nf -eq 0 -or $nf -eq 4) "fire lines=$nf" }
+    if ($nf -eq 4) { foreach ($ln in $script:FireLines) { Validate-Line $r $rec $ln $what } }
+}
+# Checks the whole dump, not only the fields a step reads: begin/end marks, no #TRUNC, the ring and
+# addr headers with all keys, every incident the ring count announces with every line and key,
+# last (a record or 'none'), cur. Returns the parsed table; returns $null when the dump has no
+# ZBOOT line at all and $zbootRequired is $false (an image without the boot instrument).
+function Validate-Dump([string]$t, [string]$what, [bool]$zbootRequired) {
+    Require "${what}:dump complete" ($t -cmatch '(?m)^ZDIAG end\s*$') 'ZDIAG end line'
+    $trunc = @($t -split "`n" | Where-Object { $_ -cmatch '#TRUNC' }).Count
+    Require "${what}:no #TRUNC line" ($trunc -eq 0) "trunc lines=$trunc"
+    $zb = @($t -split "`n" | Where-Object { $_ -cmatch '^ZBOOT ' }).Count
+    if ($zb -eq 0) {
+        if ($zbootRequired) { Require "${what}:ZBOOT lines present" $false 'zboot=0' }
+        Log "${what}: no ZBOOT line (the running image has no boot instrument)"
+        return $null
+    }
+    $r = Parse-Zboot $t
+    Require "${what}:ring header present" ($r.ContainsKey('ring') -and $r['ring'].ContainsKey('x')) "keys=$(($r.Keys | Sort-Object) -join ',')"
+    foreach ($k in $script:LineKeys['ring']) { Require "${what}:ring.$k present" ($r['ring']['x'].ContainsKey($k)) (Raw $r 'ring' 'x') }
+    Require "${what}:addr header present" ($r.ContainsKey('addr') -and $r['addr'].ContainsKey('x')) "keys=$(($r.Keys | Sort-Object) -join ',')"
+    foreach ($k in $script:LineKeys['addr']) { Require "${what}:addr.$k present" ($r['addr']['x'].ContainsKey($k)) (Raw $r 'addr' 'x') }
+    $n = [int]$r['ring']['x']['count']; $slots = [int]$r['ring']['x']['slots']
+    Require "${what}:ring count <= slots" ($n -le $slots) "count=$n slots=$slots"
+    for ($i = 0; $i -lt $n; $i++) { Validate-Record $r "inc$i" $what $true }
+    $incKeys = @($r.Keys | Where-Object { $_ -cmatch '^inc\d+$' }).Count
+    Require "${what}:incident records == ring count" ($incKeys -eq $n) "records=$incKeys count=$n"
+    if ($r.ContainsKey('last') -and $r['last'].ContainsKey('none')) { Log "${what}: last none" } else { Validate-Record $r 'last' $what $false }
+    Validate-Record $r 'cur' $what $false
+    return $r
+}
+# A dump for analysis. -ZbootOptional: accept an image without ZBOOT lines (preflight on whatever
+# image is running); the result is then $null.
+function Read-Dump([string]$what, [switch]$ZbootOptional) {
     Pause-Ms 700
     $t = Exchange
     if (-not $t) { Pause-Ms 1500; $t = Exchange }
     Require "${what}:dump present" ($null -ne $t) 'ZDIAG begin'
-    Require "${what}:dump complete" ($t -match 'ZDIAG end') 'ZDIAG end'
-    $trunc = @($t -split "`n" | Where-Object { $_ -match '#TRUNC' }).Count
-    Require "${what}:no #TRUNC line" ($trunc -eq 0) "trunc lines=$trunc"
-    $r = Parse-Zboot $t
-    Require "${what}:ZBOOT ring/addr/cur present" ($r.ContainsKey('ring') -and $r.ContainsKey('addr') -and $r.ContainsKey('cur')) "keys=$(($r.Keys | Sort-Object) -join ',')"
-    return $r
+    return (Validate-Dump $t $what (-not $ZbootOptional))
 }
 # "ZBOOT <rec> <line> k=v ..." -> $r[rec][line][key]; the ring/addr header lines get line 'x'.
 # $r[rec]['_lines'] keeps every raw line of that record (for whole-record comparison).
@@ -222,12 +334,12 @@ function Parse-Zboot([string]$text) {
     $r = @{}
     foreach ($l in ($text -split "`n")) {
         $l = $l.TrimEnd("`r")
-        if ($l -notmatch '^ZBOOT (\S+) (\S+)(.*)$') { continue }
+        if ($l -cnotmatch '^ZBOOT (\S+) (\S+)(.*)$') { continue }
         $rec = $Matches[1]; $line = $Matches[2]; $rest = $Matches[3].Trim()
-        if ($rec -eq 'ring' -or $rec -eq 'addr') { $rest = "$line $rest"; $line = 'x' }
+        if ($rec -ceq 'ring' -or $rec -ceq 'addr') { $rest = "$line $rest"; $line = 'x' }
         if (-not $r.ContainsKey($rec)) { $r[$rec] = @{ _lines = @() } }
         $h = @{}
-        foreach ($kv in ($rest -split ' ')) { if ($kv -match '^([a-z0-9_]+)=(.*)$') { $h[$Matches[1]] = $Matches[2] } }
+        foreach ($kv in ($rest -split ' ')) { if ($kv -cmatch '^([a-z0-9_]+)=(.*)$') { $h[$Matches[1]] = $Matches[2] } }
         $h['_raw'] = $l
         $r[$rec][$line] = $h
         $r[$rec]['_lines'] += $l
@@ -244,31 +356,34 @@ function Need($r, $rec, $line, $key) {
     if ($null -eq $v) { Log "FAIL field present $rec.$line.$key (absent)"; $script:fails++; Abort "missing field $rec.$line.$key" }
     return $v
 }
-function Hex($s) { if ($s -match '^0x([0-9a-fA-F]+)$') { return [Convert]::ToInt64($Matches[1], 16) }; return -1 }
+function Hex($s) { if ($s -cmatch '^0x([0-9a-fA-F]+)$') { return [Convert]::ToInt64($Matches[1], 16) }; return -1 }
 function Raw($r, $rec, $line) { return (V $r $rec $line '_raw') }
 
-# Common checks on one filed incident (all fields required). $spin = diag_spin_forever of the
-# image that fired; $threadKey = 'sysq'/'calib' to match against the addr line, or ''.
+# Common checks on one filed incident (all fields required; the four fire lines were already
+# required by Validate-Dump and are logged here as the evidence for the stall cause). $spin =
+# diag_spin_forever of the image that fired; $threadKey = 'sysq'/'calib' to match against the
+# addr line, or ''.
 function Check-Incident($r, [string]$inc, [string]$tag, [int]$reason, [string]$calib, [int]$done, [long]$spin, [string]$threadKey) {
     Require "$inc present" ($r.ContainsKey($inc)) "keys=$(($r.Keys | Sort-Object) -join ',')"
-    Check "$inc tag" ((Need $r $inc 'a' 'tag') -eq $tag) (Raw $r $inc 'a') | Out-Null
-    Check "$inc reason=$reason" ((Need $r $inc 'a' 'reason') -eq "$reason") (V $r $inc 'a' 'reason') | Out-Null
-    Check "$inc calib=$calib" ((Need $r $inc 'a' 'calib') -eq $calib) (V $r $inc 'a' 'calib') | Out-Null
-    Check "$inc done=$done" ((Need $r $inc 'a' 'done') -eq "$done") (V $r $inc 'a' 'done') | Out-Null
+    Check "$inc tag" ((Need $r $inc 'a' 'tag') -ceq $tag) (Raw $r $inc 'a') | Out-Null
+    Check "$inc reason=$reason" ((Need $r $inc 'a' 'reason') -ceq "$reason") (V $r $inc 'a' 'reason') | Out-Null
+    Check "$inc calib=$calib" ((Need $r $inc 'a' 'calib') -ceq $calib) (V $r $inc 'a' 'calib') | Out-Null
+    Check "$inc done=$done" ((Need $r $inc 'a' 'done') -ceq "$done") (V $r $inc 'a' 'done') | Out-Null
     $pc = Hex (Need $r $inc 'fire1' 'pc')
     Check "$inc pc in diag_spin_forever" ($pc -ge $spin -and $pc -lt ($spin + 4)) ("pc=" + (V $r $inc 'fire1' 'pc') + " spin=0x" + $spin.ToString('x')) | Out-Null
-    Check "$inc handler=0" ((Need $r $inc 'fire2' 'handler') -eq '0') (Raw $r $inc 'fire2') | Out-Null
+    Check "$inc handler=0" ((Need $r $inc 'fire2' 'handler') -ceq '0') (Raw $r $inc 'fire2') | Out-Null
     if ($threadKey) {
         $want = Need $r 'addr' 'x' $threadKey
-        Check "$inc thread == addr.$threadKey" ((Need $r $inc 'fire2' 'thread') -eq $want) ("thread=" + (V $r $inc 'fire2' 'thread') + " $threadKey=$want") | Out-Null
+        Check "$inc thread == addr.$threadKey" ((Need $r $inc 'fire2' 'thread') -ceq $want) ("thread=" + (V $r $inc 'fire2' 'thread') + " $threadKey=$want") | Out-Null
     }
+    foreach ($ln in @('fire1', 'fire3', 'fire4')) { Need $r $inc $ln $script:LineKeys[$ln][0] | Out-Null; Log ("$inc evidence: " + (Raw $r $inc $ln)) }
 }
 # Did the device reset between the command and now? Three observations, reported separately:
 # the console child saw the port vanish (direct), the parent saw USB leave 'app' (direct), the
 # boot number advanced (indirect). "not observed" is not "did not reset" (review #8, point 4).
 function Check-Reset([string]$text, [string]$leaveState, [int]$seqBefore, [int]$seqAfter, [int]$expectDelta) {
-    $portLost = ($text -match '\[calib-io\] port lost')
-    $usbLeft = ($leaveState -ne 'app')
+    $portLost = ($text -cmatch '\[calib-io\] port lost')
+    $usbLeft = ($leaveState -cne 'app')
     Log ("reset observation: port_lost=$portLost usb_left_app=$usbLeft (state=$leaveState) seq $seqBefore -> $seqAfter")
     Check "boot number advanced by $expectDelta" (($seqAfter - $seqBefore) -eq $expectDelta) "delta=$($seqAfter - $seqBefore)" | Out-Null
     if ($portLost -or $usbLeft) { Log "reset observed directly (port_lost=$portLost usb_left_app=$usbLeft)" }

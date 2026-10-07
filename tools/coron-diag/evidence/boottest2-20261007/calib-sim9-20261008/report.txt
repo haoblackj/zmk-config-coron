@@ -1,0 +1,891 @@
+calib-sim 2026-10-08 08:12:16: 29 scenarios, 0 mismatch
+
+| scenario | exit want/got | results | verdict |
+|---|---|---|---|
+| copy-fail | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0 | OK |
+| copy-not-taken | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0 | OK |
+| early-reset | 0/0 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=0 | OK |
+| foreign-uf2 | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0 | OK |
+| gate-b | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0 | OK |
+| gate-c | 1/1 | pre=0 flash-base=0 0=1 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| gate-h | 1/1 | pre=0 flash-base=0 0=0 1=0 2=1 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| gate-r | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=1 7=not-run 8=not-run restore=0 | OK |
+| inc-case | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0 | OK |
+| inc-changed | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0 | OK |
+| inc-missing-line | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0 | OK |
+| inc-no-regs | 1/1 | pre=0 flash-base=0 0=0 1=0 2=1 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| io-hang | 1/1 | pre=0 flash-base=0 0=0 1=1 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| missing-end | 1/1 | pre=0 flash-base=0 0=0 1=1 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| missing-field | 1/1 | pre=0 flash-base=0 0=0 1=1 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| mock-badjson | 4/4 | (none) | OK |
+| mock-missing | 4/4 | (none) | OK |
+| no-dump | 1/1 | pre=0 flash-base=0 0=0 1=1 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| no-reset | 1/1 | pre=0 flash-base=0 0=0 1=0 2=1 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| normal | 0/0 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=0 | OK |
+| normal-from-test | 0/0 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=0 | OK |
+| prod-md5 | 3/3 | pre=1 0=not-run 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=1 | OK |
+| prod-missing | 3/3 | pre=1 0=not-run 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=1 | OK |
+| prod-still-test | 2/2 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=1 | OK |
+| restore-hang | 2/2 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=TIMEOUT | OK |
+| ring-count-mismatch | 1/1 | pre=0 flash-base=0 0=1 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| step-hang | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=TIMEOUT 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| trunc | 1/1 | pre=0 flash-base=0 0=1 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| two-uf2 | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0 | OK |
+
+=== copy-fail
+    flash-base-1008-080849.log: [calib-io] sent 'b' at 08:08:49.861
+    flash-base-1008-080849.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-080849.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-080849.log: FLASH base RESULT PASS
+    flash-prod-1008-080925.log: [calib-io] sent 'b' at 08:09:25.989
+    flash-prod-1008-080925.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-080925.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-080925.log: FLASH prod RESULT PASS
+    step0-1008-080851.log: [calib-io] sent 'c' at 08:08:53.532
+    step0-1008-080851.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-080851.log: STEP 0 RESULT PASS
+    step1-1008-080855.log: STEP 1 RESULT PASS
+    step2-1008-080857.log: [calib-io] sent 'h' at 08:08:59.335
+    step2-1008-080857.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-080857.log: STEP 2 RESULT PASS
+    step3-1008-080901.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-080901.log: STEP 3 RESULT SKIP
+    step4-1008-080902.log: [calib-io] sent 'H' at 08:09:04.970
+    step4-1008-080902.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-080902.log: STEP 4 RESULT PASS
+    step5-1008-080907.log: [calib-io] sent 'G' at 08:09:09.963
+    step5-1008-080907.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-080907.log: STEP 5 RESULT PASS
+    step6-1008-080913.log: [calib-io] sent 'S' at 08:09:16.217
+    step6-1008-080913.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-080913.log: [calib-io] sent 'r' at 08:09:16.731
+    step6-1008-080913.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-080913.log: STEP 6 RESULT PASS
+    step7-1008-080920.log: [calib-io] sent 'S' at 08:09:24.266
+    step7-1008-080920.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-080920.log: [calib-io] sent 'b' at 08:09:24.775
+    step7-1008-080920.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-080920.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-080920.log: STOPPED before: nothing more in step 7 (only reading)
+    step7-1008-080920.log: STEP 7 RESULT FAIL (1 failed checks)
+    steppre-1008-080847.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0
+
+=== copy-not-taken
+    flash-base-1008-080849.log: [calib-io] sent 'b' at 08:08:49.861
+    flash-base-1008-080849.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-080849.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-080849.log: FLASH base RESULT PASS
+    flash-prod-1008-080927.log: [calib-io] sent 'b' at 08:09:28.515
+    flash-prod-1008-080927.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-080927.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-080927.log: FLASH prod RESULT PASS
+    step0-1008-080851.log: [calib-io] sent 'c' at 08:08:53.636
+    step0-1008-080851.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-080851.log: STEP 0 RESULT PASS
+    step1-1008-080855.log: STEP 1 RESULT PASS
+    step2-1008-080858.log: [calib-io] sent 'h' at 08:08:59.975
+    step2-1008-080858.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-080858.log: STEP 2 RESULT PASS
+    step3-1008-080902.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-080902.log: STEP 3 RESULT SKIP
+    step4-1008-080903.log: [calib-io] sent 'H' at 08:09:06.004
+    step4-1008-080903.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-080903.log: STEP 4 RESULT PASS
+    step5-1008-080908.log: [calib-io] sent 'G' at 08:09:11.409
+    step5-1008-080908.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-080908.log: STEP 5 RESULT PASS
+    step6-1008-080914.log: [calib-io] sent 'S' at 08:09:18.084
+    step6-1008-080914.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-080914.log: [calib-io] sent 'r' at 08:09:18.671
+    step6-1008-080914.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-080914.log: STEP 6 RESULT PASS
+    step7-1008-080922.log: [calib-io] sent 'S' at 08:09:26.669
+    step7-1008-080922.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-080922.log: [calib-io] sent 'b' at 08:09:27.275
+    step7-1008-080922.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-080922.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-080922.log: STOPPED before: nothing more in step 7 (only reading)
+    step7-1008-080922.log: STEP 7 RESULT FAIL (1 failed checks)
+    steppre-1008-080847.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0
+
+=== early-reset
+    flash-base-1008-080849.log: [calib-io] sent 'b' at 08:08:49.861
+    flash-base-1008-080849.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-080849.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-080849.log: FLASH base RESULT PASS
+    flash-prod-1008-080937.log: [calib-io] sent 'b' at 08:09:38.474
+    flash-prod-1008-080937.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-080937.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-080937.log: FLASH prod RESULT PASS
+    step0-1008-080851.log: [calib-io] sent 'c' at 08:08:53.636
+    step0-1008-080851.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-080851.log: STEP 0 RESULT PASS
+    step1-1008-080855.log: STEP 1 RESULT PASS
+    step2-1008-080858.log: [calib-io] sent 'h' at 08:08:59.976
+    step2-1008-080858.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-080858.log: NOTE reset NOT observed directly: the disconnect may have completed before the parent looked (unobserved, not 'no reset'); the verdict rests on the boot number and the incident record
+    step2-1008-080858.log: STEP 2 RESULT PASS
+    step3-1008-080902.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-080902.log: STEP 3 RESULT SKIP
+    step4-1008-080903.log: [calib-io] sent 'H' at 08:09:06.005
+    step4-1008-080903.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-080903.log: STEP 4 RESULT PASS
+    step5-1008-080908.log: [calib-io] sent 'G' at 08:09:11.399
+    step5-1008-080908.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-080908.log: STEP 5 RESULT PASS
+    step6-1008-080914.log: [calib-io] sent 'S' at 08:09:18.087
+    step6-1008-080914.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-080914.log: [calib-io] sent 'r' at 08:09:18.668
+    step6-1008-080914.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-080914.log: STEP 6 RESULT PASS
+    step7-1008-080922.log: [calib-io] sent 'S' at 08:09:26.668
+    step7-1008-080922.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-080922.log: [calib-io] sent 'b' at 08:09:27.275
+    step7-1008-080922.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-080922.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-080922.log: STEP 7 RESULT PASS
+    step8-1008-080931.log: [calib-io] sent 'c' at 08:09:35.982
+    step8-1008-080931.log: DEVICE-OP console sent 'c' (child stamp)
+    step8-1008-080931.log: STEP 8 RESULT PASS
+    steppre-1008-080847.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION PASS (step 3 SKIP: pin reset not tested) | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=0
+
+=== foreign-uf2
+    flash-base-1008-080849.log: [calib-io] sent 'b' at 08:08:49.861
+    flash-base-1008-080849.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-080849.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-080849.log: FLASH base RESULT PASS
+    flash-prod-1008-080927.log: [calib-io] sent 'b' at 08:09:28.451
+    flash-prod-1008-080927.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-080927.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-080927.log: FLASH prod RESULT PASS
+    step0-1008-080851.log: [calib-io] sent 'c' at 08:08:53.636
+    step0-1008-080851.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-080851.log: STEP 0 RESULT PASS
+    step1-1008-080855.log: STEP 1 RESULT PASS
+    step2-1008-080858.log: [calib-io] sent 'h' at 08:08:59.976
+    step2-1008-080858.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-080858.log: STEP 2 RESULT PASS
+    step3-1008-080902.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-080902.log: STEP 3 RESULT SKIP
+    step4-1008-080903.log: [calib-io] sent 'H' at 08:09:06.002
+    step4-1008-080903.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-080903.log: STEP 4 RESULT PASS
+    step5-1008-080908.log: [calib-io] sent 'G' at 08:09:11.398
+    step5-1008-080908.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-080908.log: STEP 5 RESULT PASS
+    step6-1008-080914.log: [calib-io] sent 'S' at 08:09:18.087
+    step6-1008-080914.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-080914.log: [calib-io] sent 'r' at 08:09:18.668
+    step6-1008-080914.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-080914.log: STEP 6 RESULT PASS
+    step7-1008-080922.log: [calib-io] sent 'S' at 08:09:26.669
+    step7-1008-080922.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-080922.log: [calib-io] sent 'b' at 08:09:27.275
+    step7-1008-080922.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-080922.log: STOPPED before: copy the alt image to the UF2 drive
+    step7-1008-080922.log: STEP 7 RESULT FAIL (1 failed checks)
+    steppre-1008-080847.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0
+
+=== gate-b
+    flash-base-1008-080929.log: [calib-io] sent 'b' at 08:09:29.628
+    flash-base-1008-080929.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-080929.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-080929.log: FLASH base RESULT PASS
+    flash-prod-1008-081004.log: [calib-io] sent 'b' at 08:10:05.346
+    flash-prod-1008-081004.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081004.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081004.log: FLASH prod RESULT PASS
+    step0-1008-080931.log: [calib-io] sent 'c' at 08:09:32.952
+    step0-1008-080931.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-080931.log: STEP 0 RESULT PASS
+    step1-1008-080934.log: STEP 1 RESULT PASS
+    step2-1008-080937.log: [calib-io] sent 'h' at 08:09:38.848
+    step2-1008-080937.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-080937.log: STEP 2 RESULT PASS
+    step3-1008-080941.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-080941.log: STEP 3 RESULT SKIP
+    step4-1008-080941.log: [calib-io] sent 'H' at 08:09:44.399
+    step4-1008-080941.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-080941.log: STEP 4 RESULT PASS
+    step5-1008-080946.log: [calib-io] sent 'G' at 08:09:49.385
+    step5-1008-080946.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-080946.log: STEP 5 RESULT PASS
+    step6-1008-080952.log: [calib-io] sent 'S' at 08:09:55.619
+    step6-1008-080952.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-080952.log: [calib-io] sent 'r' at 08:09:56.120
+    step6-1008-080952.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-080952.log: STEP 6 RESULT PASS
+    step7-1008-080959.log: [calib-io] sent 'S' at 08:10:03.728
+    step7-1008-080959.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-080959.log: [calib-io] NOT sent 'b': the dump before it is incomplete at 08:10:04.221
+    step7-1008-080959.log: console 'b' NOT sent by the child (exit=2)
+    step7-1008-080959.log: STOPPED before: send 'b'
+    step7-1008-080959.log: STEP 7 RESULT FAIL (1 failed checks)
+    steppre-1008-080927.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0
+
+=== gate-c
+    flash-base-1008-080931.log: [calib-io] sent 'b' at 08:09:32.090
+    flash-base-1008-080931.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-080931.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-080931.log: FLASH base RESULT PASS
+    flash-prod-1008-080936.log: [calib-io] sent 'b' at 08:09:36.726
+    flash-prod-1008-080936.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-080936.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-080936.log: FLASH prod RESULT PASS
+    step0-1008-080933.log: [calib-io] NOT sent 'c': the dump before it has a #TRUNC line at 08:09:35.563
+    step0-1008-080933.log: console 'c' NOT sent by the child (exit=2)
+    step0-1008-080933.log: STOPPED before: send 'c' (clear the ring)
+    step0-1008-080933.log: STEP 0 RESULT FAIL (1 failed checks)
+    steppre-1008-080930.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=1 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== gate-h
+    flash-base-1008-080931.log: [calib-io] sent 'b' at 08:09:32.090
+    flash-base-1008-080931.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-080931.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-080931.log: FLASH base RESULT PASS
+    flash-prod-1008-080941.log: [calib-io] sent 'b' at 08:09:42.579
+    flash-prod-1008-080941.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-080941.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-080941.log: FLASH prod RESULT PASS
+    step0-1008-080933.log: [calib-io] sent 'c' at 08:09:35.564
+    step0-1008-080933.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-080933.log: STEP 0 RESULT PASS
+    step1-1008-080937.log: STEP 1 RESULT PASS
+    step2-1008-080939.log: [calib-io] NOT sent 'h': the dump before it is incomplete at 08:09:41.440
+    step2-1008-080939.log: console 'h' NOT sent by the child (exit=2)
+    step2-1008-080939.log: STOPPED before: send 'h'
+    step2-1008-080939.log: STEP 2 RESULT FAIL (1 failed checks)
+    steppre-1008-080930.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=1 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== gate-r
+    flash-base-1008-080939.log: [calib-io] sent 'b' at 08:09:40.368
+    flash-base-1008-080939.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-080939.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-080939.log: FLASH base RESULT PASS
+    flash-prod-1008-081007.log: [calib-io] sent 'b' at 08:10:08.182
+    flash-prod-1008-081007.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081007.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081007.log: FLASH prod RESULT PASS
+    step0-1008-080942.log: [calib-io] sent 'c' at 08:09:43.680
+    step0-1008-080942.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-080942.log: STEP 0 RESULT PASS
+    step1-1008-080945.log: STEP 1 RESULT PASS
+    step2-1008-080947.log: [calib-io] sent 'h' at 08:09:49.602
+    step2-1008-080947.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-080947.log: STEP 2 RESULT PASS
+    step3-1008-080952.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-080952.log: STEP 3 RESULT SKIP
+    step4-1008-080952.log: [calib-io] sent 'H' at 08:09:55.165
+    step4-1008-080952.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-080952.log: STEP 4 RESULT PASS
+    step5-1008-080957.log: [calib-io] sent 'G' at 08:10:00.200
+    step5-1008-080957.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-080957.log: STEP 5 RESULT PASS
+    step6-1008-081003.log: [calib-io] sent 'S' at 08:10:06.483
+    step6-1008-081003.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-081003.log: [calib-io] NOT sent 'r': the dump before it has a #TRUNC line at 08:10:07.022
+    step6-1008-081003.log: console 'r' NOT sent by the child (exit=2)
+    step6-1008-081003.log: STOPPED before: send 'r'
+    step6-1008-081003.log: STEP 6 RESULT FAIL (1 failed checks)
+    steppre-1008-080938.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=1 7=not-run 8=not-run restore=0
+
+=== inc-case
+    flash-base-1008-080941.log: [calib-io] sent 'b' at 08:09:42.025
+    flash-base-1008-080941.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-080941.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-080941.log: FLASH base RESULT PASS
+    flash-prod-1008-081021.log: [calib-io] sent 'b' at 08:10:21.663
+    flash-prod-1008-081021.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081021.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081021.log: FLASH prod RESULT PASS
+    step0-1008-080943.log: [calib-io] sent 'c' at 08:09:45.340
+    step0-1008-080943.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-080943.log: STEP 0 RESULT PASS
+    step1-1008-080946.log: STEP 1 RESULT PASS
+    step2-1008-080949.log: [calib-io] sent 'h' at 08:09:51.198
+    step2-1008-080949.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-080949.log: STEP 2 RESULT PASS
+    step3-1008-080953.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-080953.log: STEP 3 RESULT SKIP
+    step4-1008-080954.log: [calib-io] sent 'H' at 08:09:56.710
+    step4-1008-080954.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-080954.log: STEP 4 RESULT PASS
+    step5-1008-080959.log: [calib-io] sent 'G' at 08:10:01.749
+    step5-1008-080959.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-080959.log: STEP 5 RESULT PASS
+    step6-1008-081004.log: [calib-io] sent 'S' at 08:10:07.993
+    step6-1008-081004.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-081004.log: [calib-io] sent 'r' at 08:10:08.545
+    step6-1008-081004.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-081004.log: STEP 6 RESULT PASS
+    step7-1008-081012.log: [calib-io] sent 'S' at 08:10:16.103
+    step7-1008-081012.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-081012.log: [calib-io] sent 'b' at 08:10:16.620
+    step7-1008-081012.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-081012.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-081012.log: STEP 7 RESULT FAIL (1 failed checks)
+    steppre-1008-080940.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0
+
+=== inc-changed
+    flash-base-1008-080945.log: [calib-io] sent 'b' at 08:09:46.133
+    flash-base-1008-080945.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-080945.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-080945.log: FLASH base RESULT PASS
+    flash-prod-1008-081025.log: [calib-io] sent 'b' at 08:10:25.810
+    flash-prod-1008-081025.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081025.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081025.log: FLASH prod RESULT PASS
+    step0-1008-080947.log: [calib-io] sent 'c' at 08:09:49.513
+    step0-1008-080947.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-080947.log: STEP 0 RESULT PASS
+    step1-1008-080951.log: STEP 1 RESULT PASS
+    step2-1008-080953.log: [calib-io] sent 'h' at 08:09:55.296
+    step2-1008-080953.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-080953.log: STEP 2 RESULT PASS
+    step3-1008-080957.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-080957.log: STEP 3 RESULT SKIP
+    step4-1008-080958.log: [calib-io] sent 'H' at 08:10:00.949
+    step4-1008-080958.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-080958.log: STEP 4 RESULT PASS
+    step5-1008-081003.log: [calib-io] sent 'G' at 08:10:05.960
+    step5-1008-081003.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-081003.log: STEP 5 RESULT PASS
+    step6-1008-081009.log: [calib-io] sent 'S' at 08:10:12.241
+    step6-1008-081009.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-081009.log: [calib-io] sent 'r' at 08:10:12.740
+    step6-1008-081009.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-081009.log: STEP 6 RESULT PASS
+    step7-1008-081016.log: [calib-io] sent 'S' at 08:10:20.357
+    step7-1008-081016.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-081016.log: [calib-io] sent 'b' at 08:10:20.871
+    step7-1008-081016.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-081016.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-081016.log: STEP 7 RESULT FAIL (1 failed checks)
+    steppre-1008-080944.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0
+
+=== inc-missing-line
+    flash-base-1008-081008.log: [calib-io] sent 'b' at 08:10:09.140
+    flash-base-1008-081008.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-081008.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-081008.log: FLASH base RESULT PASS
+    flash-prod-1008-081045.log: [calib-io] sent 'b' at 08:10:46.582
+    flash-prod-1008-081045.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081045.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081045.log: FLASH prod RESULT PASS
+    step0-1008-081010.log: [calib-io] sent 'c' at 08:10:12.513
+    step0-1008-081010.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-081010.log: STEP 0 RESULT PASS
+    step1-1008-081014.log: STEP 1 RESULT PASS
+    step2-1008-081016.log: [calib-io] sent 'h' at 08:10:18.324
+    step2-1008-081016.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-081016.log: STEP 2 RESULT PASS
+    step3-1008-081020.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-081020.log: STEP 3 RESULT SKIP
+    step4-1008-081021.log: [calib-io] sent 'H' at 08:10:23.955
+    step4-1008-081021.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-081021.log: STEP 4 RESULT PASS
+    step5-1008-081026.log: [calib-io] sent 'G' at 08:10:28.891
+    step5-1008-081026.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-081026.log: STEP 5 RESULT PASS
+    step6-1008-081031.log: [calib-io] sent 'S' at 08:10:34.934
+    step6-1008-081031.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-081031.log: [calib-io] sent 'r' at 08:10:35.418
+    step6-1008-081031.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-081031.log: STEP 6 RESULT PASS
+    step7-1008-081038.log: [calib-io] sent 'S' at 08:10:42.827
+    step7-1008-081038.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-081038.log: [calib-io] sent 'b' at 08:10:43.334
+    step7-1008-081038.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-081038.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-081038.log: STOPPED before: nothing more in step 7 (only reading)
+    step7-1008-081038.log: STEP 7 RESULT FAIL (1 failed checks)
+    steppre-1008-081007.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0
+
+=== inc-no-regs
+    flash-base-1008-081011.log: [calib-io] sent 'b' at 08:10:11.769
+    flash-base-1008-081011.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-081011.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-081011.log: FLASH base RESULT PASS
+    flash-prod-1008-081022.log: [calib-io] sent 'b' at 08:10:23.166
+    flash-prod-1008-081022.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081022.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081022.log: FLASH prod RESULT PASS
+    step0-1008-081013.log: [calib-io] sent 'c' at 08:10:15.117
+    step0-1008-081013.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-081013.log: STEP 0 RESULT PASS
+    step1-1008-081016.log: STEP 1 RESULT PASS
+    step2-1008-081019.log: [calib-io] sent 'h' at 08:10:21.003
+    step2-1008-081019.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-081019.log: STOPPED before: nothing more in step (only reading)
+    step2-1008-081019.log: STEP 2 RESULT FAIL (1 failed checks)
+    steppre-1008-081010.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=1 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== io-hang
+    flash-base-1008-081024.log: [calib-io] sent 'b' at 08:10:25.283
+    flash-base-1008-081024.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-081024.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-081024.log: FLASH base RESULT PASS
+    flash-prod-1008-081037.log: [calib-io] sent 'b' at 08:10:38.077
+    flash-prod-1008-081037.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081037.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081037.log: FLASH prod RESULT PASS
+    step0-1008-081026.log: [calib-io] sent 'c' at 08:10:28.592
+    step0-1008-081026.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-081026.log: STEP 0 RESULT PASS
+    step1-1008-081030.log: FAIL console child returned within 3s (timed out; killed with its process tree; sent stamp absent)
+    step1-1008-081030.log: FAIL console child returned within 3s (timed out; killed with its process tree; sent stamp absent)
+    step1-1008-081030.log: STOPPED before: nothing (read only)
+    step1-1008-081030.log: STEP 1 RESULT FAIL (3 failed checks)
+    steppre-1008-081023.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=1 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== missing-end
+    flash-base-1008-081026.log: [calib-io] sent 'b' at 08:10:26.744
+    flash-base-1008-081026.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-081026.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-081026.log: FLASH base RESULT PASS
+    flash-prod-1008-081032.log: [calib-io] sent 'b' at 08:10:33.240
+    flash-prod-1008-081032.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081032.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081032.log: FLASH prod RESULT PASS
+    step0-1008-081028.log: [calib-io] sent 'c' at 08:10:30.096
+    step0-1008-081028.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-081028.log: STEP 0 RESULT PASS
+    step1-1008-081031.log: STOPPED before: nothing (read only)
+    step1-1008-081031.log: STEP 1 RESULT FAIL (1 failed checks)
+    steppre-1008-081024.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=1 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== missing-field
+    flash-base-1008-081028.log: [calib-io] sent 'b' at 08:10:29.336
+    flash-base-1008-081028.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-081028.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-081028.log: FLASH base RESULT PASS
+    flash-prod-1008-081035.log: [calib-io] sent 'b' at 08:10:36.191
+    flash-prod-1008-081035.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081035.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081035.log: FLASH prod RESULT PASS
+    step0-1008-081031.log: [calib-io] sent 'c' at 08:10:32.594
+    step0-1008-081031.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-081031.log: STEP 0 RESULT PASS
+    step1-1008-081034.log: STOPPED before: nothing (read only)
+    step1-1008-081034.log: STEP 1 RESULT FAIL (1 failed checks)
+    steppre-1008-081027.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=1 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== mock-badjson
+    summary.log: ﻿08:10:34.593 MOCK FILE MISSING/INVALID: flash-base.json invalid (':' または '}' ではなく無効なオブジェクトが渡されました。 (8): { this is not json) -> nothing launched (mock mode is all-or-nothing)
+    summary.log: CALIBRATION NOT RUN | RESTORE NOT RUN
+
+=== mock-missing
+    summary.log: ﻿08:10:35.170 MOCK FILE MISSING/INVALID: flash-prod.json missing -> nothing launched (mock mode is all-or-nothing)
+    summary.log: CALIBRATION NOT RUN | RESTORE NOT RUN
+
+=== no-dump
+    flash-base-1008-081037.log: [calib-io] sent 'b' at 08:10:38.070
+    flash-base-1008-081037.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-081037.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-081037.log: FLASH base RESULT PASS
+    flash-prod-1008-081044.log: [calib-io] sent 'b' at 08:10:45.166
+    flash-prod-1008-081044.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081044.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081044.log: FLASH prod RESULT PASS
+    step0-1008-081039.log: [calib-io] sent 'c' at 08:10:41.507
+    step0-1008-081039.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-081039.log: STEP 0 RESULT PASS
+    step1-1008-081043.log: STOPPED before: nothing (read only)
+    step1-1008-081043.log: STEP 1 RESULT FAIL (1 failed checks)
+    steppre-1008-081036.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=1 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== no-reset
+    flash-base-1008-081039.log: [calib-io] sent 'b' at 08:10:39.897
+    flash-base-1008-081039.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-081039.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-081039.log: FLASH base RESULT PASS
+    flash-prod-1008-081050.log: [calib-io] sent 'b' at 08:10:51.311
+    flash-prod-1008-081050.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081050.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081050.log: FLASH prod RESULT PASS
+    step0-1008-081041.log: [calib-io] sent 'c' at 08:10:43.212
+    step0-1008-081041.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-081041.log: STEP 0 RESULT PASS
+    step1-1008-081044.log: STEP 1 RESULT PASS
+    step2-1008-081047.log: [calib-io] sent 'h' at 08:10:49.103
+    step2-1008-081047.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-081047.log: NOTE reset NOT observed directly: the disconnect may have completed before the parent looked (unobserved, not 'no reset'); the verdict rests on the boot number and the incident record
+    step2-1008-081047.log: STOPPED before: nothing more in step (only reading)
+    step2-1008-081047.log: STEP 2 RESULT FAIL (3 failed checks)
+    steppre-1008-081038.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=1 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== normal
+    flash-base-1008-081041.log: [calib-io] sent 'b' at 08:10:41.720
+    flash-base-1008-081041.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-081041.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-081041.log: FLASH base RESULT PASS
+    flash-prod-1008-081127.log: [calib-io] sent 'b' at 08:11:27.766
+    flash-prod-1008-081127.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081127.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081127.log: FLASH prod RESULT PASS
+    step0-1008-081043.log: [calib-io] sent 'c' at 08:10:45.047
+    step0-1008-081043.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-081043.log: STEP 0 RESULT PASS
+    step1-1008-081046.log: STEP 1 RESULT PASS
+    step2-1008-081049.log: [calib-io] sent 'h' at 08:10:50.871
+    step2-1008-081049.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-081049.log: STEP 2 RESULT PASS
+    step3-1008-081053.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-081053.log: STEP 3 RESULT SKIP
+    step4-1008-081053.log: [calib-io] sent 'H' at 08:10:56.401
+    step4-1008-081053.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-081053.log: STEP 4 RESULT PASS
+    step5-1008-081058.log: [calib-io] sent 'G' at 08:11:01.411
+    step5-1008-081058.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-081058.log: STEP 5 RESULT PASS
+    step6-1008-081104.log: [calib-io] sent 'S' at 08:11:07.682
+    step6-1008-081104.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-081104.log: [calib-io] sent 'r' at 08:11:08.194
+    step6-1008-081104.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-081104.log: STEP 6 RESULT PASS
+    step7-1008-081111.log: [calib-io] sent 'S' at 08:11:15.854
+    step7-1008-081111.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-081111.log: [calib-io] sent 'b' at 08:11:16.369
+    step7-1008-081111.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-081111.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-081111.log: STEP 7 RESULT PASS
+    step8-1008-081120.log: [calib-io] sent 'c' at 08:11:25.310
+    step8-1008-081120.log: DEVICE-OP console sent 'c' (child stamp)
+    step8-1008-081120.log: STEP 8 RESULT PASS
+    steppre-1008-081039.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION PASS (step 3 SKIP: pin reset not tested) | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=0
+
+=== normal-from-test
+    flash-base-1008-081049.log: [calib-io] sent 'b' at 08:10:49.952
+    flash-base-1008-081049.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-081049.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-081049.log: FLASH base RESULT PASS
+    flash-prod-1008-081137.log: [calib-io] sent 'b' at 08:11:38.311
+    flash-prod-1008-081137.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081137.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081137.log: FLASH prod RESULT PASS
+    step0-1008-081052.log: [calib-io] sent 'c' at 08:10:55.082
+    step0-1008-081052.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-081052.log: STEP 0 RESULT PASS
+    step1-1008-081056.log: STEP 1 RESULT PASS
+    step2-1008-081059.log: [calib-io] sent 'h' at 08:11:01.284
+    step2-1008-081059.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-081059.log: STEP 2 RESULT PASS
+    step3-1008-081103.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-081103.log: STEP 3 RESULT SKIP
+    step4-1008-081104.log: [calib-io] sent 'H' at 08:11:06.943
+    step4-1008-081104.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-081104.log: STEP 4 RESULT PASS
+    step5-1008-081109.log: [calib-io] sent 'G' at 08:11:12.026
+    step5-1008-081109.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-081109.log: STEP 5 RESULT PASS
+    step6-1008-081115.log: [calib-io] sent 'S' at 08:11:18.361
+    step6-1008-081115.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-081115.log: [calib-io] sent 'r' at 08:11:18.873
+    step6-1008-081115.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-081115.log: STEP 6 RESULT PASS
+    step7-1008-081122.log: [calib-io] sent 'S' at 08:11:26.417
+    step7-1008-081122.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-081122.log: [calib-io] sent 'b' at 08:11:26.915
+    step7-1008-081122.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-081122.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-081122.log: STEP 7 RESULT PASS
+    step8-1008-081131.log: [calib-io] sent 'c' at 08:11:35.877
+    step8-1008-081131.log: DEVICE-OP console sent 'c' (child stamp)
+    step8-1008-081131.log: STEP 8 RESULT PASS
+    steppre-1008-081047.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION PASS (step 3 SKIP: pin reset not tested) | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=0
+
+=== prod-md5
+    flash-prod-1008-081049.log: STOPPED before: nothing (preflight)
+    flash-prod-1008-081049.log: FLASH prod RESULT FAIL (1 failed checks)
+    steppre-1008-081048.log: STOPPED before: nothing (preflight only)
+    steppre-1008-081048.log: STEP pre RESULT FAIL (1 failed checks)
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore FAIL (rc=1)
+    summary.log: CALIBRATION FAIL | RESTORE FAIL
+    summary.log: results: pre=1 0=not-run 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=1
+
+=== prod-missing
+    flash-prod-1008-081050.log: STOPPED before: nothing (preflight)
+    flash-prod-1008-081050.log: FLASH prod RESULT FAIL (1 failed checks)
+    steppre-1008-081050.log: STOPPED before: nothing (preflight only)
+    steppre-1008-081050.log: STEP pre RESULT FAIL (1 failed checks)
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore FAIL (rc=1)
+    summary.log: CALIBRATION FAIL | RESTORE FAIL
+    summary.log: results: pre=1 0=not-run 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=1
+
+=== prod-still-test
+    flash-base-1008-081053.log: [calib-io] sent 'b' at 08:10:53.909
+    flash-base-1008-081053.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-081053.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-081053.log: FLASH base RESULT PASS
+    flash-prod-1008-081139.log: [calib-io] sent 'b' at 08:11:40.003
+    flash-prod-1008-081139.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081139.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081139.log: FLASH prod RESULT FAIL (1 failed checks)
+    step0-1008-081055.log: [calib-io] sent 'c' at 08:10:57.227
+    step0-1008-081055.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-081055.log: STEP 0 RESULT PASS
+    step1-1008-081058.log: STEP 1 RESULT PASS
+    step2-1008-081101.log: [calib-io] sent 'h' at 08:11:03.040
+    step2-1008-081101.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-081101.log: STEP 2 RESULT PASS
+    step3-1008-081105.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-081105.log: STEP 3 RESULT SKIP
+    step4-1008-081106.log: [calib-io] sent 'H' at 08:11:08.671
+    step4-1008-081106.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-081106.log: STEP 4 RESULT PASS
+    step5-1008-081111.log: [calib-io] sent 'G' at 08:11:13.704
+    step5-1008-081111.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-081111.log: STEP 5 RESULT PASS
+    step6-1008-081116.log: [calib-io] sent 'S' at 08:11:20.034
+    step6-1008-081116.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-081116.log: [calib-io] sent 'r' at 08:11:20.540
+    step6-1008-081116.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-081116.log: STEP 6 RESULT PASS
+    step7-1008-081124.log: [calib-io] sent 'S' at 08:11:28.148
+    step7-1008-081124.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-081124.log: [calib-io] sent 'b' at 08:11:28.642
+    step7-1008-081124.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-081124.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-081124.log: STEP 7 RESULT PASS
+    step8-1008-081133.log: [calib-io] sent 'c' at 08:11:37.604
+    step8-1008-081133.log: DEVICE-OP console sent 'c' (child stamp)
+    step8-1008-081133.log: STEP 8 RESULT PASS
+    steppre-1008-081052.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore FAIL (rc=1)
+    summary.log: CALIBRATION PASS (step 3 SKIP: pin reset not tested) | RESTORE FAIL
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=1
+
+=== restore-hang
+    flash-base-1008-081054.log: [calib-io] sent 'b' at 08:10:54.831
+    flash-base-1008-081054.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-081054.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-081054.log: FLASH base RESULT PASS
+    step0-1008-081056.log: [calib-io] sent 'c' at 08:10:58.182
+    step0-1008-081056.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-081056.log: STEP 0 RESULT PASS
+    step1-1008-081059.log: STEP 1 RESULT PASS
+    step2-1008-081102.log: [calib-io] sent 'h' at 08:11:04.020
+    step2-1008-081102.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-081102.log: STEP 2 RESULT PASS
+    step3-1008-081106.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-081106.log: STEP 3 RESULT SKIP
+    step4-1008-081107.log: [calib-io] sent 'H' at 08:11:09.644
+    step4-1008-081107.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-081107.log: STEP 4 RESULT PASS
+    step5-1008-081112.log: [calib-io] sent 'G' at 08:11:14.754
+    step5-1008-081112.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-081112.log: STEP 5 RESULT PASS
+    step6-1008-081117.log: [calib-io] sent 'S' at 08:11:21.076
+    step6-1008-081117.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-081117.log: [calib-io] sent 'r' at 08:11:21.573
+    step6-1008-081117.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-081117.log: STEP 6 RESULT PASS
+    step7-1008-081125.log: [calib-io] sent 'S' at 08:11:29.245
+    step7-1008-081125.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-081125.log: [calib-io] sent 'b' at 08:11:29.771
+    step7-1008-081125.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-081125.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-081125.log: STEP 7 RESULT PASS
+    step8-1008-081134.log: [calib-io] sent 'c' at 08:11:38.682
+    step8-1008-081134.log: DEVICE-OP console sent 'c' (child stamp)
+    step8-1008-081134.log: STEP 8 RESULT PASS
+    steppre-1008-081053.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: flash-prod did not return within 8s: killed with its process tree (its log and \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim9\logs-1008-080846\restore-hang\child-flash-prod.out hold what it wrote)
+    summary.log: restore FAIL (rc=TIMEOUT)
+    summary.log: CALIBRATION PASS (step 3 SKIP: pin reset not tested) | RESTORE FAIL
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=TIMEOUT
+
+=== ring-count-mismatch
+    flash-base-1008-081130.log: [calib-io] sent 'b' at 08:11:31.402
+    flash-base-1008-081130.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-081130.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-081130.log: FLASH base RESULT PASS
+    flash-prod-1008-081134.log: [calib-io] sent 'b' at 08:11:35.050
+    flash-prod-1008-081134.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081134.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081134.log: FLASH prod RESULT PASS
+    step0-1008-081133.log: STOPPED before: send 'c' (clear the ring)
+    step0-1008-081133.log: STEP 0 RESULT FAIL (1 failed checks)
+    steppre-1008-081129.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=1 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== step-hang
+    flash-base-1008-081138.log: [calib-io] sent 'b' at 08:11:38.710
+    flash-base-1008-081138.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-081138.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-081138.log: FLASH base RESULT PASS
+    flash-prod-1008-081158.log: [calib-io] sent 'b' at 08:11:59.205
+    flash-prod-1008-081158.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081158.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081158.log: FLASH prod RESULT PASS
+    step0-1008-081140.log: [calib-io] sent 'c' at 08:11:41.969
+    step0-1008-081140.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-081140.log: STEP 0 RESULT PASS
+    step1-1008-081143.log: STEP 1 RESULT PASS
+    step2-1008-081146.log: [calib-io] sent 'h' at 08:11:47.519
+    step2-1008-081146.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-081146.log: STEP 2 RESULT PASS
+    step3-1008-081149.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-081149.log: STEP 3 RESULT SKIP
+    steppre-1008-081136.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: 4 did not return within 8s: killed with its process tree (its log and \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim9\logs-1008-080846\step-hang\child-4.out hold what it wrote)
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=TIMEOUT 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== trunc
+    flash-base-1008-081141.log: [calib-io] sent 'b' at 08:11:41.834
+    flash-base-1008-081141.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-081141.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-081141.log: FLASH base RESULT PASS
+    flash-prod-1008-081144.log: [calib-io] sent 'b' at 08:11:45.115
+    flash-prod-1008-081144.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081144.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081144.log: FLASH prod RESULT PASS
+    step0-1008-081143.log: STOPPED before: send 'c' (clear the ring)
+    step0-1008-081143.log: STEP 0 RESULT FAIL (1 failed checks)
+    steppre-1008-081140.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=1 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== two-uf2
+    flash-base-1008-081142.log: [calib-io] sent 'b' at 08:11:43.462
+    flash-base-1008-081142.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-081142.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-081142.log: FLASH base RESULT PASS
+    flash-prod-1008-081215.log: [calib-io] sent 'b' at 08:12:15.718
+    flash-prod-1008-081215.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-081215.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-081215.log: FLASH prod RESULT PASS
+    step0-1008-081145.log: [calib-io] sent 'c' at 08:11:46.559
+    step0-1008-081145.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-081145.log: STEP 0 RESULT PASS
+    step1-1008-081147.log: STEP 1 RESULT PASS
+    step2-1008-081150.log: [calib-io] sent 'h' at 08:11:51.940
+    step2-1008-081150.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-081150.log: STEP 2 RESULT PASS
+    step3-1008-081154.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-081154.log: STEP 3 RESULT SKIP
+    step4-1008-081154.log: [calib-io] sent 'H' at 08:11:56.948
+    step4-1008-081154.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-081154.log: STEP 4 RESULT PASS
+    step5-1008-081159.log: [calib-io] sent 'G' at 08:12:01.475
+    step5-1008-081159.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-081159.log: STEP 5 RESULT PASS
+    step6-1008-081204.log: [calib-io] sent 'S' at 08:12:07.043
+    step6-1008-081204.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-081204.log: [calib-io] sent 'r' at 08:12:07.490
+    step6-1008-081204.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-081204.log: STEP 6 RESULT PASS
+    step7-1008-081210.log: [calib-io] sent 'S' at 08:12:14.166
+    step7-1008-081210.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-081210.log: [calib-io] sent 'b' at 08:12:14.642
+    step7-1008-081210.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-081210.log: STOPPED before: copy the alt image to the UF2 drive
+    step7-1008-081210.log: STEP 7 RESULT FAIL (1 failed checks)
+    steppre-1008-081141.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0

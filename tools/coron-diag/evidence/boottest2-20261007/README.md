@@ -70,20 +70,21 @@ GitHub で読める写しは `haoblackj/zmk-config-coron` の `feat/dya-diagnost
 スレッド文脈の書き手（SYS_INIT の段、feeder、probe、コンソール）は `irq_lock` の下で項目の更新と CRC の計算を一組にする。TIMER4 の ISR は NVIC 優先度 0 で `irq_lock` の外にあるが、最後の書き手として記録全体を封印してからリセットし、戻らないので、割り込まれたスレッドが古い CRC を後から書き戻すことは起きない。CRC が保証するのは「読み出した内容が ISR の封印したとおりである」ことまでで、複数項目の更新の途中で ISR が割り込んだ場合、その途中の値（例: `probes_run` は増えたが `STG_WQ_PROBED` の刻印はまだ、`stage` は進んだが `stage_cyc[]` はまだ）が CRC つきで保存されることはある。読むときはこの組を「途中の可能性あり」として解釈する。残るのは「ロック中の数マイクロ秒にピンリセットが入る」場合で、CRC 不一致として検出され `invalid` に数えられる（誤った内容が有効と読まれることはない）。
 
 ## 校正（実機。リーダーの許可の後。手動操作なし。所要 20 分）
-実行は `tools/coron-diag/calib/` のスクリプト。`calib-all.ps1` が「事前確認 → 基準像の書き込み → 第 0〜8 段（第 3 段は SKIP）→ 本番復帰」を人の操作なしで通し、各段の生のコンソール出力と PASS/FAIL（期待値と実測値）を `stepN-<時刻>.log` に、全体を `summary.log` に残す。
+実行は `tools/coron-diag/calib/` のスクリプト。`calib-all.ps1` が「事前確認 → 基準像の書き込み → 第 0〜8 段（第 3 段は SKIP）→ 本番復帰」を人の操作なしで通し、各段の生のコンソール出力と PASS/FAIL（期待値と実測値）を `stepN-<時刻>.log` に、全体を `summary.log` に残す。各段と復帰は子プロセスとして期限つきで起動し（pre 90 秒、基準像の書き込み 300 秒、第 0/1/8 段 90 秒、第 2/5/6 段 240 秒、第 4 段 150 秒、第 7 段 400 秒、復帰 300 秒。各段自身の待ち時間の合計より長い）、期限までに戻らない子はプロセスツリーごと終了して `TIMEOUT` と記録し、校正は不合格として復帰へ進む。子の標準出力と標準エラーは書かれた端からファイル（`child-<段>.out/.err`、交換ごとの `step<段>-<時刻>-ioN.out/.err`）に落ちるので、強制終了しても途中までの出力が残る。
 - 第 3 段（ピンリセット 1 回押し）は実施しない。手動操作をこの実行に含めないため SKIP と記録し、PASS にはしない。ピンリセットを挟んだ保持は未検証のまま残す。`r` のソフトリセットをその代わりの合格にはしない。
 - FAIL で止まる。各段の前提条件（`Require`）が成立しなければ、生の出力を保存して、その段の次のデバイス操作（命令の送信、`b`、UF2 の複写）を行わない。ログに `STOPPED before: <行わなかった操作>` が残る。校正が止まっても本番復帰は別に走る。
+- 命令の送信の関門は、ポートを開いた子プロセス（`calib-io.ps1`）自身が持つ。子は送信の直前に読んだ dump が `ZDIAG begin` と `ZDIAG end` をそろえ、` #TRUNC` を含まないときだけ 1 文字を書き、`[calib-io] sent 'X'` を刻む。そうでなければ何も書かず `[calib-io] NOT sent 'X': <理由>` を刻んで終了コード 2 で戻る。親は「送信した」を自分の送信要求ではなく子の `sent` の刻印だけで判定し（`Send-Cmd`）、刻印が無ければその段は命令の前で FAIL になる。最初の読み取りが正常で、送信のために開き直した読み取りだけが壊れている場合もここで止まる。
 - 本番復帰（`calib-flash.ps1 -Expect prod`）は校正の結果にかかわらず最後に必ず行い、校正とは別に PASS/FAIL を出す。合格の条件: 本番像のファイルが存在し md5 が一致（最初の実機操作の前と複写の直前に確認）→ `b` の受理 → そのシリアルに結びついた UF2 ドライブが 1 つだけ（`Win32_DiskDrive` の `PNPDeviceID` にシリアルを含む USBSTOR ディスク → パーティション → 論理ディスク、かつ `INFO_UF2.TXT` あり）かつ USB 上のブートローダーが 1 台 → 複写がエラーなし（`-ErrorAction Stop`）→ 30 秒以内に UF2 ドライブが消える（像が受け取られた印）→ 90 秒以内に app として戻る → dump が `ZDIAG begin version=prof1` で `ZBOOT` 行が 0 本（本番像には `CONFIG_CORON_DIAG_BOOT` が無い。コンソールが出す識別はこれだけ）。
 - 手動復旧が必要な状態（app としても boot としても戻らない）になったら、成功扱いにせず、到達した状態とログを保存して止まる（`Require 'device back as app within N s'` の FAIL）。
 - デバイスの識別は USB シリアル `B17318CDBE9A61B1` だけ。列挙は `Get-PnpDevice` と CIM のディスク連鎖（`Win32_SerialPort` は使わない）。
-- 事前確認（`-Step pre`）: 基準像、最適化像、本番像の 3 ファイルの存在と md5（基準 df108d7a…、最適化 e1e62efe…、本番 889f3a48…）を最初の実機操作より前に確認する。
-- 読み取り: すべてのシリアル交換の標準出力、標準エラー、終了コードを、dump が取れたかにかかわらず保存する。判定に使う dump は `ZDIAG begin`/`ZDIAG end` と `ZBOOT ring`/`addr`/`cur` 行がそろっていることを要求し、欠けた項目は 0 などに置き換えず `FAIL field present` で止める。` #TRUNC` を含む出力は保存するが判定に使わない。
+- 事前確認（`-Step pre`）: 基準像、最適化像、本番像の 3 ファイルの存在と md5（基準 df108d7a…、最適化 e1e62efe…、本番 889f3a48…）を最初の実機操作より前に確認し、いま動いている像（通常は本番像 2725423。`b` と `d` のコンソールはあるが `ZBOOT` 行は無い）から完全な dump（`ZDIAG begin`〜`ZDIAG end`、` #TRUNC` なし）が読めることを要求する。`ZBOOT` 行は要求しない。あれば構造を検証して事故記録を含む全行を保存する。試験像固有の確認（タグ、固定アドレス、done=1）は基準像の書き込み後（`calib-flash.ps1 -Expect base`）に行う。
+- 読み取り: すべてのシリアル交換の標準出力、標準エラー、終了コード、期限超過の有無を、dump が取れたかにかかわらず保存する。判定に使う dump は全体の構造を検証する（`Validate-Dump`）: `ZDIAG begin`/`ZDIAG end`、` #TRUNC` なし、`ring` と `addr` の全キー、`ring count` が告げる件数ぶんの `inc0`〜`inc(n-1)` がそれぞれ `a/b/entry1/entry2/us1/us2` と `fire1`〜`fire4`（例外フレーム、レジスタ、USBD、クロック）の全行と全キーを持つこと、`count` を超える `inc` が無いこと、`last`（記録か `none`）と `cur` が `a`〜`us2` の全行を持つこと（`fire` 行は 4 行そろうか 1 行も無いか）。`print_rec` が出す行とキーの一覧がスクリプトの表（`$script:LineKeys`）。欠けた項目は 0 などに置き換えず `FAIL … present` で止め、消去（`c`）の前の読み取りで欠けていれば `c` を送らない。` #TRUNC` を含む出力は保存するが判定に使わない。コンソール文字列の比較はすべて大文字小文字を区別する（`-ceq`/`-cmatch`。PowerShell の既定の `-eq`/`-match` は区別しないので、`calib=h` と `calib=H`、`h` と `H` の命令応答を取り違えない）。
 - リセットの観測: 命令を送った子プロセス（`calib-io.ps1`）が「送信」「ポート消失」の時刻を出力に刻み、親は USB の app 離脱を監視し、起動番号（`seq`）の増分を照合する。直接観測（ポート消失か USB 離脱）が無くても、起動番号と事故記録が合えば「未観測」と記録して合格にする（「リセットしなかった」とは区別する）。起動番号の増分: 第 1、4 段は 0、第 2、5 段は 1、第 6、7 段は 2（`b`/`r` の起動 + 仕込みで止まった起動）。
 校正命令の応答: コンソールはまず受理判定を `ZDIAG calibrate X rc=0`（受理）か `rc=-16`（前の校正が生きているので拒否）と出し、受理のときだけ開始する。開始後に `ZDIAG calibrate X returned` が出るのは `S`（すぐ）と `H`（約 30 秒後、スピナーの終了の印）だけ。`h` と `G` は開始した瞬間にコンソールのスレッドが止まり、仕掛けのリセットまで何も出ない。`h`/`G` が実行されたことは、自動復帰後の事故記録（`inc`）で確かめる。
 出力の行: すべての行は最長値でも 150 文字以内（`diag_boot.c` の `print_rec`）。コンソールの行バッファは 253 文字で、超えた行は末尾が ` #TRUNC` に置き換わる。
 | 段 | 操作 | 期待値（スクリプトの判定） |
 |---|---|---|
-| pre | 3 ファイルの存在と md5、app で dump が読めること | すべて成立。成立しなければ実機操作なしで終了 |
+| pre | 3 ファイルの存在と md5、app で完全な dump が読めること（`ZBOOT` 行は任意。あれば保存） | すべて成立。成立しなければ実機操作なしで終了 |
 | flash-base | `b` → UF2 ドライブ（シリアル一致、1 つ）に基準像を複写 | 複写エラーなし、ドライブ消失、app に復帰、dump に `ZBOOT` 行、cur tag=bt4-R、addr cur=0x2002c818、done=1 |
 | 0 | `d` で読み出して保存 → `c` → `d` | `c` の前に cur tag と addr を確認。`ZDIAG ring cleared`、`ring count=0 slots=6`、seq 不変 |
 | 1 | `d` を 5 秒おきに 2 回 | done=1、running>0、probes_run と feeds が増える、seq 不変、ring 不変 |
@@ -92,26 +93,43 @@ GitHub で読める写しは `haoblackj/zmk-config-coron` の `feat/dya-diagnost
 | 4 | `H` | 前提: calib_live=0。`rc=0` → 約 30 秒無音 → `returned`。ポート消失なし、seq 不変、ring 不変、calib_live=0、feeds が 12 以上増加、cur calib=H |
 | 5 | `G` | 前提: calib_live=0（第 4 段のスピナーが終了済み）。`rc=0`、`returned` なし。復帰後: seq +1、ring count +1、`inc1`: reason=2、calib=G、thread = addr の calib、pc ∈ `diag_spin_forever` |
 | 6 | `S` → `r` | `S rc=0` と `returned` を確認してから `r`。`ZDIAG reboot`。復帰後: seq +2、ring count +1、`inc2`: reason=1、calib=S、done=0、stage=6、usb=0、seq=前の seq+1、pc ∈ `diag_spin_forever` |
-| 7 | `d` で既存事故記録の全行を保存 → `S` → `b` → 最適化像を複写 | `S rc=0`/`returned`、`b` 受理、シリアル一致の UF2 ドライブ 1 つ、ブートローダー 1 台、md5 再確認、複写エラーなし、ドライブ消失、app 復帰。dump: cur tag=bt4A-R、addr cur=0x2002c818、seq +2、ring count +1、`inc0`〜`inc2` の全行が 1 文字も変わらず残る（行の欠落も FAIL）、`inc3`: tag=bt4A-R、reason=1、calib=S、done=0、stage=6、seq=前の seq+1、pc ∈ 最適化像の `diag_spin_forever`（0x38a08〜）、reinit=0、dropped/invalid 不変 |
+| 7 | `d` で既存事故記録の全行を保存 → `S` → `b` → 最適化像を複写 | `S rc=0`/`returned`、`b` 受理、シリアル一致の UF2 ドライブ 1 つ、ブートローダー 1 台、md5 再確認、複写エラーなし、ドライブ消失、app 復帰。dump: cur tag=bt4A-R、addr cur=0x2002c818、seq +2、ring count +1、`inc0`〜`inc2` の全行が 1 文字も変わらず残る（行の欠落も、大文字小文字の違いも FAIL）、`inc3`: tag=bt4A-R、reason=1、calib=S、done=0、stage=6、seq=前の seq+1、pc ∈ 最適化像の `diag_spin_forever`（0x38a08〜）、reinit=0、dropped/invalid 不変 |
 | 8 | `d` で保存 → `c` → `d` | `ring count=0`。本番復帰はこの段に含めない（別スクリプト、上の条件） |
 校正の発火は自然発生の件数に数えない。自動復帰で救えない停止（NVIC 優先度 0 まで抑止、TIMER4 準備前、ブートローダー内）は、この計測器では救えない。
 
-### 模擬試験（実機なし。`calib-sim.sh`、2026-10-08 03:01）
-スクリプトは `-Mock <scenario.json>` で USB 状態、コンソール出力、UF2 ドライブ、複写結果、ファイルの md5 を差し替えられる（モックは PnP も CIM も SerialPort も Copy-Item も呼ばない）。場面は `gen-scenarios.py` が作り、ログは `calib-sim-20261008/` に置いた。
-| 場面 | 判定 | 行われなかった後続操作 |
-|---|---|---|
-| 正常（全段、`calib-all.ps1`） | pre/flash-base/0/1/2/4/5/6/7/8 PASS、3 SKIP、restore PASS。全体 `CALIBRATION PASS (step 3 SKIP) / RESTORE PASS` | なし |
-| 第 0 段の dump に ` #TRUNC` | FAIL | `c` を送らない（`STOPPED before: send 'c'`） |
-| dump に `ZDIAG end` が無い | FAIL | （読むだけの段） |
-| 必須項目（cur us2 行）の欠落 | FAIL（`FAIL field present cur.us2.running`、0 に置き換えない） | （読むだけの段） |
-| dump が取れない（子プロセスがエラー、標準エラーと終了コードを保存） | FAIL | （読むだけの段） |
-| 親の監視前に切断と復帰が完了（ポート消失の印なし、USB は app のまま、seq +1、事故記録あり） | PASS。`NOTE reset NOT observed directly …（unobserved, not 'no reset'）` を記録 | なし |
-| `h` の後にリセットが起きない（seq 不変、事故記録なし） | FAIL（3 件） | （以後の段は走らない） |
-| UF2 ドライブが別シリアルのもの | FAIL | 複写しない（`STOPPED before: copy the alt image`） |
-| 自分のドライブと別シリアルのドライブが同時にある（ブートローダー 2 台） | FAIL | 複写しない |
-| 複写がエラー | FAIL（`copy error`） | 以後の確認に進まない |
-| 複写は通ったがドライブが消えない（像が受け取られない） | FAIL | 以後の確認に進まない |
-| 本番像のファイルが無い／md5 不一致 | pre が FAIL。復帰スクリプト単体でも FAIL | 実機操作なし（`STOPPED before: nothing (preflight)`） |
-| 書き込み後、既存事故記録のタグは同じで PC だけ違う | FAIL（`inc1 kept verbatim` が不一致、変わった行をログに出す） | なし（読むだけ） |
-| 書き込み後、既存事故記録の 1 行が欠落 | FAIL | なし |
-| 本番復帰後も `ZBOOT` 行が出る（本番像になっていない） | restore FAIL | なし |
+### 模擬試験（実機なし。`calib-sim.py`、2026-10-08 08:08〜08:12。記録は `calib-sim9-20261008/`）
+`calib-sim.py` が `gen-scenarios.py` の 29 場面をすべて `calib-all.ps1` の全体実行（事前確認 → 基準像 → 第 0〜8 段 → 本番復帰）として流し、各場面の `expect.json`（終了コード、`results:` 行の全段の値、ログに必ず現れる正規表現と現れてはならない正規表現。ファイル名の glob で段を限定できる）と機械的に照合する。1 つでも不一致なら非ゼロで終わる。模擬は USB 状態、UF2 ドライブ、複写結果、ファイルの md5 を差し替え（PnP も CIM も Copy-Item も呼ばない）、コンソールの子プロセス `calib-io.ps1` は実物を起動してポートだけを缶詰（`-MockFile`）に置き換えるので、子の送信の関門、刻印、期限超過時の強制終了がそのまま試験される。異常場面も全体実行なので、「失敗した段の後の段が `not-run`」「それでも復帰が走り別に判定される」が `results:` 行で確かめられる。
+03:01 の旧版（`calib-sim.sh`、`calib-sim-20261008/`）は単段実行で期待の照合が無かったので、この版で置き換えた。この版の初回実行で、旧版では見えなかった欠陥を 1 つ捕まえて直した: 子の刻印 `dump incomplete (no ZDIAG end within 4 s)` に文字列 `ZDIAG end` が含まれ、親の「dump 完了」判定（`-cmatch 'ZDIAG end'`）が刻印に当たって PASS になっていた（`no dump (no ZDIAG begin …)` も同様）。判定を行頭アンカー（`(?m)^ZDIAG end\s*$`）にし、刻印の文言から印の文字列を外した。
+29 場面の結果（全部期待どおり。`report.txt`）:
+| 場面 | 内容 | 期待（終了コード、結果） | 照合した決め手 |
+|---|---|---|---|
+| normal | 本番像（`ZBOOT` なし）から始めて基準像の書き込み、第 0〜8 段、本番復帰 | 0。pre/flash-base/0/1/2/4/5/6/7/8 PASS、3 SKIP、restore PASS | pre に `no ZBOOT line`、複写 2 回、`CALIBRATION PASS`、第 2 段 `reset observed directly`、`inc0 evidence: … fire4`、`NOT sent`/`timed out`/` #TRUNC` 行末なし |
+| normal-from-test | 試験像に古い事故記録が残った状態から | 0。同上 | pre と第 0 段で `saved ZBOOT inc0 …` |
+| trunc | 第 0 段の最初の読み取りに ` #TRUNC` | 1。0=FAIL、以後 not-run、restore PASS | `STOPPED before: send 'c'`、`sent 'c'` なし |
+| gate-c | 第 0 段: 最初の読み取りは正常、`c` のために開き直した読み取りに ` #TRUNC` | 1。0=FAIL | 子の `NOT sent 'c': the dump before it has a #TRUNC line`、`STOPPED before: send 'c'`、`[calib-io] sent 'c'` なし |
+| gate-h | 第 2 段: `h` のための読み取りに `ZDIAG end` が無い | 1。2=FAIL | `NOT sent 'h': the dump before it is incomplete`、`sent 'h'` なし |
+| gate-r | 第 6 段: `S` は送られ、`r` のための読み取りに ` #TRUNC` | 1。6=FAIL | `sent 'S'` あり、`NOT sent 'r'`、`STOPPED before: send 'r'`、`sent 'r'` なし |
+| gate-b | 第 7 段: `b` のための読み取りに `ZDIAG end` が無い | 1。7=FAIL | `NOT sent 'b'`、`STOPPED before: send 'b'`、第 7 段に `sent 'b'` も `DEVICE-OP copy` も無し |
+| missing-end | 第 1 段の dump に `ZDIAG end` が無い（子の刻印は `dump incomplete (no end mark …)`） | 1。1=FAIL | `FAIL read 1:dump complete` |
+| missing-field | 第 1 段の dump に `cur us2` 行が無い | 1。1=FAIL | `FAIL read 1:cur us2 line present`（0 に置き換えない） |
+| no-dump | 第 1 段: 子がポートを開けない（標準エラーあり、終了コード 1） | 1。1=FAIL | `[stderr] diagio: access denied`、`exit=1`、`FAIL read 1:dump present` |
+| ring-count-mismatch | 第 0 段: `ring count=1` なのに `inc0` が無い | 1。0=FAIL | `FAIL before clear:inc0 present`、`STOPPED before: send 'c'`、`sent 'c'` なし |
+| inc-no-regs | 第 2 段: 新しい事故記録に `fire3`/`fire4` が無い | 1。2=FAIL | `FAIL after h:inc0 fire1..fire4 (exception frame, registers, USBD, clocks) present` |
+| early-reset | 第 2 段: 親の監視前に切断と復帰が完了（ポート消失の印なし、USB は app のまま、seq +1、事故記録あり） | 0。全段 PASS | `NOTE reset NOT observed directly`（未観測と記録。「リセットしなかった」とは別） |
+| no-reset | 第 2 段: `h` の後にリセットが起きない | 1。2=FAIL | `FAIL boot number advanced by 1`、`FAIL inc0 present` |
+| foreign-uf2 | 第 7 段: UF2 ドライブが別シリアルのものだけ | 1。7=FAIL | `STOPPED before: copy the alt image`、第 7 段に `DEVICE-OP copy` なし |
+| two-uf2 | 第 7 段: 自分のドライブと別シリアルのドライブ（ブートローダー 2 台） | 1。7=FAIL | 同上 |
+| copy-fail | 第 7 段: 複写がエラー | 1。7=FAIL | `copy error (mock)`、`FAIL copy raised no error` |
+| copy-not-taken | 第 7 段: 複写は通るがドライブが消えない | 1。7=FAIL | `FAIL UF2 drive vanished` |
+| prod-missing | 本番像のファイルが無い | 3。pre=FAIL、以後 not-run、restore=FAIL | pre `STOPPED before: nothing (preflight`、復帰 `FAIL prod image exists`、全ログに `DEVICE-OP` も `[calib-io] sent` も `opened` も無し（実機操作ゼロ） |
+| prod-md5 | 本番像の md5 不一致 | 3。同上 | `FAIL production image md5`、`FAIL prod image md5`、実機操作ゼロ |
+| inc-changed | 第 7 段: 書き込み後、既存記録のタグは同じで PC だけ違う | 1。7=FAIL | `FAIL inc1 kept verbatim` |
+| inc-missing-line | 第 7 段: 書き込み後、既存記録の 1 行（`fire4`）が欠落 | 1。7=FAIL | `FAIL after flash:inc2 fire1..fire4 …` |
+| inc-case | 第 7 段: 書き込み後、既存記録の `calib=h` が `calib=H` | 1。7=FAIL | `FAIL inc0 kept verbatim`（大文字小文字を区別） |
+| prod-still-test | 本番復帰後も `ZBOOT` 行が出る | 2。校正 PASS、restore=FAIL | `FAIL no ZBOOT line` |
+| mock-missing | 模擬: `flash-prod.json` が無い | 4。結果なし | `MOCK FILE MISSING/INVALID: flash-prod.json missing`、`STEP pre start`/`FLASH`/`DEVICE-OP`/`[calib-io]` が 1 行も無い（子の起動ゼロ） |
+| mock-badjson | 模擬: `flash-base.json` が JSON でない | 4。結果なし | `… flash-base.json invalid`、同上 |
+| io-hang | 第 1 段: コンソールの子がポートを開いたまま戻らない（交換の期限 3 秒） | 1。1=FAIL、以後 not-run、restore PASS | `FAIL console child returned within 3s (timed out; killed with its process tree; sent stamp absent)`、`timed_out=True` |
+| step-hang | 第 4 段の子スクリプトが戻らない（段の期限 8 秒） | 1。4=TIMEOUT、以後 not-run、restore PASS | `4 did not return within 8s: killed with its process tree`、`step 4 rc=TIMEOUT`、`restore PASS` |
+| restore-hang | 本番復帰の子スクリプトが戻らない（期限 8 秒） | 2。校正 PASS、restore=TIMEOUT | `flash-prod did not return within 8s`、`CALIBRATION PASS … | RESTORE FAIL` |
+手動押下もユーザーの応答待ちも、どの場面にも無い。

@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
-"""Mock scenarios for the calibration scripts (review #8, point 8).
+"""Mock scenarios for the calibration scripts (review #8 point 8, review #9 point 6).
 
-Writes sim/<scenario>/<step>.json files that calib-lib.ps1's mock mode replays: a sequence of
-USB states, a sequence of console exchanges (dump text + replies), the UF2 drives present and
-whether a copy succeeds, and the files with their md5. The dump texts follow diag_boot.c v4's
-print_rec/diag_boot_print format exactly (line names a/b/entry1/entry2/us1/us2/fire1..4).
+Writes <out>/<scenario>/<step>.json (pre, flash-base, 0,1,2,4,5,6,7,8, flash-prod) that the
+scripts replay in mock mode, plus <out>/<scenario>/expect.json with the expected outcome of a
+FULL run through calib-all.ps1: its exit code, the per-step results line, and regexes that must
+(or must not) appear in the logs. calib-sim.py runs every scenario and compares.
+
+Each exchange is what the DEVICE emits (pre = before the command, post = after it; no
+"[calib-io]" stamps: the real calib-io.ps1 child produces those from a canned port). The dump
+texts follow diag_boot.c v4's print_rec/diag_boot_print format exactly (line names
+a/b/entry1/entry2/us1/us2/fire1..4).
 """
-import json, os, sys, copy
+import argparse, json, os, copy
 
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sim')
 SERIAL = 'B17318CDBE9A61B1'
 IMG = {
     'base': dict(tag='bt4-R-10080217', sysq='0x20009910', main='0x20009848', calib='0x20005d00', spin=0x662ea),
@@ -20,6 +24,10 @@ FILES = {
     'prod': ('C:\\T\\coron_R-prod-2725423.uf2', '889f3a4816c82bdd4adc253b16f28689'),
 }
 ADDR = 'ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq={sysq} main={main} calib={calib}'
+# the production image (2725423): diag console without the boot instrument -> no ZBOOT line
+PROD = ('ZDIAG begin version=prof1 up_ms=6690 boot=1 reset=0x2\r\n'
+        'ZDIAG now count host_conn=0 host_disc=0 split_conn=1 split_disc=0\r\nZDIAG end\r\n')
+BOOTLOADER = 'ZDIAG bootloader rc=0\r\n'
 
 
 def rec(tag, img, seq, done=1, reason=0, calib='-', stage=12, reinit=0, probes=(30, 30), feeds=28, loops=30,
@@ -58,9 +66,9 @@ def inc_S(img, seq):   # armed stall at APPLICATION 50 -> BOOT_TIMEOUT
                fire=dict(exc=0xfffffff9, frame=0x2003fe00, pc=img['spin'], handler=0, thread=img['main'], at_us=20000000))
 
 
-def dump(img, cur, incs=(), last=None, count=None, dropped=0, invalid=0, reinit=0, calib_live=0, extra='', trunc=False,
+def dump(img, cur, incs=(), last=None, count=None, dropped=0, invalid=0, reinit=0, calib_live=0, trunc=False,
          no_end=False, drop_line=None):
-    """A full console dump: ZDIAG begin, ZBOOT lines, ZDIAG end (+ replies in extra)."""
+    """A full console dump as the device emits it: ZDIAG begin, ZBOOT lines, ZDIAG end."""
     n = len(incs) if count is None else count
     out = ['ZDIAG begin version=prof1 up_ms=65000 boot=1 reset=0x4',
            'ZDIAG now count host_conn=1 host_disc=0 split_conn=1 split_disc=0',
@@ -76,26 +84,27 @@ def dump(img, cur, incs=(), last=None, count=None, dropped=0, invalid=0, reinit=
         out = [l for l in out if not l.startswith(drop_line)]
     if not no_end:
         out.append('ZDIAG end')
-    text = '\r\n'.join(out) + '\r\n'
-    text = '[calib-io] opened COM5 at 00:00:00.000\n' + text + ('' if no_end else '\n[calib-io] dump complete at 00:00:02.000\n')
-    return text + extra
+    return '\r\n'.join(out) + '\r\n'
 
 
-def reply(send, rc=0, returned=False, lost=False, extra=''):
-    s = f"[calib-io] sent '{send}' at 00:00:02.100\n"
-    if rc is not None:
-        s += f'ZDIAG calibrate {send} rc={rc}\r\n'
-    s += extra
+def reply(send, rc=0, returned=False):
+    s = f'ZDIAG calibrate {send} rc={rc}\r\n'
     if returned:
         s += f'ZDIAG calibrate {send} returned\r\n'
-    if lost:
-        s += '\n[calib-io] port lost (The device does not recognize the command) at 00:00:14.000\n'
-    s += '[calib-io] read window over at 00:00:20.000\n[calib-io] closing at 00:00:20.100\n'
     return s
 
 
-def ex(send, stdout, exit_code=0, stderr=''):
-    return dict(send=send, stdout=stdout, exit=exit_code, stderr=stderr)
+def ex(send, pre, post='', lost=False, hang_s=0, open_error='', stderr='', io_timeout_s=None):
+    e = dict(send=send, pre=pre, post=post, lost=lost)
+    if hang_s:
+        e['hang_s'] = hang_s
+    if open_error:
+        e['open_error'] = open_error
+    if stderr:
+        e['stderr'] = stderr
+    if io_timeout_s:
+        e['io_timeout_s'] = io_timeout_s
+    return e
 
 
 def files(**override):
@@ -104,120 +113,265 @@ def files(**override):
     return f
 
 
-def scen(states, exchanges, drives=None, copy='ok', vanish=True, fl=None):
-    return dict(states=states, exchanges=exchanges, ports=['COM5'],
-                uf2=dict(drives=drives if drives is not None else [], copy=copy, vanish=vanish),
-                files=fl if fl is not None else files())
-
-
-def write(scenario, step, data):
-    d = os.path.join(OUT, scenario)
-    os.makedirs(d, exist_ok=True)
-    with open(os.path.join(d, f'{step}.json'), 'w') as f:
-        json.dump(data, f, indent=1)
+def scen(states, exchanges, drives=None, copy='ok', vanish=True, fl=None, **extra):
+    d = dict(states=states, exchanges=exchanges, ports=['COM5'],
+             uf2=dict(drives=drives if drives is not None else [], copy=copy, vanish=vanish),
+             files=fl if fl is not None else files())
+    d.update(extra)
+    return d
 
 
 B, A = IMG['base'], IMG['alt']
 OUR = [dict(letter='E', serial=SERIAL)]
-
-# ---------------------------------------------------------------- normal full run
 cur = lambda img, seq, **kw: rec('cur', img, seq, **kw)
 last = lambda img, seq, **kw: rec('last', img, seq, **kw)
-old_incs = [inc_h(B, 3)]  # something left from an earlier run, to be read out and cleared in step 0
+STEPS = ['pre', 'flash-base', '0', '1', '2', '4', '5', '6', '7', '8', 'flash-prod']
 
-write('normal', 'pre', scen(['app'], [ex('', dump(B, cur(B, 10), old_incs))]))
-write('normal', 'flash-base', scen(['app', 'boot', 'app'],
-      [ex('b', dump(B, cur(B, 10), old_incs, extra="[calib-io] sent 'b' at 00:00:02.100\nZDIAG bootloader rc=0\r\n[calib-io] port lost (gone) at 00:00:02.500\n")),
-       ex('', dump(B, cur(B, 11), old_incs, last=last(B, 10, reason=3)))], drives=OUR))
-write('normal', '0', scen(['app'],
-      [ex('', dump(B, cur(B, 11), old_incs, last=last(B, 10, reason=3))),
-       ex('c', dump(B, cur(B, 11), old_incs, last=last(B, 10, reason=3), extra="[calib-io] sent 'c' at 00:00:02.100\nZDIAG ring cleared\r\n")),
-       ex('', dump(B, cur(B, 11), [], last=last(B, 10, reason=3)))]))
-write('normal', '1', scen(['app'],
-      [ex('', dump(B, cur(B, 11, probes=(30, 30), feeds=28), [], last=last(B, 10, reason=3))),
-       ex('', dump(B, cur(B, 11, probes=(33, 33), feeds=31), [], last=last(B, 10, reason=3)))]))
-i0 = inc_h(B, 11)
-write('normal', '2', scen(['app', 'none', 'app'],
-      [ex('', dump(B, cur(B, 11), [], last=last(B, 10, reason=3))),
-       ex('h', dump(B, cur(B, 11), [], last=last(B, 10, reason=3), extra=reply('h', lost=True))),
-       ex('', dump(B, cur(B, 12), [i0], last=last(B, 11, reason=2, calib='h')))]))
-write('normal', '4', scen(['app'],
-      [ex('', dump(B, cur(B, 12, feeds=40), [i0], last=last(B, 11, reason=2, calib='h'))),
-       ex('H', dump(B, cur(B, 12, feeds=40), [i0], last=last(B, 11, reason=2, calib='h'), extra=reply('H', returned=True))),
-       ex('', dump(B, cur(B, 12, feeds=56, calib='H'), [i0], last=last(B, 11, reason=2, calib='h')))]))
-i1 = inc_G(B, 12)
-write('normal', '5', scen(['app', 'none', 'app'],
-      [ex('', dump(B, cur(B, 12, calib='H'), [i0], last=last(B, 11, reason=2, calib='h'))),
-       ex('G', dump(B, cur(B, 12, calib='H'), [i0], last=last(B, 11, reason=2, calib='h'), extra=reply('G', lost=True))),
-       ex('', dump(B, cur(B, 13), [i0, i1], last=last(B, 12, reason=2, calib='G')))]))
-i2 = inc_S(B, 14)
-write('normal', '6', scen(['app', 'none', 'app'],
-      [ex('', dump(B, cur(B, 13), [i0, i1], last=last(B, 12, reason=2, calib='G'))),
-       ex('S', dump(B, cur(B, 13), [i0, i1], last=last(B, 12, reason=2, calib='G'), extra=reply('S', returned=True))),
-       ex('r', dump(B, cur(B, 13, calib='S'), [i0, i1], last=last(B, 12, reason=2, calib='G'), extra="[calib-io] sent 'r' at 00:00:02.100\nZDIAG reboot\r\n[calib-io] port lost (gone) at 00:00:02.400\n")),
-       ex('', dump(B, cur(B, 15), [i0, i1, i2], last=last(B, 14, done=0, reason=1, calib='S', stage=6)))]))
-i3 = inc_S(A, 16)
-write('normal', '7', scen(['app', 'boot', 'app'],
-      [ex('', dump(B, cur(B, 15), [i0, i1, i2], last=last(B, 14, done=0, reason=1, calib='S', stage=6))),
-       ex('S', dump(B, cur(B, 15), [i0, i1, i2], last=last(B, 14, done=0, reason=1, calib='S', stage=6), extra=reply('S', returned=True))),
-       ex('b', dump(B, cur(B, 15, calib='S'), [i0, i1, i2], last=last(B, 14, done=0, reason=1, calib='S', stage=6), extra="[calib-io] sent 'b' at 00:00:02.100\nZDIAG bootloader rc=0\r\n[calib-io] port lost (gone) at 00:00:02.500\n")),
-       ex('', dump(A, cur(A, 17), [i0, i1, i2, i3], last=last(A, 16, done=0, reason=1, calib='S', stage=6)))], drives=OUR))
-write('normal', '8', scen(['app'],
-      [ex('', dump(A, cur(A, 17), [i0, i1, i2, i3], last=last(A, 16, done=0, reason=1, calib='S', stage=6))),
-       ex('c', dump(A, cur(A, 17), [i0, i1, i2, i3], last=last(A, 16, done=0, reason=1, calib='S', stage=6), extra="[calib-io] sent 'c' at 00:00:02.100\nZDIAG ring cleared\r\n")),
-       ex('', dump(A, cur(A, 17), [], last=last(A, 16, done=0, reason=1, calib='S', stage=6)))]))
-PROD = '[calib-io] opened COM5 at 00:00:00.000\nZDIAG begin version=prof1 up_ms=6690 boot=1 reset=0x2\r\nZDIAG now count host_conn=0 host_disc=0 split_conn=1 split_disc=0\r\nZDIAG end\r\n\n[calib-io] dump complete at 00:00:02.000\n'
-write('normal', 'flash-prod', scen(['app', 'boot', 'app'],
-      [ex('b', dump(A, cur(A, 17), [], extra="[calib-io] sent 'b' at 00:00:02.100\nZDIAG bootloader rc=0\r\n[calib-io] port lost (gone) at 00:00:02.500\n")),
-       ex('', PROD)], drives=OUR))
 
-# ---------------------------------------------------------------- abnormal cases (one step each)
-# B. a #TRUNC line in the dump of step 0 -> FAIL before 'c'
-write('trunc', '0', scen(['app'], [ex('', dump(B, cur(B, 11), old_incs, trunc=True)),
-                                   ex('c', 'should not be sent')]))
-# C1. dump without ZDIAG end
-write('missing-end', '1', scen(['app'], [ex('', dump(B, cur(B, 11), [], no_end=True)), ex('', dump(B, cur(B, 11), [], no_end=True))]))
-# C2. required field missing (cur us2 line absent) -> abort, no default
-write('missing-field', '1', scen(['app'], [ex('', dump(B, cur(B, 11), [], drop_line='ZBOOT cur us2')),
-                                           ex('', dump(B, cur(B, 11), [], drop_line='ZBOOT cur us2'))]))
-# C3. no dump at all (helper reports an error), twice
-NODUMP = '[calib-io] error on COM5 (Access to the port is denied) at 00:00:00.100\n[calib-io] closing at 00:00:00.200\n'
-write('no-dump', '1', scen(['app'], [ex('', NODUMP, exit_code=1, stderr='diagio: access denied'), ex('', NODUMP, exit_code=1)]))
-# D. reset finished before the parent looked: no port-lost marker, USB already app, but seq +1 and the incident filed
-write('early-reset', '2', scen(['app', 'app', 'app'],
-      [ex('', dump(B, cur(B, 11), [], last=last(B, 10, reason=3))),
-       ex('h', dump(B, cur(B, 11), [], last=last(B, 10, reason=3), extra=reply('h', lost=False))),
-       ex('', dump(B, cur(B, 12), [i0], last=last(B, 11, reason=2, calib='h')))]))
-# D2. no reset at all after 'h': seq unchanged, no incident -> FAIL
-write('no-reset', '2', scen(['app', 'app', 'app'],
-      [ex('', dump(B, cur(B, 11), [], last=last(B, 10, reason=3))),
-       ex('h', dump(B, cur(B, 11), [], last=last(B, 10, reason=3), extra=reply('h', lost=False))),
-       ex('', dump(B, cur(B, 11, calib='h'), [], last=last(B, 10, reason=3)))]))
-# E1. the only UF2 drive belongs to another serial -> no copy
-step7_pre = [ex('', dump(B, cur(B, 15), [i0, i1, i2], last=last(B, 14, done=0, reason=1, calib='S', stage=6))),
-             ex('S', dump(B, cur(B, 15), [i0, i1, i2], last=last(B, 14, done=0, reason=1, calib='S', stage=6), extra=reply('S', returned=True))),
-             ex('b', dump(B, cur(B, 15, calib='S'), [i0, i1, i2], last=last(B, 14, done=0, reason=1, calib='S', stage=6), extra="[calib-io] sent 'b' at 00:00:02.100\nZDIAG bootloader rc=0\r\n[calib-io] port lost (gone) at 00:00:02.500\n"))]
-write('foreign-uf2', '7', scen(['app', 'boot'], step7_pre, drives=[dict(letter='F', serial='DEADBEEF00000001')]))
-# E2. our drive plus a foreign one (two bootloaders) -> no copy
-write('two-uf2', '7', scen(['app', 'boot'], step7_pre, drives=OUR + [dict(letter='F', serial='DEADBEEF00000001')]))
-# F. copy fails
-write('copy-fail', '7', scen(['app', 'boot'], step7_pre, drives=OUR, copy='fail'))
-# F2. copy "succeeds" but the drive never vanishes (image not taken)
-write('copy-not-taken', '7', scen(['app', 'boot'], step7_pre, drives=OUR, vanish=False))
-# G. production file missing / md5 mismatch -> preflight FAIL, nothing touched
-write('prod-missing', 'pre', scen(['app'], [ex('', dump(B, cur(B, 10)))], fl={p: m for k, (p, m) in FILES.items() if k != 'prod'}))
-write('prod-md5', 'pre', scen(['app'], [ex('', dump(B, cur(B, 10)))], fl=files(**{FILES['prod'][0]: '00000000000000000000000000000000'})))
-write('prod-md5', 'flash-prod', scen(['app'], [ex('b', 'should not be sent')], drives=OUR, fl=files(**{FILES['prod'][0]: '00000000000000000000000000000000'})))
-# H. after the flash, an existing incident keeps its tag but another field changed -> FAIL on verbatim comparison
-i1_changed = [l.replace('pc=0x662ec', 'pc=0x662e0') for l in i1]
-write('inc-changed', '7', scen(['app', 'boot', 'app'], step7_pre +
-      [ex('', dump(A, cur(A, 17), [i0, i1_changed, i2, i3], last=last(A, 16, done=0, reason=1, calib='S', stage=6)))], drives=OUR))
-# H2. an existing incident lost one line after the flash
-i2_short = i2[:-1]
-write('inc-missing-line', '7', scen(['app', 'boot', 'app'], step7_pre +
-      [ex('', dump(A, cur(A, 17), [i0, i1, i2_short, i3], last=last(A, 16, done=0, reason=1, calib='S', stage=6)))], drives=OUR))
-# I. restore: the device answers but still with ZBOOT lines (the production image did not take)
-write('prod-still-test', 'flash-prod', scen(['app', 'boot', 'app'],
-      [ex('b', dump(A, cur(A, 17), [], extra="[calib-io] sent 'b' at 00:00:02.100\nZDIAG bootloader rc=0\r\n")),
-       ex('', dump(A, cur(A, 18), []))], drives=OUR))
-print('scenarios written to', OUT)
+def normal(from_prod=True):
+    """The whole run. from_prod: the device starts on the production image (no ZBOOT line), as
+    on the real device; otherwise on a test image with a leftover incident to read out and clear."""
+    s = {}
+    if from_prod:
+        first = PROD
+        old = []
+    else:
+        old = [inc_h(B, 3)]
+        first = dump(B, cur(B, 9), old)
+    s['pre'] = scen(['app'], [ex('', first)])
+    s['flash-base'] = scen(['app', 'boot', 'app'],
+                           [ex('b', first, post=BOOTLOADER, lost=True),
+                            ex('', dump(B, cur(B, 10, reinit=0 if old else 1), old, last=last(B, 9, reason=3) if old else None))],
+                           drives=OUR)
+    d0 = dump(B, cur(B, 10), old, last=last(B, 9, reason=3) if old else None)
+    d0c = dump(B, cur(B, 10), [], last=last(B, 9, reason=3) if old else None)
+    s['0'] = scen(['app'], [ex('', d0), ex('c', d0, post='ZDIAG ring cleared\r\n'), ex('', d0c)])
+    s['1'] = scen(['app'], [ex('', dump(B, cur(B, 10, probes=(30, 30), feeds=28), [])),
+                            ex('', dump(B, cur(B, 10, probes=(33, 33), feeds=31), []))])
+    i0 = inc_h(B, 10)
+    d = dump(B, cur(B, 10), [])
+    s['2'] = scen(['app', 'none', 'app'],
+                  [ex('', d), ex('h', d, post=reply('h'), lost=True),
+                   ex('', dump(B, cur(B, 11), [i0], last=last(B, 10, reason=2, calib='h')))])
+    d = dump(B, cur(B, 11, feeds=40), [i0], last=last(B, 10, reason=2, calib='h'))
+    s['4'] = scen(['app'],
+                  [ex('', d), ex('H', d, post=reply('H', returned=True)),
+                   ex('', dump(B, cur(B, 11, feeds=56, calib='H'), [i0], last=last(B, 10, reason=2, calib='h')))])
+    i1 = inc_G(B, 11)
+    d = dump(B, cur(B, 11, calib='H'), [i0], last=last(B, 10, reason=2, calib='h'))
+    s['5'] = scen(['app', 'none', 'app'],
+                  [ex('', d), ex('G', d, post=reply('G'), lost=True),
+                   ex('', dump(B, cur(B, 12), [i0, i1], last=last(B, 11, reason=2, calib='G')))])
+    i2 = inc_S(B, 13)
+    d = dump(B, cur(B, 12), [i0, i1], last=last(B, 11, reason=2, calib='G'))
+    dS = dump(B, cur(B, 12, calib='S'), [i0, i1], last=last(B, 11, reason=2, calib='G'))
+    s['6'] = scen(['app', 'none', 'app'],
+                  [ex('', d), ex('S', d, post=reply('S', returned=True)),
+                   ex('r', dS, post='ZDIAG reboot\r\n', lost=True),
+                   ex('', dump(B, cur(B, 14), [i0, i1, i2], last=last(B, 13, done=0, reason=1, calib='S', stage=6)))])
+    i3 = inc_S(A, 15)
+    d = dump(B, cur(B, 14), [i0, i1, i2], last=last(B, 13, done=0, reason=1, calib='S', stage=6))
+    dS = dump(B, cur(B, 14, calib='S'), [i0, i1, i2], last=last(B, 13, done=0, reason=1, calib='S', stage=6))
+    after7 = dump(A, cur(A, 16), [i0, i1, i2, i3], last=last(A, 15, done=0, reason=1, calib='S', stage=6))
+    s['7'] = scen(['app', 'boot', 'app'],
+                  [ex('', d), ex('S', d, post=reply('S', returned=True)),
+                   ex('b', dS, post=BOOTLOADER, lost=True), ex('', after7)], drives=OUR)
+    s['8'] = scen(['app'], [ex('', after7), ex('c', after7, post='ZDIAG ring cleared\r\n'),
+                            ex('', dump(A, cur(A, 16), [], last=last(A, 15, done=0, reason=1, calib='S', stage=6)))])
+    d8 = dump(A, cur(A, 16), [], last=last(A, 15, done=0, reason=1, calib='S', stage=6))
+    s['flash-prod'] = scen(['app', 'boot', 'app'], [ex('b', d8, post=BOOTLOADER, lost=True), ex('', PROD)], drives=OUR)
+    s['_incs'] = dict(i0=i0, i1=i1, i2=i2, i3=i3, d=d, dS=dS, after7=after7, d0=d0)
+    return s
+
+
+def results(**over):
+    """Expected per-step results line of calib-all.ps1 (keys in its order)."""
+    r = {'pre': '0', 'flash-base': '0', '0': '0', '1': '0', '2': '0', '3': '2', '4': '0', '5': '0', '6': '0', '7': '0', '8': '0', 'restore': '0'}
+    r.update(over)
+    return r
+
+
+def stopped_after(step, **over):
+    """Calibration stopped at <step>: later steps not run, restore still run."""
+    order = ['pre', 'flash-base', '0', '1', '2', '3', '4', '5', '6', '7', '8']
+    r = results()
+    i = order.index(step)
+    r[step] = over.pop(step, '1')
+    for k in order[i + 1:]:
+        r[k] = 'not-run'
+    if step == 'pre':
+        del r['flash-base']
+    r.update(over)
+    return r
+
+
+def expect(exit_code, res, must=(), must_not=()):
+    return dict(exit=exit_code, results=res, must=list(must), must_not=list(must_not))
+
+
+def step_log(step):
+    return f'step{step}-*.log' if step not in ('flash-base', 'flash-prod') else f'{step}-*.log'
+
+
+def in_file(glob, regex):
+    return dict(glob=glob, re=regex)
+
+
+SCENARIOS = {}
+
+
+def add(name, steps, exp, drop=(), raw=None):
+    SCENARIOS[name] = dict(steps={k: v for k, v in steps.items() if not k.startswith('_') and k not in drop},
+                           expect=exp, raw=raw or {})
+
+
+# ------------------------------------------------------------------ normal runs
+N = normal(True)
+add('normal', N, expect(0, results(), must=[in_file('steppre-*.log', 'no ZBOOT line'), r"DEVICE-OP copy \(mock\)", 'CALIBRATION PASS',
+                                            in_file('step2-*.log', 'reset observed directly'),
+                                            in_file('step2-*.log', 'inc0 evidence: ZBOOT inc0 fire4')],
+                        must_not=['NOT sent', 'timed out', ' #TRUNC\\s*$']))
+NT = normal(False)
+add('normal-from-test', NT, expect(0, results(), must=[in_file('steppre-*.log', 'saved ZBOOT inc0 fire4'), in_file('step0-*.log', 'saved ZBOOT inc0 a ')],
+                                   must_not=['NOT sent', 'timed out']))
+
+# ------------------------------------------------------------------ dump / read failures
+I = N['_incs']
+
+
+def variant(step, scn):
+    s = {k: v for k, v in N.items() if not k.startswith('_')}
+    s[step] = scn
+    return s
+
+
+d0 = I['d0']
+# first read of step 0 has a #TRUNC line -> FAIL before 'c'
+add('trunc', variant('0', scen(['app'], [ex('', dump(B, cur(B, 10), [], trunc=True)), ex('c', d0, post='ZDIAG ring cleared\r\n')])),
+    expect(1, stopped_after('0'), must=[in_file('step0-*.log', "STOPPED before: send 'c'"), 'no #TRUNC line \\(trunc'],
+           must_not=[in_file('step0-*.log', "sent 'c'")]))
+# send gate in the child: the first read is fine, the dump read just before the command is broken
+add('gate-c', variant('0', scen(['app'], [ex('', d0), ex('c', dump(B, cur(B, 10), [], trunc=True), post='ZDIAG ring cleared\r\n')])),
+    expect(1, stopped_after('0'), must=[in_file('step0-*.log', "NOT sent 'c': the dump before it has a #TRUNC line"), in_file('step0-*.log', "STOPPED before: send 'c'")],
+           must_not=[in_file('step0-*.log', "\\[calib-io\\] sent 'c'")]))
+d = dump(B, cur(B, 10), [])
+add('gate-h', variant('2', scen(['app', 'app'], [ex('', d), ex('h', dump(B, cur(B, 10), [], no_end=True), post=reply('h'), lost=True)])),
+    expect(1, stopped_after('2'), must=[in_file('step2-*.log', "NOT sent 'h': the dump before it is incomplete"), in_file('step2-*.log', "STOPPED before: send 'h'")],
+           must_not=[in_file('step2-*.log', "\\[calib-io\\] sent 'h'")]))
+d6 = N['6']['exchanges'][0]['pre']
+add('gate-r', variant('6', scen(['app', 'app'], [ex('', d6), ex('S', d6, post=reply('S', returned=True)),
+                                                 ex('r', dump(B, cur(B, 12, calib='S'), [I['i0'], I['i1']], last=last(B, 11, reason=2, calib='G'), trunc=True), post='ZDIAG reboot\r\n', lost=True)])),
+    expect(1, stopped_after('6'), must=[in_file('step6-*.log', "\\[calib-io\\] sent 'S'"), in_file('step6-*.log', "NOT sent 'r'"), in_file('step6-*.log', "STOPPED before: send 'r'")],
+           must_not=[in_file('step6-*.log', "\\[calib-io\\] sent 'r'")]))
+d7 = N['7']['exchanges'][0]['pre']
+add('gate-b', variant('7', scen(['app', 'app'], [ex('', d7), ex('S', d7, post=reply('S', returned=True)),
+                                                 ex('b', dump(B, cur(B, 14, calib='S'), [I['i0'], I['i1'], I['i2']], last=last(B, 13, done=0, reason=1, calib='S', stage=6), no_end=True), post=BOOTLOADER, lost=True)], drives=OUR)),
+    expect(1, stopped_after('7'), must=[in_file('step7-*.log', "NOT sent 'b'"), in_file('step7-*.log', "STOPPED before: send 'b'")],
+           must_not=[in_file('step7-*.log', "\\[calib-io\\] sent 'b'"), in_file('step7-*.log', 'DEVICE-OP copy')]))
+d1 = dump(B, cur(B, 10), [])
+add('missing-end', variant('1', scen(['app'], [ex('', dump(B, cur(B, 10), [], no_end=True)), ex('', dump(B, cur(B, 10), [], no_end=True))])),
+    expect(1, stopped_after('1'), must=[in_file('step1-*.log', 'dump incomplete \\(no end mark'), in_file('step1-*.log', 'FAIL read 1:dump complete')]))
+add('missing-field', variant('1', scen(['app'], [ex('', dump(B, cur(B, 10), [], drop_line='ZBOOT cur us2')), ex('', dump(B, cur(B, 10), [], drop_line='ZBOOT cur us2'))])),
+    expect(1, stopped_after('1'), must=[in_file('step1-*.log', 'FAIL read 1:cur us2 line present')]))
+add('no-dump', variant('1', scen(['app'], [ex('', '', open_error='Access to the port is denied', stderr='diagio: access denied'),
+                                           ex('', '', open_error='Access to the port is denied')])),
+    expect(1, stopped_after('1'), must=[in_file('step1-*.log', '\\[stderr\\] diagio: access denied'), in_file('step1-*.log', 'exit=1'), in_file('step1-*.log', 'FAIL read 1:dump present')]))
+# ring says count=1 but the incident record is absent -> FAIL before 'c' (review #9, point 4)
+add('ring-count-mismatch', variant('0', scen(['app'], [ex('', dump(B, cur(B, 10), [], count=1)), ex('c', d0, post='ZDIAG ring cleared\r\n')])),
+    expect(1, stopped_after('0'), must=[in_file('step0-*.log', 'FAIL before clear:inc0 present'), in_file('step0-*.log', "STOPPED before: send 'c'")],
+           must_not=[in_file('step0-*.log', "sent 'c'")]))
+# the new incident lacks its register lines (fire3/fire4)
+i0_noregs = I['i0'][:-2]
+add('inc-no-regs', variant('2', scen(['app', 'none', 'app'], [ex('', d), ex('h', d, post=reply('h'), lost=True),
+                                                              ex('', dump(B, cur(B, 11), [i0_noregs], last=last(B, 10, reason=2, calib='h')))])),
+    expect(1, stopped_after('2'), must=[in_file('step2-*.log', 'FAIL after h:inc0 fire1\\.\\.fire4 \\(exception frame, registers, USBD, clocks\\) present')]))
+
+# ------------------------------------------------------------------ reset observation
+add('early-reset', variant('2', scen(['app', 'app', 'app'], [ex('', d), ex('h', d, post=reply('h'), lost=False),
+                                                             ex('', dump(B, cur(B, 11), [I['i0']], last=last(B, 10, reason=2, calib='h')))])),
+    expect(0, results(), must=[in_file('step2-*.log', 'NOTE reset NOT observed directly')]))
+add('no-reset', variant('2', scen(['app', 'app', 'app'], [ex('', d), ex('h', d, post=reply('h'), lost=False),
+                                                          ex('', dump(B, cur(B, 10, calib='h'), []))])),
+    expect(1, stopped_after('2'), must=[in_file('step2-*.log', 'FAIL boot number advanced by 1'), in_file('step2-*.log', 'FAIL inc0 present')]))
+
+# ------------------------------------------------------------------ UF2 drive / copy
+step7_pre = [ex('', d7), ex('S', d7, post=reply('S', returned=True)), ex('b', I['dS'], post=BOOTLOADER, lost=True)]
+FOREIGN = [dict(letter='F', serial='DEADBEEF00000001')]
+add('foreign-uf2', variant('7', scen(['app', 'boot'], step7_pre, drives=FOREIGN)),
+    expect(1, stopped_after('7'), must=[in_file('step7-*.log', 'STOPPED before: copy the alt image')], must_not=[in_file('step7-*.log', 'DEVICE-OP copy')]))
+add('two-uf2', variant('7', scen(['app', 'boot'], step7_pre, drives=OUR + FOREIGN)),
+    expect(1, stopped_after('7'), must=[in_file('step7-*.log', 'STOPPED before: copy the alt image')], must_not=[in_file('step7-*.log', 'DEVICE-OP copy')]))
+add('copy-fail', variant('7', scen(['app', 'boot'], step7_pre, drives=OUR, copy='fail')),
+    expect(1, stopped_after('7'), must=[in_file('step7-*.log', 'copy error \\(mock\\)'), in_file('step7-*.log', 'FAIL copy raised no error')]))
+add('copy-not-taken', variant('7', scen(['app', 'boot'], step7_pre, drives=OUR, vanish=False)),
+    expect(1, stopped_after('7'), must=[in_file('step7-*.log', 'FAIL UF2 drive vanished')]))
+
+# ------------------------------------------------------------------ production image file
+NO_PROD = {p: m for k, (p, m) in FILES.items() if k != 'prod'}
+BAD_PROD = files(**{FILES['prod'][0]: '00000000000000000000000000000000'})
+pm = {k: v for k, v in N.items() if not k.startswith('_')}
+for k in pm:
+    pm[k] = dict(pm[k], files=NO_PROD)
+add('prod-missing', pm, expect(3, stopped_after('pre', restore='1'),
+                               must=[in_file('steppre-*.log', 'STOPPED before: nothing \\(preflight'), in_file('flash-prod-*.log', 'FAIL prod image exists')],
+                               must_not=['DEVICE-OP', "\\[calib-io\\] sent", '\\[calib-io\\] opened']))
+pm = {k: v for k, v in N.items() if not k.startswith('_')}
+for k in pm:
+    pm[k] = dict(pm[k], files=BAD_PROD)
+add('prod-md5', pm, expect(3, stopped_after('pre', restore='1'),
+                           must=[in_file('steppre-*.log', 'FAIL production image md5'), in_file('flash-prod-*.log', 'FAIL prod image md5')],
+                           must_not=['DEVICE-OP', "\\[calib-io\\] sent", '\\[calib-io\\] opened']))
+
+# ------------------------------------------------------------------ retention across the flash (step 7)
+def after7_with(incs):
+    return dump(A, cur(A, 16), incs, last=last(A, 15, done=0, reason=1, calib='S', stage=6))
+
+
+i1_changed = [l.replace('pc=0x662ec', 'pc=0x662e0') for l in I['i1']]
+add('inc-changed', variant('7', scen(['app', 'boot', 'app'], step7_pre + [ex('', after7_with([I['i0'], i1_changed, I['i2'], I['i3']]))], drives=OUR)),
+    expect(1, stopped_after('7'), must=[in_file('step7-*.log', 'FAIL inc1 kept verbatim')]))
+add('inc-missing-line', variant('7', scen(['app', 'boot', 'app'], step7_pre + [ex('', after7_with([I['i0'], I['i1'], I['i2'][:-1], I['i3']]))], drives=OUR)),
+    expect(1, stopped_after('7'), must=[in_file('step7-*.log', 'FAIL after flash:inc2 fire1\\.\\.fire4')]))
+i0_upper = [l.replace('calib=h', 'calib=H') for l in I['i0']]
+add('inc-case', variant('7', scen(['app', 'boot', 'app'], step7_pre + [ex('', after7_with([i0_upper, I['i1'], I['i2'], I['i3']]))], drives=OUR)),
+    expect(1, stopped_after('7'), must=[in_file('step7-*.log', 'FAIL inc0 kept verbatim')]))
+
+# ------------------------------------------------------------------ restore
+d8 = N['flash-prod']['exchanges'][0]['pre']
+add('prod-still-test', variant('flash-prod', scen(['app', 'boot', 'app'], [ex('b', d8, post=BOOTLOADER, lost=True), ex('', dump(A, cur(A, 17), []))], drives=OUR)),
+    expect(2, results(restore='1'), must=[in_file('flash-prod-*.log', 'FAIL no ZBOOT line')]))
+
+# ------------------------------------------------------------------ mock files (review #9, point 1)
+add('mock-missing', N, expect(4, {}, must=['MOCK FILE MISSING/INVALID: flash-prod.json missing'], must_not=['STEP pre start', 'FLASH', 'DEVICE-OP', '\\[calib-io\\]']), drop=('flash-prod',))
+add('mock-badjson', N, expect(4, {}, must=['MOCK FILE MISSING/INVALID: flash-base.json invalid'], must_not=['STEP pre start', 'FLASH', 'DEVICE-OP', '\\[calib-io\\]']),
+    drop=('flash-base',), raw={'flash-base.json': '{ this is not json'})
+
+# ------------------------------------------------------------------ hangs (review #9, point 5)
+add('io-hang', variant('1', scen(['app'], [ex('', d1, hang_s=60, io_timeout_s=3), ex('', d1, hang_s=60, io_timeout_s=3)])),
+    expect(1, stopped_after('1'), must=[in_file('step1-*.log', 'FAIL console child returned within 3s \\(timed out; killed'), in_file('step1-*.log', 'timed_out=True')]))
+add('step-hang', variant('4', dict(N['4'], step_hang_s=60, step_timeout_s=8)),
+    expect(1, stopped_after('4', **{'4': 'TIMEOUT'}), must=['4 did not return within 8s: killed with its process tree', 'step 4 rc=TIMEOUT', 'restore PASS']))
+add('restore-hang', variant('flash-prod', dict(N['flash-prod'], step_hang_s=60, step_timeout_s=8)),
+    expect(2, results(restore='TIMEOUT'), must=['flash-prod did not return within 8s', 'CALIBRATION PASS .* \\| RESTORE FAIL']))
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--out', required=True)
+    a = ap.parse_args()
+    for name, sc in SCENARIOS.items():
+        d = os.path.join(a.out, name)
+        os.makedirs(d, exist_ok=True)
+        for step, data in sc['steps'].items():
+            with open(os.path.join(d, f'{step}.json'), 'w') as f:
+                json.dump(data, f, indent=1)
+        for fn, text in sc['raw'].items():
+            with open(os.path.join(d, fn), 'w') as f:
+                f.write(text)
+        with open(os.path.join(d, 'expect.json'), 'w') as f:
+            json.dump(sc['expect'], f, indent=1)
+    print(f'{len(SCENARIOS)} scenarios written to {a.out}')
+
+
+if __name__ == '__main__':
+    main()
