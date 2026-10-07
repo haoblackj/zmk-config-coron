@@ -1,4 +1,4 @@
-# 証拠の束（Coron 起動停止の調査、計測器 v4、2026-10-07 23:59 作成、2026-10-08 01:46 更新）
+# 証拠の束（Coron 起動停止の調査、計測器 v4、2026-10-07 23:59 作成、2026-10-08 02:19 更新）
 
 GitHub で読める写しは `haoblackj/zmk-config-coron` の `feat/dya-diagnostics` ブランチ、`tools/coron-diag/`（モジュールのソース）と `tools/coron-diag/evidence/boottest2-20261007/`（この束。ELF と UF2 は大きさの都合で入れず、md5 だけ置く。要るときは渡す）。
 
@@ -11,9 +11,9 @@ GitHub で読める写しは `haoblackj/zmk-config-coron` の `feat/dya-diagnost
 6. （レビュー外、ビルドで判明）記録領域を `diagrec.overlay` で 0x2002c000 に固定。像ごとに `.noinit` の位置がずれるのを防ぐ。
 
 ## ファイル
-- `../coron_R-bt4.{uf2,elf,config}` タグ `bt4-R-10080143`（ELF md5 ef0524695a8f…）、`../coron_R-bt4-alt.{uf2,elf,config}` タグ `bt4A-R-10080143`（速度最適化、交互書き込み用。ELF md5 bc4738657a03…）。md5 は `md5sums.txt`。v3 の像（`bt3-R-10072355`、`bt3A-R-10072355`）は校正に使わない。
+- `../coron_R-bt4.{uf2,elf,config}` タグ `bt4-R-10080217`（ELF md5 b32956d62f1d…）、`../coron_R-bt4-alt.{uf2,elf,config}` タグ `bt4A-R-10080217`（速度最適化、交互書き込み用。ELF md5 a4dced604ea9…）。レビュー #7 の前の像（`bt4-R-10080143`、`bt4A-R-10080143`）は出力の切り詰めがあるので使わない。md5 は `md5sums.txt`。v3 の像（`bt3-R-10072355`、`bt3A-R-10072355`）は校正に使わない。
 - `../diag_boot.c`（計測器）、`../diag_min.c`（コンソール命令）、`../CMakeLists.txt`、`../Kconfig`、`../boottest*.conf`、`../diagrec.overlay`（記録領域を 0x2002c000 に固定する devicetree）、`../build-boottest2.sh`（ビルド手順。記録領域のアドレスを出力する）。
-- PC 範囲（`disasm-net.txt`）: USB READY 待ち（`nrf_usbd_common.c:1009`）は基準像 0x57ef4〜0x57efb、最適化像 0x6c484〜0x6c48b。`diag_spin_forever` は 0x662a2〜、0x389d0〜。ベクタ表 27 番は 0x00066229、0x00037ff9。
+- PC 範囲（`disasm-net.txt`）: USB READY 待ち（`nrf_usbd_common.c:1009`）は基準像 0x57f3c〜0x57f43、最適化像 0x6c4d4〜0x6c4db。`diag_spin_forever` は 0x662ea〜、0x38a08〜。ベクタ表 27 番は 0x00066271、0x00038029。
 - `review6-fixes.md` レビュー #6 の各指摘に対する検証結果と修正箇所。
 - `disasm-net.txt` 例外入口（naked）から記録処理までの逆アセンブル、ベクタ表 27 番の中身、USB READY 待ちと `diag_spin_forever` の PC 範囲、記録領域と主要スレッドのアドレス（像ごと）。
 - `bootloader-ram.md` 実機のブートローダー（Seeed 配布の XIAO Sense 版、文字列 0.6.1）の hex から読んだ RAM の静的な使用範囲（.data 0x20008000〜0x20008620、.bss 〜0x2000ce28、初期 SP 0x20040000）と記録領域の位置、第 7 段で照合する項目。`bootloader-ram.txt`（リンカスクリプトだけの旧版）を置き換える。
@@ -62,23 +62,25 @@ GitHub で読める写しは `haoblackj/zmk-config-coron` の `feat/dya-diagnost
 ## 監視
 | 監視 | 期限 | 解除／切替の条件 | 期限切れが意味すること |
 |---|---|---|---|
-| 起動 | 入口から 20 秒 | main スレッドが終了した（`k_thread_join(&z_main_thread, K_NO_WAIT)==0`。join は終了の仕方を区別しない。この構成では致命的エラーが halt（v4）か `sys_reboot`（v3）に進み、他に `k_thread_abort` の呼び出しが無いので、終了は `main()` が戻った場合に限られる。根拠は `fatal-path.md`。ZMK の `main()` は `settings_load()` の後に戻る）かつ、システムワークキューで最初の probe が走った | 所定の段に到達しなかった |
+| 起動 | 入口から 20 秒 | main スレッドが終了した（`k_thread_join(&z_main_thread, K_NO_WAIT)==0`。join は終了の仕方を区別しない。この構成（v3、v4 とも fatal 検出有効）では致命的エラーが watchdog の記録つき `sys_reboot` に進み、他に `k_thread_abort` の呼び出しが無いので、終了は `main()` が戻った場合に限られる。根拠は `fatal-path.md`。ZMK の `main()` は `settings_load()` の後に戻る）かつ、システムワークキューで最初の probe が走った | 所定の段に到達しなかった |
 | ワークキュー | 餌なしで 15 秒 | 餌は優先度 `K_PRIO_PREEMPT(10)` の feeder スレッドが「前回の probe が走った」ときだけ与える（2 秒周期） | 監視処理の進行が止まった（probe が走らない、または feeder 自身が飢えた）。ワークキューの停止とは限らず、PC とスレッドで判断する |
 記録する数: probes_submitted、probes_run、feeds、feeder_loops、last_feed_cyc。
 
 ### `cur` の整合性
-スレッド文脈の書き手（SYS_INIT の段、feeder、probe、コンソール）は `irq_lock` の下で項目の更新と CRC の計算を一組にする。TIMER4 の ISR は NVIC 優先度 0 で `irq_lock` の外にあるが、最後の書き手として記録全体を封印してからリセットし、戻らないので、割り込んだ相手の途中状態は問題にならない。残るのは「ロック中の数マイクロ秒にピンリセットが入る」場合で、CRC 不一致として検出され `invalid` に数えられる（誤った内容が有効と読まれることはない）。
+スレッド文脈の書き手（SYS_INIT の段、feeder、probe、コンソール）は `irq_lock` の下で項目の更新と CRC の計算を一組にする。TIMER4 の ISR は NVIC 優先度 0 で `irq_lock` の外にあるが、最後の書き手として記録全体を封印してからリセットし、戻らないので、割り込まれたスレッドが古い CRC を後から書き戻すことは起きない。CRC が保証するのは「読み出した内容が ISR の封印したとおりである」ことまでで、複数項目の更新の途中で ISR が割り込んだ場合、その途中の値（例: `probes_run` は増えたが `STG_WQ_PROBED` の刻印はまだ、`stage` は進んだが `stage_cyc[]` はまだ）が CRC つきで保存されることはある。読むときはこの組を「途中の可能性あり」として解釈する。残るのは「ロック中の数マイクロ秒にピンリセットが入る」場合で、CRC 不一致として検出され `invalid` に数えられる（誤った内容が有効と読まれることはない）。
 
 ## 校正（実機。リーダーの許可の後。所要 15 分）
-前提: 右手側に `coron_R-bt4.uf2` を `b` 経由で書く。各段で COM の `d` を読む。`h`/`H`/`G` の応答は `ZDIAG calibrate X` と `ZDIAG calibrate X rc=0` の 2 行（`rc=-16` は前の校正が生きているので拒否）。
+前提: 右手側に `coron_R-bt4.uf2` を `b` 経由で書く。各段で COM の `d` を読む。
+校正命令の応答: コンソールはまず受理判定を `ZDIAG calibrate X rc=0`（受理）か `rc=-16`（前の校正が生きているので拒否）と出し、受理のときだけ開始する。開始後に `ZDIAG calibrate X returned` が出るのは `S`（すぐ）と `H`（約 30 秒後、スピナーの終了の印）だけ。`h` と `G` は開始した瞬間にコンソールのスレッドが止まり、仕掛けのリセットまで何も出ない。`h`/`G` が実行されたことは、自動復帰後の事故記録（`inc`）で確かめる。
+出力の行: すべての行は最長値でも 150 文字以内（`diag_boot.c` の `print_rec`）。コンソールの行バッファは 253 文字で、超えた行は末尾が ` #TRUNC` に置き換わる。` #TRUNC` の付いた行の値は読まない。
 | 段 | 操作 | 期待値 |
 |---|---|---|
 | 0 | `d` → 出力を保存 → `c` → `d` | 2 回目の `d` で `ring count=0 slots=6 dropped=0 invalid=0 reinit=…`。以後の事故は空の ring に積まれる（枠 6 に対し校正で作るのは 4 件） |
 | 1 | 正常起動 | `cur`: done=1、running>0、probes 増加、feeds 増加 |
-| 2 | `h` | 15 秒以内に発火して自動復帰。`inc0`: tag=bt4-R、done=1、reason=2、calib=h、handler=0、pc ∈ `diag_spin_forever`、thread = `k_sys_work_q.thread`（ヘッダ行の sysq）。usbd en=1/ec の READY=0 でも B と判定しない。`last` = 止まった起動（同じ seq）、`cur` = 復帰後の起動（seq+1） |
+| 2 | `h` | `rc=0` の行のあと何も出ず、15 秒以内に発火して自動復帰。`inc0`: tag=bt4-R、done=1、reason=2、calib=h、handler=0、pc ∈ `diag_spin_forever`、thread = `k_sys_work_q.thread`（`ZBOOT addr` 行の sysq）。usbd en=1/ec の READY=0 でも B と判定しない。`last` = 止まった起動（同じ seq）、`cur` = 復帰後の起動（seq+1） |
 | 3 | ピンリセット 1 回 | ring は不変、`last` = 復帰後の起動（done=1、reason=0）、`cur` = 新しい起動 |
-| 4 | `H` | `ZDIAG calibrate H` の後、約 30 秒コンソールが黙る（スピナーの優先度 12 がコンソールの 14 を止める。feeder の 10 は動く）。その後 `ZDIAG calibrate H rc=0` が出る。`d`: ring count 不変、`calib_live=0`、`cur.feeds` が約 15 増えている |
-| 5 | `G` | `rc=0`（前の H が終了済み）。発火。`inc1`: reason=2、calib=G、thread = `calib_thread`（ヘッダ行の calib）、pc ∈ `diag_spin_forever`。これは「監視の進行が止まった」の例で、ワークキューの停止ではない |
+| 4 | `H` | `ZDIAG calibrate H rc=0` の後、約 30 秒コンソールが黙る（スピナーの優先度 12 がコンソールの 14 を止める。feeder の 10 は動く）。その後 `ZDIAG calibrate H returned` が出る。`d`: ring count 不変、`calib_live=0`、`cur.feeds` が約 15 増えている |
+| 5 | `G` | 第 4 段の `returned` と `calib_live=0` を見てから送る。`ZDIAG calibrate G rc=0` が出て（これは受理の印。`returned` は出ない）、15 秒以内に発火。`inc1`: reason=2、calib=G、thread = `calib_thread`（`ZBOOT addr` 行の calib）、pc ∈ `diag_spin_forever`。これは「監視の進行が止まった」の例で、ワークキューの停止ではない。`rc=-16` が出たら第 4 段のスピナーがまだ生きている |
 | 6 | `S` → `r` | 次の起動が APPLICATION 50 で止まり、20 秒で発火。`inc2`: reason=1、calib=S、done=0、stage=6（APP_EARLY）、usb=0、pc ∈ `diag_spin_forever` |
 | 7 | `d` で `cur.seq` を控える → `S` → `b` → `coron_R-bt4-alt.uf2` | `S` の仕込みは `b` の次のアプリ起動（＝書き込み後の最適化像の初回起動）で消費され、その起動が止まり 20 秒で発火する。自動復帰後の最適化像の `d`: `inc0`〜`inc2`（tag=bt4-R）がそのまま残り、`inc3` が tag=bt4A-R、seq=控えた値+1、reason=1、calib=S、done=0、stage=6、pc ∈ 最適化像の `diag_spin_forever`。`dropped`/`invalid`/`reinit` は 0。これがブートローダーと像の切り替えを通して ring が保たれたことの確認。magic と CRC だけでは「領域が読めた」までしか言えない |
 | 8 | `c` → `d` | ring count=0。そのあと `b` で本番 2725423 へ戻す |

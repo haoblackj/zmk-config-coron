@@ -27,6 +27,7 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/hci.h>
 #include <stdarg.h>
+#include <string.h>
 
 #define EVENT_COUNT 256
 /* The value the Adafruit nRF52 bootloader looks for in GPREGRET to stay in UF2 mode. */
@@ -103,8 +104,12 @@ BT_CONN_CB_DEFINE(diag_min_conn_cb) = {
 
 static const struct device *const out_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
 
+/* One line per call. The buffer holds 253 characters of text plus CRLF; a longer line is cut and
+ * marked with " #TRUNC" at the end, so a value that was cut is never read as complete. */
+#define OUT_MARK " #TRUNC"
+
 static void out(const char *fmt, ...) {
-    char line[160];
+    char line[256];
     va_list ap;
 
     va_start(ap, fmt);
@@ -113,7 +118,11 @@ static void out(const char *fmt, ...) {
     if (n < 0) {
         return;
     }
-    n = MIN(n, (int)sizeof(line) - 3);
+    if (n > (int)sizeof(line) - 3) {
+        /* vsnprintk wrote sizeof(line) - 3 characters and reports what it wanted to write. */
+        n = (int)sizeof(line) - 3;
+        memcpy(line + n - (sizeof(OUT_MARK) - 1), OUT_MARK, sizeof(OUT_MARK) - 1);
+    }
     line[n++] = '\r';
     line[n++] = '\n';
     for (int i = 0; i < n; i++) {
@@ -140,7 +149,8 @@ __weak void diag_prof_print(void (*out)(const char *fmt, ...)) { ARG_UNUSED(out)
 __weak void diag_boot_print(void (*out)(const char *fmt, ...)) { ARG_UNUSED(out); }
 __weak void diag_boot_reboot(void) { sys_reboot(SYS_REBOOT_WARM); }
 __weak void diag_boot_mark_reboot(void) {}
-__weak int diag_boot_calibrate(char which) { ARG_UNUSED(which); return 0; }
+__weak int diag_boot_calibrate_check(char which) { ARG_UNUSED(which); return 0; }
+__weak void diag_boot_calibrate_start(char which) { ARG_UNUSED(which); }
 __weak void diag_boot_clear_ring(void) {}
 
 static void dump(void) {
@@ -217,14 +227,19 @@ static void diag_min_thread(void *p1, void *p2, void *p3) {
                 /* Instrument calibration (see diag_boot.c): 'h' cooperative stall on the system
                  * workqueue, 'H' bounded preemptible spinner below the feeder (this console thread
                  * is silent while it runs), 'G' preemptible spinner above the feeder, 'S' arm a
-                 * stall for the next boot. rc=-16 (EBUSY) when a previous one is still live.
-                 * No-ops in production. */
-                out("ZDIAG calibrate %c", ch);
+                 * stall for the next boot. The verdict (rc=0 accepted, rc=-16 a previous one is
+                 * still live) is printed BEFORE anything starts, because 'h' and 'G' stop this
+                 * thread the moment they run and only the net's reset ends them. No-ops in
+                 * production. */
+                int rc = diag_boot_calibrate_check(ch);
 
-                int rc = diag_boot_calibrate(ch);
-
-                /* For 'H' this second line only appears once the spinner has exited. */
                 out("ZDIAG calibrate %c rc=%d", ch, rc);
+                if (rc == 0) {
+                    diag_boot_calibrate_start(ch);
+                    /* Reached at once for 'S'; for 'H' only after its ~30 s spin; never for 'h'
+                     * and 'G'. */
+                    out("ZDIAG calibrate %c returned", ch);
+                }
             } else if (ch == 'c') {
                 diag_boot_clear_ring();
                 out("ZDIAG ring cleared");
@@ -249,5 +264,5 @@ static void diag_min_thread(void *p1, void *p2, void *p3) {
     }
 }
 
-K_THREAD_DEFINE(diag_min_tid, 1536, diag_min_thread, NULL, NULL, NULL,
+K_THREAD_DEFINE(diag_min_tid, 2048, diag_min_thread, NULL, NULL, NULL,
                 K_LOWEST_APPLICATION_THREAD_PRIO, 0, 0);

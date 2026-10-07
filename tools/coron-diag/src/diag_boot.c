@@ -63,11 +63,17 @@
  * CONSISTENCY of cur: every thread-context writer updates the fields and recomputes the CRC
  *  under irq_lock() (rec_lock/rec_unlock), so two threads cannot interleave an update and a seal.
  *  The TIMER4 ISR (NVIC priority 0, above the irq_lock level) is not excluded by that lock; it is
- *  the last writer, re-seals the whole record and never returns, so whatever it interrupted does
- *  not matter. A pin reset inside the few microseconds of a locked update can still leave a torn
+ *  the last writer, re-seals the whole record and never returns. What the CRC then guarantees is
+ *  that the bytes read back are the bytes the ISR sealed; it does NOT guarantee that a multi-field
+ *  update the ISR interrupted was complete (e.g. probes_run already incremented but STG_WQ_PROBED
+ *  not yet stamped, or stage set but stage_cyc[] not yet written). Readers interpret such pairs
+ *  accordingly. A pin reset inside the few microseconds of a locked update can still leave a torn
  *  record; that is detected (CRC) and counted in ring.invalid, never read as valid data.
  *
- * CALIBRATION (console commands; test builds only; each returns 0 or -EBUSY):
+ * CALIBRATION (console commands; test builds only). The console first prints the verdict of
+ *  diag_boot_calibrate_check() ("rc=0" accepted, "rc=-16" refused) and only then calls
+ *  diag_boot_calibrate_start(): 'h' and 'G' stop the console thread the moment they run, so no
+ *  line can follow them; their execution is confirmed by the incident record after the reset.
  *  h  spin forever on the system workqueue (cooperative)      -> WQ_TIMEOUT, PC in diag_spin_forever,
  *                                                                 thread == &k_sys_work_q.thread
  *  H  spin H_SPIN_S seconds in a preemptible thread at K_PRIO_PREEMPT(12) (lower than the feeder,
@@ -590,36 +596,39 @@ struct k_thread calib_thread; /* global so nm resolves the thread pointer */
 static bool calib_thread_started;
 static bool calib_coop_submitted;
 
-/* The thread object and stack are reused only after the previous calibration thread has fully
+/* Two steps so the console can print the verdict BEFORE anything starts: 'h' and 'G' stop the
+ * console thread (priority 14) as soon as they run ('h': the cooperative workqueue at -1 runs at
+ * once; 'G': the priority-0 spinner runs at once) and only the net's reset ends them, so no line
+ * can be printed after them. check() has no side effects; start() is called only after a 0 from
+ * check(), on the same (single) console thread, so nothing can slip in between.
+ * The thread object and stack are reused only after the previous calibration thread has fully
  * terminated (k_thread_join == 0); otherwise the command is refused. 'h' is accepted once. */
-int diag_boot_calibrate(char which) {
-    unsigned int key;
-
+int diag_boot_calibrate_check(char which) {
     switch (which) {
     case 'h':
-        if (calib_coop_submitted) {
-            return -EBUSY;
-        }
-        calib_coop_submitted = true;
-        break;
+        return calib_coop_submitted ? -EBUSY : 0;
     case 'H':
     case 'G':
         if (calib_thread_started && k_thread_join(&calib_thread, K_NO_WAIT) != 0) {
             return -EBUSY;
         }
-        break;
+        return 0;
     case 'S':
-        break;
+        return 0;
     default:
         return -EINVAL;
     }
+}
 
-    key = rec_lock();
+void diag_boot_calibrate_start(char which) {
+    unsigned int key = rec_lock();
+
     cur.calib = (uint32_t)which;
     rec_unlock(key);
 
     switch (which) {
     case 'h':
+        calib_coop_submitted = true;
         k_work_submit(&calib_coop_work);
         break;
     case 'H':
@@ -640,50 +649,55 @@ int diag_boot_calibrate(char which) {
     default:
         break;
     }
-    return 0;
 }
 
+/* Every line stays under 150 characters with the longest possible values (39-character tag, ten-
+ * digit counters), inside the console's 256-byte line buffer (253 usable); the console marks a
+ * line it had to cut with " #TRUNC" so a cut value is never read as complete. */
 static void print_rec(void (*out)(const char *fmt, ...), const char *tag, const struct boot_rec *r) {
-    out("ZBOOT %s seq=%u tag=%s done=%u reason=%u phase=%u calib=%c stage=%u reset=0x%x "
-        "reinit=%u fix=%u/%u/%u probes=%u/%u feeds=%u loops=%u lastfeed_us=%u",
+    out("ZBOOT %s a seq=%u tag=%s done=%u reason=%u phase=%u calib=%c stage=%u reset=0x%x reinit=%u",
         tag, r->seq, r->build_tag, r->boot_done, r->reason, r->phase, r->calib ? (char)r->calib : '-',
-        r->stage, r->entry.resetreas, r->ring_reinit, r->fix_action, r->fix_us, r->hf_action,
-        r->probes_submitted, r->probes_run, r->feeds, r->feeder_loops, r->last_feed_cyc / CYC_PER_US);
-    out("ZBOOT %s entry lfstat=0x%x lfrun=%u lfsrc=0x%x lfcopy=0x%x lfev=%u hfstat=0x%x hfrun=%u "
-        "hfev=%u rtc1=%u usbreg=0x%x ficr130=0x%x ficr134=0x%x",
+        r->stage, r->entry.resetreas, r->ring_reinit);
+    out("ZBOOT %s b fix=%u/%u/%u probes=%u/%u feeds=%u loops=%u lastfeed_us=%u",
+        tag, r->fix_action, r->fix_us, r->hf_action, r->probes_submitted, r->probes_run, r->feeds,
+        r->feeder_loops, r->last_feed_cyc / CYC_PER_US);
+    out("ZBOOT %s entry1 lfstat=0x%x lfrun=%u lfsrc=0x%x lfcopy=0x%x lfev=%u",
         tag, r->entry.lfclkstat, r->entry.lfclkrun, r->entry.lfclksrc, r->entry.lfclksrccopy,
-        r->entry.ev_lfstarted, r->entry.hfclkstat, r->entry.hfclkrun, r->entry.ev_hfstarted,
-        r->entry.rtc1_counter, r->entry.usbregstatus, r->entry.ficr_130, r->entry.ficr_134);
-    out("ZBOOT %s us hook=%u pk1=%u clk=%u pk1end=%u sysclk=%u post=%u app=%u usb=%u applast=%u "
-        "commit=%u mainexit=%u probed=%u running=%u",
+        r->entry.ev_lfstarted);
+    out("ZBOOT %s entry2 hfstat=0x%x hfrun=%u hfev=%u rtc1=%u usbreg=0x%x ficr130=0x%x ficr134=0x%x",
+        tag, r->entry.hfclkstat, r->entry.hfclkrun, r->entry.ev_hfstarted, r->entry.rtc1_counter,
+        r->entry.usbregstatus, r->entry.ficr_130, r->entry.ficr_134);
+    out("ZBOOT %s us1 hook=%u pk1=%u clk=%u pk1end=%u sysclk=%u post=%u app=%u",
         tag, r->stage_cyc[STG_HOOK] / CYC_PER_US, r->stage_cyc[STG_PK1_EARLY] / CYC_PER_US,
         r->stage_cyc[STG_PK1_AFTER_CLK] / CYC_PER_US, r->stage_cyc[STG_PK1_LAST] / CYC_PER_US,
         r->stage_cyc[STG_PK2_AFTER_SYSCLK] / CYC_PER_US, r->stage_cyc[STG_POST] / CYC_PER_US,
-        r->stage_cyc[STG_APP_EARLY] / CYC_PER_US, r->stage_cyc[STG_APP_AFTER_USB] / CYC_PER_US,
-        r->stage_cyc[STG_APP_LAST] / CYC_PER_US, r->stage_cyc[STG_SETTINGS_COMMIT] / CYC_PER_US,
-        r->stage_cyc[STG_MAIN_DONE] / CYC_PER_US, r->stage_cyc[STG_WQ_PROBED] / CYC_PER_US,
-        r->stage_cyc[STG_RUNNING] / CYC_PER_US);
+        r->stage_cyc[STG_APP_EARLY] / CYC_PER_US);
+    out("ZBOOT %s us2 usb=%u applast=%u commit=%u mainexit=%u probed=%u running=%u",
+        tag, r->stage_cyc[STG_APP_AFTER_USB] / CYC_PER_US, r->stage_cyc[STG_APP_LAST] / CYC_PER_US,
+        r->stage_cyc[STG_SETTINGS_COMMIT] / CYC_PER_US, r->stage_cyc[STG_MAIN_DONE] / CYC_PER_US,
+        r->stage_cyc[STG_WQ_PROBED] / CYC_PER_US, r->stage_cyc[STG_RUNNING] / CYC_PER_US);
     if (r->fire.exc_return != 0) {
         const struct fire_info *f = &r->fire;
-        out("ZBOOT %s fire exc=0x%x msp=0x%x psp=0x%x frame=0x%x pc=0x%x lr=0x%x xpsr=0x%x "
-            "handler=%u thread=0x%x at_us=%u",
-            tag, f->exc_return, f->msp, f->psp, f->frame_sp, f->pc, f->lr, f->xpsr, f->in_handler,
-            f->cur_thread, f->fire_cyc / CYC_PER_US);
-        out("ZBOOT %s fire usbd en=%u ec=0x%x pullup=%u usbreg=0x%x lfstat=0x%x lfrun=%u "
-            "hfstat=0x%x hfrun=%u cc0=%u",
-            tag, f->usbd_enable, f->usbd_eventcause, f->usbd_usbpullup, f->usbregstatus,
-            f->lfclkstat, f->lfclkrun, f->hfclkstat, f->hfclkrun, f->timer4_cc0);
+        out("ZBOOT %s fire1 exc=0x%x msp=0x%x psp=0x%x frame=0x%x pc=0x%x lr=0x%x",
+            tag, f->exc_return, f->msp, f->psp, f->frame_sp, f->pc, f->lr);
+        out("ZBOOT %s fire2 xpsr=0x%x handler=%u thread=0x%x at_us=%u",
+            tag, f->xpsr, f->in_handler, f->cur_thread, f->fire_cyc / CYC_PER_US);
+        out("ZBOOT %s fire3 usbd en=%u ec=0x%x pullup=%u usbreg=0x%x",
+            tag, f->usbd_enable, f->usbd_eventcause, f->usbd_usbpullup, f->usbregstatus);
+        out("ZBOOT %s fire4 lfstat=0x%x lfrun=%u hfstat=0x%x hfrun=%u cc0=%u",
+            tag, f->lfclkstat, f->lfclkrun, f->hfclkstat, f->hfclkrun, f->timer4_cc0);
     }
 }
 
 void diag_boot_print(void (*out)(const char *fmt, ...)) {
     bool calib_live = calib_thread_started && k_thread_join(&calib_thread, K_NO_WAIT) != 0;
 
-    out("ZBOOT ring count=%u slots=%u dropped=%u invalid=%u reinit=%u calib_live=%u addr cur=0x%x "
-        "last=0x%x ring=0x%x sysq=0x%x main=0x%x calib=0x%x",
+    out("ZBOOT ring count=%u slots=%u dropped=%u invalid=%u reinit=%u calib_live=%u",
         ring.count, RING_SLOTS, ring.dropped, ring.invalid, ring_reinit_this_boot ? 1 : 0,
-        calib_live ? 1 : 0, (uint32_t)&cur, (uint32_t)&last, (uint32_t)&ring,
-        (uint32_t)&k_sys_work_q.thread, (uint32_t)&z_main_thread, (uint32_t)&calib_thread);
+        calib_live ? 1 : 0);
+    out("ZBOOT addr cur=0x%x last=0x%x ring=0x%x sysq=0x%x main=0x%x calib=0x%x",
+        (uint32_t)&cur, (uint32_t)&last, (uint32_t)&ring, (uint32_t)&k_sys_work_q.thread,
+        (uint32_t)&z_main_thread, (uint32_t)&calib_thread);
     for (uint32_t i = 0; i < ring.count && i < RING_SLOTS; i++) {
         char tag[12];
         snprintk(tag, sizeof(tag), "inc%u", i);

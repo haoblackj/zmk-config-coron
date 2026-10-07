@@ -181,7 +181,7 @@ CONFIG_REBOOT=y
 ## 計測器側の表記の訂正
 v3 の `diag_boot.c` の `STG_MAIN_DONE` のコメントは「main() returned」と書いていた。v4（2026-10-08 01:43 の像）でコメントと出力名を「main thread exited」「mainexit」に直した。
 
-## v4 像（bt4-R-10080143、bt4A-R-10080143）での確認（2026-10-08 01:46 追記）
+## v4 像（bt4-R-10080143、bt4A-R-10080143。レビュー #7 後の bt4-R-10080217、bt4A-R-10080217 も同じ設定）での確認（2026-10-08 01:46 追記、02:19 更新）
 - `CONFIG_ZMK_WATCHDOG_FATAL_DETECT=y` のまま（変更なし）。`k_sys_fatal_error_handler` は両像とも `zmk-feature-watchdog/src/watchdog_fatal.c:65` のもの（`objdump -dl`）。上の結論はそのまま成り立つ。
 - 設定リポジトリには `src/fatal_reboot.c`（10c183c、2026-10-05 00:53。記録なしで `sys_reboot`）があり、`CMakeLists.txt` が「coron_L/coron_R かつ `CONFIG_ZMK_WATCHDOG_FATAL_DETECT` でないとき」だけ組み込む。v4 では組み込まれない（`build.ninja` に無い）。fatal 検出を切った最初の試みは、この関数と計測器の自前のハンドラの二重定義でリンクに失敗した。
 - 変えたのは `CONFIG_ZMK_WATCHDOG_FREEZE_DETECT=n` だけ。freeze 検出は `task_wdt` の期限切れ callback（タイマー ISR 文脈）から `zmk_watchdog_reboot()` → `sys_reboot` に進む別の経路で、main スレッドの終了には関わらない。

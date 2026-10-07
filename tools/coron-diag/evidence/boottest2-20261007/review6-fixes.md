@@ -33,10 +33,22 @@
 確認: v3 の 2 像は `.noinit` の配置が偶然一致していた（0x20027400）。v4 の最初のビルドでは基準像 0x20027280、最適化像 0x20027300 と 0x80 ずれた。`.noinit` の先頭は `.bss` の大きさで決まるので、像が変われば動く。
 対応: `diagrec.overlay`（`-DEXTRA_DTC_OVERLAY_FILE`）で `sram0` を 176 KB に縮め、0x2002c000〜0x2002d000 を `zephyr,memory-region`（`DIAGREC`、NOLOAD）として切り、4 つの記録を 1 つの構造体 `diag_area` にまとめてそこへ置く。像の `.bss` の大きさに関係なく同じアドレスになり、RAM が足りない像はリンクで失敗する（黙って動かない）。0x2002c000 はブートローダーの `.bss` 上端（0x2000ce28）の約 124 KB 上、スタック上端（0x20040000）の 80 KB 下。
 
+## レビュー #7（2026-10-08、校正前の 2 点）への対応
+### 7-1. `G` と `h` の `rc=0` は出力できない
+確認: そのとおり。`G` は優先度 0 の無限ループを `K_NO_WAIT` で始めるので、呼び出しが戻った直後からコンソール（14）は動けず、仕掛けのリセットまで戻り値を表示できない。`h` も協調ワークが走り始めた時点で同じ。
+対応: `diag_boot_calibrate()` を副作用の無い `diag_boot_calibrate_check()`（0 か `-EBUSY`/`-EINVAL`）と `diag_boot_calibrate_start()` に分け、コンソールは判定を `ZDIAG calibrate X rc=N` と出してから、0 のときだけ開始する。拒否した命令に成功を表示することはない（判定と開始は同じコンソールスレッドで連続して行い、間に別の命令は入らない）。開始が戻った後の `ZDIAG calibrate X returned` は `S`（すぐ）と `H`（約 30 秒後）だけに出る。README の手順を「`H` は `returned` と `calib_live=0` を確認してから `G`。`G` と `h` は復帰後の事故記録で実行を確認」に直した。
+### 7-2. 出力が 157 文字で切られ、照合に要るアドレスが失われる
+確認: そのとおり。旧ヘッダ行は基準像のアドレスで 169 文字になり、`calib=0x…` が切れていた。記録の他の行も、タグ 39 文字と 10 桁のカウンターでは 180〜200 文字になりえた。
+対応: ヘッダを「状態」（`ZBOOT ring …`）と「アドレス」（`ZBOOT addr …`）の 2 行に、記録を a/b、entry1/2、us1/2、fire1〜4 の各行に分けた。最長値でも各行 150 文字以内。`out()` のバッファを 256 にし、253 文字を超える行は末尾を ` #TRUNC` に置き換えて切り詰めを明示する（`vsnprintk` の戻り値で検出）。コンソールスレッドのスタックを 2048 にした。
+### 7-3. 文書
+- README の監視表の「致命的エラーが halt（v4）か sys_reboot（v3）」を「v3、v4 とも watchdog の記録つき sys_reboot」に訂正。
+- `cur` の整合性: CRC が保証するのは「読み出した内容が ISR の封印したとおり」まで。複数項目の更新の途中で ISR が割り込めば途中の値が CRC つきで残りうる（`probes_run` と `STG_WQ_PROBED`、`stage` と `stage_cyc[]` の組）。README と `diag_boot.c` の説明をそう改めた。
+
 ## 像の識別
 | 像 | タグ | ELF md5 | UF2 md5 | ベクタ表 27 番 | `diag_spin_forever` | USB READY 待ち |
 |---|---|---|---|---|---|---|
-| 基準 `coron_R-bt4` | `bt4-R-10080143` | ef0524695a8f010d24869932b2bb6f04 | 42467852c15942b81af08b8df1972fd1 | 0x00066229 | 0x662a2〜 | 0x57ef4〜0x57efb |
-| 最適化 `coron_R-bt4-alt` | `bt4A-R-10080143` | bc4738657a03cda312697b14f158fac1 | 556a08fab5991e7ff7fe7756df545edd | 0x00037ff9 | 0x389d0〜 | 0x6c484〜0x6c48b |
+| 基準 `coron_R-bt4` | `bt4-R-10080217` | b32956d62f1dd6fb3af6be0b5ba5b6c9 | df108d7ad2009afccfbfbba66b6ad093 | 0x00066271 | 0x662ea〜 | 0x57f3c〜0x57f43 |
+| 最適化 `coron_R-bt4-alt` | `bt4A-R-10080217` | a4dced604ea9e67fc16810481c1983f2 | e1e62efeeda0f87a1678a3d53f8151cf | 0x00038029 | 0x38a08〜 | 0x6c4d4〜0x6c4db |
+（レビュー #7 の前の像 `bt4-R-10080143` / `bt4A-R-10080143`（ELF md5 ef0524695a8f… / bc4738657a03…）は出力の切り詰めがあるので校正に使わない）
 両像とも `diag_area` = 0x2002c000（大きさ 0x93c、NOBITS）、`CONFIG_SRAM_SIZE=176`、`CONFIG_ZMK_WATCHDOG_FREEZE_DETECT` 無効、`CONFIG_ZMK_WATCHDOG_FATAL_DETECT=y`（`k_sys_fatal_error_handler` は `watchdog_fatal.c:65` のもの。`fatal_reboot.c` は build.ninja に無い）。ソースの md5 は `md5sums.txt`。
 ビルドログの注意: `west build` の初回は nanopb の生成（`protoc-gen-nanopb`）が `google.protobuf` 不在で失敗し、続けて実行する `ninja` で完了する（v3 の像も同じ手順。`build-boottest2.sh`）。
