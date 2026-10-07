@@ -3,7 +3,8 @@
 #                 -Uf2Base <file> -Md5Base <md5> -Uf2Alt <file> -Md5Alt <md5> -Uf2Prod <file> -Md5Prod <md5>
 #                 [-Mock <scenario.json>]
 # Exit 0 = step PASS, 1 = step FAIL (stopped before the next device operation), 2 = SKIP,
-# 3 = usage, 4 = mock scenario file missing/invalid (nothing done).
+# 3 = usage, 4 = mock scenario file missing/invalid (nothing done), 5 = FAIL and a timed-out console
+# child could not be confirmed dead (it may still write to the port: no further device operation).
 # Step 3 (pin reset by hand) is not performed: no manual operation is part of this run. It is
 # recorded as SKIP, never PASS; retention across a pin reset stays unverified.
 # A FAIL stops the calibration; restoring the production image is a separate script
@@ -232,10 +233,12 @@ try {
     if ($_.Exception.Message -cne 'CALIB-ABORT') { Log "ERROR $($_.Exception.Message) at $($_.InvocationInfo.PositionMessage)" ; $script:fails++ }
     Log "STOPPED before: $script:nextOp"
     $code = 1
+    if ($script:childAlive) { Log "a console child may still be alive (termination not confirmed): exit 5, the caller must not start any device operation"; $code = 5 }
 }
 switch ($code) {
     0 { Log "STEP $Step RESULT PASS" }
     1 { Log "STEP $Step RESULT FAIL ($($script:fails) failed checks)" }
+    5 { Log "STEP $Step RESULT FAIL ($($script:fails) failed checks; a console child may still be alive)" }
     2 { Log "STEP $Step RESULT SKIP" }
 }
 exit $code

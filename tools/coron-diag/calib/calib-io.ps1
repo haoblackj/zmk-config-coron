@@ -58,6 +58,10 @@ if ($MockFile) {
     $sp.DtrEnable = $true
     $sp.ReadTimeout = 300
 }
+# The marks are whole lines: 'ZDIAG begin ...' at a line start, 'ZDIAG end' alone on its line
+# (CRLF from the device). A partial match ('ZDIAG endBROKEN') is not a mark (review #10, point 2).
+$BEGIN = '(?m)^ZDIAG begin\b'
+$END = '(?m)^ZDIAG end\r?$'
 $text = ''
 $rc = 0
 function ReadChunk {
@@ -69,20 +73,20 @@ try {
     Stamp "opened $Com"
     Nap 1500
     ReadChunk
-    if ($text -cmatch 'ZDIAG begin') {
+    if ($text -cmatch $BEGIN) {
         $deadline = (Get-Date).AddSeconds(4); $iter = 0
-        while ($text -cnotmatch 'ZDIAG end') {
+        while ($text -cnotmatch $END) {
             if ($script:mock) { if ($iter -ge 3) { break } } elseif ((Get-Date) -ge $deadline) { break }
             $iter++
             Nap 100
             ReadChunk
         }
-        if ($text -cmatch 'ZDIAG end') { Stamp 'dump complete' } else { Stamp 'dump incomplete (no end mark within 4 s)' }
+        if ($text -cmatch $END) { Stamp 'dump complete' } else { Stamp 'dump incomplete (no end mark within 4 s)' }
     } else {
         Stamp 'no dump (no begin mark within 1.5 s)'
     }
     if ($Send) {
-        $complete = ($text -cmatch 'ZDIAG begin') -and ($text -cmatch 'ZDIAG end')
+        $complete = ($text -cmatch $BEGIN) -and ($text -cmatch $END)
         $trunc = ($text -cmatch '#TRUNC')
         if ($complete -and -not $trunc) {
             $sp.Write($Send)

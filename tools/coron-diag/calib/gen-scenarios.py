@@ -27,6 +27,8 @@ ADDR = 'ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq={sysq} ma
 # the production image (2725423): diag console without the boot instrument -> no ZBOOT line
 PROD = ('ZDIAG begin version=prof1 up_ms=6690 boot=1 reset=0x2\r\n'
         'ZDIAG now count host_conn=0 host_disc=0 split_conn=1 split_disc=0\r\nZDIAG end\r\n')
+PROD_TRUNC = ('ZDIAG begin version=prof1 up_ms=6690 boot=1 reset=0x2\r\n'
+              'ZDIAG now count host_conn=0 host_disc=0 split_co #TRUNC\r\nZDIAG end\r\n')
 BOOTLOADER = 'ZDIAG bootloader rc=0\r\n'
 
 
@@ -66,8 +68,12 @@ def inc_S(img, seq):   # armed stall at APPLICATION 50 -> BOOT_TIMEOUT
                fire=dict(exc=0xfffffff9, frame=0x2003fe00, pc=img['spin'], handler=0, thread=img['main'], at_us=20000000))
 
 
+def inc_abort(img, seq):   # boot interrupted (boot_done=0) without a requested reboot: filed by is_incident(), no firing -> no fire line
+    return rec('INC', img, seq, done=0, reason=0, calib='-', stage=5, probes=(0, 0), feeds=0, loops=0, usb=0, running=0)
+
+
 def dump(img, cur, incs=(), last=None, count=None, dropped=0, invalid=0, reinit=0, calib_live=0, trunc=False,
-         no_end=False, drop_line=None):
+         no_end=False, drop_line=None, end_text='ZDIAG end'):
     """A full console dump as the device emits it: ZDIAG begin, ZBOOT lines, ZDIAG end."""
     n = len(incs) if count is None else count
     out = ['ZDIAG begin version=prof1 up_ms=65000 boot=1 reset=0x4',
@@ -83,7 +89,7 @@ def dump(img, cur, incs=(), last=None, count=None, dropped=0, invalid=0, reinit=
     if drop_line:
         out = [l for l in out if not l.startswith(drop_line)]
     if not no_end:
-        out.append('ZDIAG end')
+        out.append(end_text)
     return '\r\n'.join(out) + '\r\n'
 
 
@@ -128,7 +134,7 @@ last = lambda img, seq, **kw: rec('last', img, seq, **kw)
 STEPS = ['pre', 'flash-base', '0', '1', '2', '4', '5', '6', '7', '8', 'flash-prod']
 
 
-def normal(from_prod=True):
+def normal(from_prod=True, leftover=None):
     """The whole run. from_prod: the device starts on the production image (no ZBOOT line), as
     on the real device; otherwise on a test image with a leftover incident to read out and clear."""
     s = {}
@@ -136,7 +142,7 @@ def normal(from_prod=True):
         first = PROD
         old = []
     else:
-        old = [inc_h(B, 3)]
+        old = leftover if leftover is not None else [inc_h(B, 3)]
         first = dump(B, cur(B, 9), old)
     s['pre'] = scen(['app'], [ex('', first)])
     s['flash-base'] = scen(['app', 'boot', 'app'],
@@ -353,6 +359,40 @@ add('step-hang', variant('4', dict(N['4'], step_hang_s=60, step_timeout_s=8)),
     expect(1, stopped_after('4', **{'4': 'TIMEOUT'}), must=['4 did not return within 8s: killed with its process tree', 'step 4 rc=TIMEOUT', 'restore PASS']))
 add('restore-hang', variant('flash-prod', dict(N['flash-prod'], step_hang_s=60, step_timeout_s=8)),
     expect(2, results(restore='TIMEOUT'), must=['flash-prod did not return within 8s', 'CALIBRATION PASS .* \\| RESTORE FAIL']))
+
+
+# ------------------------------------------------------------------ review #10
+# 1. an incident filed for an interrupted boot (done=0, reason=0, no fire line) is read and saved
+NA = normal(False, leftover=[inc_abort(B, 3)])
+add('inc-boot-abort', NA, expect(0, results(), must=[in_file('steppre-*.log', 'saved ZBOOT inc0 us2'), in_file('steppre-*.log', 'inc0 reason=0 \\(boot interrupted without the net firing\\): fire lines not required'),
+                                                in_file('step0-*.log', 'saved ZBOOT inc0 a seq=3 .* done=0 reason=0')],
+                            must_not=[in_file('steppre-*.log', 'saved ZBOOT inc0 fire'), in_file('step0-*.log', 'saved ZBOOT inc0 fire'), 'NOT sent', 'timed out']))
+# 1b. a partial set of fire lines is rejected whatever the reason
+i_partial = inc_abort(B, 3) + inc_h(B, 3)[6:8]
+add('inc-partial-fire', variant('0', scen(['app'], [ex('', dump(B, cur(B, 10), [i_partial])), ex('c', d0, post='ZDIAG ring cleared\r\n')])),
+    expect(1, stopped_after('0'), must=[in_file('step0-*.log', 'FAIL before clear:inc0 fire lines all-or-none')], must_not=[in_file('step0-*.log', "sent 'c'")]))
+# 2. the end mark is a whole line: 'ZDIAG endBROKEN' is not one, so the child must not send
+add('gate-endbroken', variant('0', scen(['app'], [ex('', d0), ex('c', dump(B, cur(B, 10), [], end_text='ZDIAG endBROKEN'), post='ZDIAG ring cleared\r\n')])),
+    expect(1, stopped_after('0'), must=[in_file('step0-*.log', "NOT sent 'c': the dump before it is incomplete"), in_file('step0-*.log', 'ZDIAG endBROKEN')],
+           must_not=[in_file('step0-*.log', "\\[calib-io\\] sent 'c'")]))
+# 2b. the production restore dump has a #TRUNC line -> restore FAIL
+add('prod-trunc', variant('flash-prod', scen(['app', 'boot', 'app'], [ex('b', d8, post=BOOTLOADER, lost=True), ex('', PROD_TRUNC)], drives=OUR)),
+    expect(2, results(restore='1'), must=[in_file('flash-prod-*.log', 'FAIL after flash:no #TRUNC line')]))
+# 3. termination of a timed-out child must be confirmed before any further device operation
+add('kill-fail', variant('1', dict(scen(['app'], [ex('', d1, hang_s=60, io_timeout_s=3), ex('', d1, hang_s=60, io_timeout_s=3)]), kill_mode='fail')),
+    expect(3, stopped_after('1', **{'1': '5', 'restore': 'not-attempted'}),
+           must=[in_file('step1-*.log', 'taskkill rc=1'), in_file('step1-*.log', 'termination confirmed=False'), in_file('step1-*.log', 'termination NOT confirmed, pids still alive'),
+                 in_file('step1-*.log', 'exit 5'), 'reports a console child it could not confirm dead', 'RESTORE NOT ATTEMPTED', 'NOT restored to the production image'],
+           must_not=['FLASH prod start', in_file('flash-prod-*.log', '.')]))
+add('kill-linger', variant('4', dict(N['4'], step_hang_s=60, step_timeout_s=8, kill_mode='linger')),
+    expect(3, stopped_after('4', **{'4': 'TIMEOUT-ALIVE', 'restore': 'not-attempted'}),
+           must=['taskkill rc=0: \\(mock\\) taskkill NOT invoked', 'termination confirmed=False', '4 did not return within 8s: termination NOT confirmed', 'RESTORE NOT ATTEMPTED'],
+           must_not=['FLASH prod start', in_file('flash-prod-*.log', '.')]))
+# 3b. the step's own console child is hanging when the step's deadline passes: the whole tree is killed and confirmed
+add('tree-kill', variant('4', dict(scen(['app'], [ex('', N['4']['exchanges'][0]['pre'], hang_s=60, io_timeout_s=50)]), step_timeout_s=8)),
+    expect(1, stopped_after('4', **{'4': 'TIMEOUT'}), must=['process tree=\\[\\d+(,\\d+)+\\]; terminating', 'termination confirmed=True', '4 did not return within 8s: killed with its process tree, termination confirmed', 'restore PASS']))
+add('restore-kill-linger', variant('flash-prod', dict(N['flash-prod'], step_hang_s=60, step_timeout_s=8, kill_mode='linger')),
+    expect(2, results(restore='TIMEOUT-ALIVE'), must=['restore process not confirmed dead', 'termination confirmed=False', 'CALIBRATION PASS .* \\| RESTORE FAIL']))
 
 
 def main():

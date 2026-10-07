@@ -1,0 +1,37 @@
+{
+ "exit": 1,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "0": "0",
+  "1": "0",
+  "2": "0",
+  "3": "2",
+  "4": "0",
+  "5": "0",
+  "6": "0",
+  "7": "1",
+  "8": "not-run",
+  "restore": "0"
+ },
+ "must": [
+  {
+   "glob": "step7-*.log",
+   "re": "NOT sent 'b'"
+  },
+  {
+   "glob": "step7-*.log",
+   "re": "STOPPED before: send 'b'"
+  }
+ ],
+ "must_not": [
+  {
+   "glob": "step7-*.log",
+   "re": "\\[calib-io\\] sent 'b'"
+  },
+  {
+   "glob": "step7-*.log",
+   "re": "DEVICE-OP copy"
+  }
+ ]
+}

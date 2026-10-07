@@ -22,6 +22,7 @@
 $script:fails = 0
 $script:nextOp = 'start'
 $script:xn = 0
+$script:childAlive = $false   # set when a timed-out console child could not be confirmed dead (exit 5)
 
 function Log($m) {
     $line = (Get-Date).ToString('HH:mm:ss.fff') + " $m"
@@ -53,7 +54,7 @@ function Load-Mock([string]$path) {
     $j = Get-Content -Path $path -Raw | ConvertFrom-Json
     if ($null -eq $j) { throw "mock scenario file empty or invalid: $path" }
     $script:Scn = @{ states = @($j.states); si = 0; exchanges = @($j.exchanges); ei = 0; ports = @($j.ports);
-                      uf2 = $j.uf2; files = @{}; copies = @(); step_hang_s = [int]$j.step_hang_s }
+                      uf2 = $j.uf2; files = @{}; copies = @(); step_hang_s = [int]$j.step_hang_s; kill_mode = [string]$j.kill_mode }
     if ($j.files) { foreach ($p in $j.files.PSObject.Properties) { $script:Scn.files[$p.Name] = $p.Value } }
     Log "MOCK scenario $path"
 }
@@ -81,21 +82,48 @@ function Require-File([string]$label, [string]$path, [string]$md5) {
 
 # ---- child processes ------------------------------------------------------------------------
 # Runs powershell.exe -File $file $argv with stdout/stderr redirected to files (written as the
-# child flushes, so a killed child leaves what it had) and a deadline. On the deadline the child
-# and its whole process tree are killed (taskkill /T /F). Returns @{ rc; timedOut }.
-function Invoke-Child([string]$file, [string[]]$argv, [int]$timeoutSec, [string]$outFile, [string]$errFile) {
+# child flushes, so a killed child leaves what it had) and a deadline. On the deadline the whole
+# process tree (enumerated through Win32_Process parent ids BEFORE the kill) is terminated with
+# taskkill /T /F; the taskkill output and exit code are logged, and every pid of the tree is then
+# polled for up to 5 s (its own deadline). Returns @{ rc; timedOut; killed; alive; tree }:
+# killed=$true ONLY when taskkill returned 0 AND no pid of the tree is left (review #10, point 3).
+# $killMode (simulation only): 'fail' = do not invoke taskkill, report rc 1; 'linger' = do not
+# invoke taskkill, report rc 0 (a kill that "succeeded" without effect). The tree enumeration and
+# the confirmation are real in every mode.
+function Get-ProcessTree([int]$rootPid) {
+    $ids = @($rootPid); $queue = @($rootPid)
+    while ($queue.Count -gt 0) {
+        $cur = $queue[0]; $queue = @($queue | Select-Object -Skip 1)
+        $kids = @(Get-CimInstance Win32_Process -Filter "ParentProcessId=$cur" -ErrorAction SilentlyContinue | ForEach-Object { [int]$_.ProcessId })
+        foreach ($k in $kids) { if ($ids -notcontains $k) { $ids += $k; $queue += $k } }
+    }
+    return $ids
+}
+function Invoke-Child([string]$file, [string[]]$argv, [int]$timeoutSec, [string]$outFile, [string]$errFile, [string]$killMode = '') {
     $all = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $file) + $argv
     $quoted = ($all | ForEach-Object { '"' + ([string]$_ -replace '"', '\"') + '"' }) -join ' '
     $p = Start-Process -FilePath 'powershell.exe' -ArgumentList $quoted -RedirectStandardOutput $outFile -RedirectStandardError $errFile -NoNewWindow -PassThru
     $null = $p.Handle
     $done = $p.WaitForExit($timeoutSec * 1000)
-    if (-not $done) {
-        & taskkill.exe /PID $p.Id /T /F 2>&1 | Out-Null
-        try { $p.WaitForExit(5000) | Out-Null } catch {}
-        return @{ rc = $null; timedOut = $true }
+    if ($done) {
+        $p.WaitForExit()
+        return @{ rc = $p.ExitCode; timedOut = $false; killed = $false; alive = @(); tree = @($p.Id) }
     }
-    $p.WaitForExit()
-    return @{ rc = $p.ExitCode; timedOut = $false }
+    $tree = @(Get-ProcessTree $p.Id)
+    Log "deadline ${timeoutSec}s passed for pid $($p.Id): process tree=[$($tree -join ',')]; terminating"
+    if ($killMode -ceq 'fail') { $kout = '(mock) taskkill NOT invoked: simulated failure'; $krc = 1 }
+    elseif ($killMode -ceq 'linger') { $kout = '(mock) taskkill NOT invoked: simulated success without effect'; $krc = 0 }
+    else { $kout = ((& taskkill.exe /PID $p.Id /T /F 2>&1) | ForEach-Object { "$_" }) -join ' | '; $krc = $LASTEXITCODE }
+    Log "taskkill rc=${krc}: $kout"
+    $t0 = Get-Date; $alive = @()
+    while ($true) {
+        $alive = @($tree | Where-Object { $null -ne (Get-Process -Id $_ -ErrorAction SilentlyContinue) })
+        if ($alive.Count -eq 0 -or ((Get-Date) - $t0).TotalSeconds -ge 5) { break }
+        Start-Sleep -Milliseconds 200
+    }
+    $killed = ($krc -eq 0 -and $alive.Count -eq 0)
+    Log "termination confirmed=$killed (taskkill rc=$krc, pids still alive after $([int](((Get-Date) - $t0).TotalSeconds)) s: [$($alive -join ',')])"
+    return @{ rc = $null; timedOut = $true; killed = $killed; alive = $alive; tree = $tree }
 }
 
 # ---- USB state ------------------------------------------------------------------------------
@@ -225,7 +253,9 @@ function Exchange([string]$Send = '', [int]$ReadSeconds = 0) {
             $argv += @('-MockFile', $mockPath)
             if ($e.io_timeout_s) { $timeout = [int]$e.io_timeout_s }
         }
-        $res = Invoke-Child $helper $argv $timeout $outFile $errFile
+        $killMode = ''
+        if ($script:Scn -and $script:Scn.kill_mode) { $killMode = [string]$script:Scn.kill_mode }
+        $res = Invoke-Child $helper $argv $timeout $outFile $errFile $killMode
         $stdout = ''; $stderr = ''
         if (Test-Path -LiteralPath $outFile) { $stdout = [string](Get-Content -LiteralPath $outFile -Raw -ErrorAction SilentlyContinue) }
         if (Test-Path -LiteralPath $errFile) { $stderr = [string](Get-Content -LiteralPath $errFile -Raw -ErrorAction SilentlyContinue) }
@@ -236,9 +266,16 @@ function Exchange([string]$Send = '', [int]$ReadSeconds = 0) {
         Add-Content -Path $script:LogFile -Value '----- end console -----' -Encoding UTF8
         $sentStamp = ($Send -and ($stdout -cmatch ("\[calib-io\] sent '" + [regex]::Escape($Send) + "'")))
         if ($res.timedOut) {
-            Log ("FAIL console child returned within ${timeout}s (timed out; killed with its process tree; sent stamp " + $(if ($sentStamp) { 'PRESENT' } else { 'absent' }) + ")")
+            $stampTxt = $(if ($sentStamp) { 'PRESENT' } else { 'absent' })
+            if ($res.killed) {
+                Log "FAIL console child returned within ${timeout}s (timed out; killed with its process tree, termination confirmed; sent stamp $stampTxt)"
+                $script:fails++
+                return $null
+            }
+            Log "FAIL console child returned within ${timeout}s (timed out; termination NOT confirmed, pids still alive [$($res.alive -join ',')]; sent stamp $stampTxt)"
             $script:fails++
-            return $null
+            $script:childAlive = $true
+            Abort "a console child may still be alive and could still write to the port; no further device operation"
         }
         if ($Send) {
             if ($sentStamp) { Log "DEVICE-OP console sent '$Send' (child stamp)" }
@@ -260,7 +297,8 @@ function Send-Cmd([string]$cmd, [int]$ReadSeconds) {
 # ---- dump structure --------------------------------------------------------------------------
 # The lines and keys print_rec/diag_boot_print (diag_boot.c v4) emit for every record. A record
 # is complete only with all of them; the fire1..fire4 lines (exception frame, registers, USBD,
-# clocks) are printed when the net fired, so an incident must carry all four (review #9, point 4).
+# clocks) are printed only when the net fired (fire.exc_return != 0), so a BOOT_TIMEOUT/WQ_TIMEOUT
+# incident must carry all four and an interrupted boot (reason 0) carries none (review #10, point 1).
 $script:RecLines = @('a', 'b', 'entry1', 'entry2', 'us1', 'us2')
 $script:FireLines = @('fire1', 'fire2', 'fire3', 'fire4')
 $script:LineKeys = @{
@@ -283,11 +321,21 @@ function Validate-Line($r, [string]$rec, [string]$line, [string]$what) {
         Require "${what}:$rec $line.$k present" ($r[$rec][$line].ContainsKey($k)) (Raw $r $rec $line)
     }
 }
-function Validate-Record($r, [string]$rec, [string]$what, [bool]$fireRequired) {
+# $fireMode: 'required' (the net fired: all four lines), 'optional' (all four or none), or
+# 'by-reason' for an incident: diag_boot.c's is_incident() files BOOT_TIMEOUT/WQ_TIMEOUT records
+# (reason 1/2, the net fired, fire lines required) AND boots that ended with boot_done=0 without a
+# requested reboot (reason 0, no firing, print_rec prints no fire line); a partial set is rejected
+# in every mode (review #10, point 1).
+function Validate-Record($r, [string]$rec, [string]$what, [string]$fireMode) {
     Require "${what}:$rec present" ($r.ContainsKey($rec)) "keys=$(($r.Keys | Sort-Object) -join ',')"
     foreach ($ln in $script:RecLines) { Validate-Line $r $rec $ln $what }
     $nf = @($script:FireLines | Where-Object { $r[$rec].ContainsKey($_) }).Count
-    if ($fireRequired) { Require "${what}:$rec fire1..fire4 (exception frame, registers, USBD, clocks) present" ($nf -eq 4) "fire lines=$nf" }
+    if ($fireMode -ceq 'by-reason') {
+        $reason = $r[$rec]['a']['reason']
+        if ($reason -ceq '1' -or $reason -ceq '2') { $fireMode = 'required' }
+        else { Log "${what}:$rec reason=$reason (boot interrupted without the net firing): fire lines not required, all-or-none"; $fireMode = 'optional' }
+    }
+    if ($fireMode -ceq 'required') { Require "${what}:$rec fire1..fire4 (exception frame, registers, USBD, clocks) present" ($nf -eq 4) "fire lines=$nf" }
     else { Require "${what}:$rec fire lines all-or-none" ($nf -eq 0 -or $nf -eq 4) "fire lines=$nf" }
     if ($nf -eq 4) { foreach ($ln in $script:FireLines) { Validate-Line $r $rec $ln $what } }
 }
@@ -312,11 +360,11 @@ function Validate-Dump([string]$t, [string]$what, [bool]$zbootRequired) {
     foreach ($k in $script:LineKeys['addr']) { Require "${what}:addr.$k present" ($r['addr']['x'].ContainsKey($k)) (Raw $r 'addr' 'x') }
     $n = [int]$r['ring']['x']['count']; $slots = [int]$r['ring']['x']['slots']
     Require "${what}:ring count <= slots" ($n -le $slots) "count=$n slots=$slots"
-    for ($i = 0; $i -lt $n; $i++) { Validate-Record $r "inc$i" $what $true }
+    for ($i = 0; $i -lt $n; $i++) { Validate-Record $r "inc$i" $what 'by-reason' }
     $incKeys = @($r.Keys | Where-Object { $_ -cmatch '^inc\d+$' }).Count
     Require "${what}:incident records == ring count" ($incKeys -eq $n) "records=$incKeys count=$n"
-    if ($r.ContainsKey('last') -and $r['last'].ContainsKey('none')) { Log "${what}: last none" } else { Validate-Record $r 'last' $what $false }
-    Validate-Record $r 'cur' $what $false
+    if ($r.ContainsKey('last') -and $r['last'].ContainsKey('none')) { Log "${what}: last none" } else { Validate-Record $r 'last' $what 'optional' }
+    Validate-Record $r 'cur' $what 'optional'
     return $r
 }
 # A dump for analysis. -ZbootOptional: accept an image without ZBOOT lines (preflight on whatever

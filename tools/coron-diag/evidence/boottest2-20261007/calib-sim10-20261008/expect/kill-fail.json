@@ -1,0 +1,45 @@
+{
+ "exit": 3,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "0": "0",
+  "1": "5",
+  "2": "not-run",
+  "3": "not-run",
+  "4": "not-run",
+  "5": "not-run",
+  "6": "not-run",
+  "7": "not-run",
+  "8": "not-run",
+  "restore": "not-attempted"
+ },
+ "must": [
+  {
+   "glob": "step1-*.log",
+   "re": "taskkill rc=1"
+  },
+  {
+   "glob": "step1-*.log",
+   "re": "termination confirmed=False"
+  },
+  {
+   "glob": "step1-*.log",
+   "re": "termination NOT confirmed, pids still alive"
+  },
+  {
+   "glob": "step1-*.log",
+   "re": "exit 5"
+  },
+  "reports a console child it could not confirm dead",
+  "RESTORE NOT ATTEMPTED",
+  "NOT restored to the production image"
+ ],
+ "must_not": [
+  "FLASH prod start",
+  {
+   "glob": "flash-prod-*.log",
+   "re": "."
+  }
+ ]
+}

@@ -1,0 +1,31 @@
+{
+ "exit": 3,
+ "results": {
+  "pre": "1",
+  "0": "not-run",
+  "1": "not-run",
+  "2": "not-run",
+  "3": "not-run",
+  "4": "not-run",
+  "5": "not-run",
+  "6": "not-run",
+  "7": "not-run",
+  "8": "not-run",
+  "restore": "1"
+ },
+ "must": [
+  {
+   "glob": "steppre-*.log",
+   "re": "STOPPED before: nothing \\(preflight"
+  },
+  {
+   "glob": "flash-prod-*.log",
+   "re": "FAIL prod image exists"
+  }
+ ],
+ "must_not": [
+  "DEVICE-OP",
+  "\\[calib-io\\] sent",
+  "\\[calib-io\\] opened"
+ ]
+}

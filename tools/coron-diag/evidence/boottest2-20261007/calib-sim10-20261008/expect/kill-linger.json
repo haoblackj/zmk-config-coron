@@ -1,0 +1,30 @@
+{
+ "exit": 3,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "0": "0",
+  "1": "0",
+  "2": "0",
+  "3": "2",
+  "4": "TIMEOUT-ALIVE",
+  "5": "not-run",
+  "6": "not-run",
+  "7": "not-run",
+  "8": "not-run",
+  "restore": "not-attempted"
+ },
+ "must": [
+  "taskkill rc=0: \\(mock\\) taskkill NOT invoked",
+  "termination confirmed=False",
+  "4 did not return within 8s: termination NOT confirmed",
+  "RESTORE NOT ATTEMPTED"
+ ],
+ "must_not": [
+  "FLASH prod start",
+  {
+   "glob": "flash-prod-*.log",
+   "re": "."
+  }
+ ]
+}

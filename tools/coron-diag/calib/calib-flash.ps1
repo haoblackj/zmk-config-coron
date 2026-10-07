@@ -8,7 +8,8 @@
 # 'b' is written only after a complete, #TRUNC-free dump (Send-Cmd); the image currently running
 # may be any image with the diag console (the production image included).
 # Exit 0 = PASS, 1 = FAIL (stopped before the next device operation, everything saved),
-# 4 = mock scenario file missing/invalid (nothing done).
+# 4 = mock scenario file missing/invalid (nothing done), 5 = FAIL and a timed-out console child could
+# not be confirmed dead.
 # This script is also the production restore: calib-all.ps1 runs it last whatever happened before.
 param(
     [Parameter(Mandatory = $true)][string]$Serial,
@@ -73,15 +74,18 @@ try {
         Check 'first boot after the write reached RUNNING (done=1)' ((Need $r 'cur' 'a' 'done') -ceq '1') (Raw $r 'cur' 'a') | Out-Null
         Log ("after flash ring: " + (Raw $r 'ring' 'x'))
     } else {
-        Require 'dump complete' ($t2 -cmatch '(?m)^ZDIAG end\s*$') 'ZDIAG end line'
+        # complete and #TRUNC-free like every other dump; ZBOOT lines are not required (a $null table
+        # is the expected answer of the production image) but are validated when present
+        $r = Validate-Dump $t2 'after flash' $false
         Check 'production image answers (version=prof1)' ($t2 -cmatch '(?m)^ZDIAG begin version=prof1') "$begin" | Out-Null
-        Check 'no ZBOOT line (not a test image)' ($zb -eq 0) "zboot=$zb" | Out-Null
+        Check 'no ZBOOT line (not a test image)' ($zb -eq 0 -and $null -eq $r) "zboot=$zb" | Out-Null
     }
     if ($script:fails -eq 0) { $code = 0 }
 } catch {
     if ($_.Exception.Message -cne 'CALIB-ABORT') { Log "ERROR $($_.Exception.Message) at $($_.InvocationInfo.PositionMessage)"; $script:fails++ }
     Log "STOPPED before: $script:nextOp"
     $code = 1
+    if ($script:childAlive) { Log "a console child may still be alive (termination not confirmed): exit 5, the caller must not start any device operation"; $code = 5 }
 }
-if ($code -eq 0) { Log "FLASH $Expect RESULT PASS" } else { Log "FLASH $Expect RESULT FAIL ($($script:fails) failed checks)" }
+if ($code -eq 0) { Log "FLASH $Expect RESULT PASS" } elseif ($code -eq 5) { Log "FLASH $Expect RESULT FAIL ($($script:fails) failed checks; a console child may still be alive)" } else { Log "FLASH $Expect RESULT FAIL ($($script:fails) failed checks)" }
 exit $code
