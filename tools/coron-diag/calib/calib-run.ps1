@@ -1,284 +1,229 @@
-# Boot-instrument calibration driver (evidence/README.md, steps 0..8), one step per invocation so
-# the pace is controlled from outside and every step's raw console text is saved.
-#   calib-run.ps1 -Step N -Serial <usb serial> -LogDir <dir> [-Uf2Alt <file>] [-Uf2Prod <file>]
-# Reads the device tree only (Get-PnpDevice); never enumerates Win32_SerialPort. Never touches a
-# device whose USB serial is not -Serial. Writes to the device only through the diag console
-# characters the step needs (c/h/H/G/S/r/b) and, in steps 7 and 8, one UF2 copy to the UF2 drive
-# that belongs to that serial.
-# Every expectation is printed as PASS/FAIL with the actual value; the step's verdict is the AND.
+# Boot-instrument calibration, one README step per invocation (evidence/boottest2-20261007/README.md).
+#   calib-run.ps1 -Step <pre|0|1|2|3|4|5|6|7|8> -Serial <usb serial> -LogDir <dir>
+#                 -Uf2Base <file> -Md5Base <md5> -Uf2Alt <file> -Md5Alt <md5> -Uf2Prod <file> -Md5Prod <md5>
+#                 [-Mock <scenario.json>]
+# Exit 0 = step PASS, 1 = step FAIL (stopped before the next device operation), 2 = SKIP, 3 = usage.
+# Step 3 (pin reset by hand) is not performed: no manual operation is part of this run. It is
+# recorded as SKIP, never PASS; retention across a pin reset stays unverified.
+# A FAIL stops the calibration; restoring the production image is a separate script
+# (calib-flash.ps1 -Expect prod) that calib-all.ps1 runs afterwards whatever the result.
 param(
-    [Parameter(Mandatory = $true)][int]$Step,
+    [Parameter(Mandatory = $true)][string]$Step,
     [Parameter(Mandatory = $true)][string]$Serial,
     [Parameter(Mandatory = $true)][string]$LogDir,
-    [string]$Uf2Alt = '',
-    [string]$Uf2Prod = '',
+    [string]$Uf2Base = '', [string]$Md5Base = '',
+    [string]$Uf2Alt = '', [string]$Md5Alt = '',
+    [string]$Uf2Prod = '', [string]$Md5Prod = '',
     [string]$TagBase = 'bt4-R-10080217',
     [string]$TagAlt = 'bt4A-R-10080217',
-    [int]$SpinBase = 0x662ea,   # diag_spin_forever, base image (4 bytes: nop; b.n)
-    [int]$SpinAlt = 0x38a08
+    [long]$SpinBase = 0x662ea,   # diag_spin_forever, base image (4 bytes: nop; b.n)
+    [long]$SpinAlt = 0x38a08,
+    [string]$Mock = ''
 )
 $ErrorActionPreference = 'Continue'
+. (Join-Path $PSScriptRoot 'calib-lib.ps1')
 if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir | Out-Null }
-$ts = (Get-Date).ToString('MMdd-HHmmss')
-$LogFile = Join-Path $LogDir ("step$Step-$ts.log")
-$script:fails = 0
+$script:Serial = $Serial
+$script:LogFile = Join-Path $LogDir ("step$Step-" + (Get-Date).ToString('MMdd-HHmmss') + '.log')
+$script:Scn = $null
+if ($Mock) { Load-Mock $Mock }
+Log "STEP $Step start serial=$Serial"
 
-function Log($m) {
-    $line = (Get-Date).ToString('HH:mm:ss.fff') + " $m"
-    Add-Content -Path $LogFile -Value $line -Encoding UTF8
-    Write-Host $line
+function Step-Pre {
+    # Everything the run will write to the device, checked before the first device operation.
+    NextOp 'nothing (preflight only)'
+    Require-File 'base image' $Uf2Base $Md5Base
+    Require-File 'alt image' $Uf2Alt $Md5Alt
+    Require-File 'production image' $Uf2Prod $Md5Prod
+    Require 'device on USB as app with a diag port' (Wait-State 'app' 20) ("state=" + $script:lastState)
+    $r = Read-Dump 'preflight'
+    Log ("preflight cur: " + (Raw $r 'cur' 'a'))
+    Log ("preflight ring: " + (Raw $r 'ring' 'x'))
+    Log ("preflight addr: " + (Raw $r 'addr' 'x'))
 }
-function Check([string]$name, [bool]$ok, [string]$actual) {
-    if ($ok) { Log "PASS $name ($actual)" } else { Log "FAIL $name ($actual)"; $script:fails++ }
+function Step-0 {
+    NextOp "send 'c' (clear the ring)"
+    $r = Read-Dump 'before clear'
+    Log ("saved ring before clear: " + (Raw $r 'ring' 'x'))
+    foreach ($k in ($r.Keys | Where-Object { $_ -like 'inc*' } | Sort-Object)) { foreach ($l in $r[$k]['_lines']) { Log "saved $l" } }
+    Require 'cur tag=base' ((Need $r 'cur' 'a' 'tag') -eq $TagBase) (V $r 'cur' 'a' 'tag')
+    Require 'addr cur=0x2002c818' ((Need $r 'addr' 'x' 'cur') -eq '0x2002c818') (Raw $r 'addr' 'x')
+    $t = Exchange 'c' 3
+    NextOp 'nothing more in step 0'
+    Check 'c acknowledged' ($null -ne $t -and $t -match 'ZDIAG ring cleared') 'ZDIAG ring cleared' | Out-Null
+    $r3 = Read-Dump 'after clear'
+    Check 'ring count=0' ((Need $r3 'ring' 'x' 'count') -eq '0') (Raw $r3 'ring' 'x') | Out-Null
+    Check 'slots=6' ((Need $r3 'ring' 'x' 'slots') -eq '6') (V $r3 'ring' 'x' 'slots') | Out-Null
+    Check 'seq unchanged by c' ((Need $r3 'cur' 'a' 'seq') -eq (Need $r 'cur' 'a' 'seq')) ((V $r 'cur' 'a' 'seq') + ' -> ' + (V $r3 'cur' 'a' 'seq')) | Out-Null
 }
-function Get-Devices { Get-PnpDevice -PresentOnly -ErrorAction SilentlyContinue }
-function Get-State($devs) {
-    if ($devs | Where-Object { $_.InstanceId -match "^USB\\VID_(239A|2886)&PID_[0-9A-F]{4}\\$Serial$" }) { return 'boot' }
-    if ($devs | Where-Object { $_.InstanceId -match "^USB\\VID_1D50&PID_615E\\$Serial$" }) { return 'app' }
-    return 'none'
+function Step-1 {
+    NextOp 'nothing (read only)'
+    $r = Read-Dump 'read 1'
+    Pause-Ms 5000
+    $r2 = Read-Dump 'read 2'
+    Check 'cur done=1' ((Need $r2 'cur' 'a' 'done') -eq '1') (Raw $r2 'cur' 'a') | Out-Null
+    Check 'cur running>0' ([int](Need $r2 'cur' 'us2' 'running') -gt 0) (Raw $r2 'cur' 'us2') | Out-Null
+    $p1 = (Need $r 'cur' 'b' 'probes') -split '/'; $p2 = (Need $r2 'cur' 'b' 'probes') -split '/'
+    Check 'probes_run increases' ([int]$p2[1] -gt [int]$p1[1]) ("$($p1 -join '/') -> $($p2 -join '/')") | Out-Null
+    Check 'feeds increases' ([int](Need $r2 'cur' 'b' 'feeds') -gt [int](Need $r 'cur' 'b' 'feeds')) ((V $r 'cur' 'b' 'feeds') + ' -> ' + (V $r2 'cur' 'b' 'feeds')) | Out-Null
+    Check 'seq unchanged (no reboot)' ((Need $r2 'cur' 'a' 'seq') -eq (Need $r 'cur' 'a' 'seq')) ((V $r 'cur' 'a' 'seq') + ' -> ' + (V $r2 'cur' 'a' 'seq')) | Out-Null
+    Check 'ring count unchanged' ((Need $r2 'ring' 'x' 'count') -eq (Need $r 'ring' 'x' 'count')) (Raw $r2 'ring' 'x') | Out-Null
 }
-function Get-DiagPorts {
-    Get-PnpDevice -PresentOnly -Class Ports -ErrorAction SilentlyContinue |
-        Where-Object { $_.InstanceId -match '^USB\\VID_1D50&PID_615E&MI_' } |
-        Where-Object { (Get-PnpDeviceProperty -InstanceId $_.InstanceId -KeyName 'DEVPKEY_Device_Parent' -ErrorAction SilentlyContinue).Data -match "\\$Serial$" } |
-        ForEach-Object { if ($_.FriendlyName -match '\((COM\d+)\)') { $Matches[1] } }
+# 'h' (step 2) and 'G' (step 5): a stall the net must catch within 15 s, then an automatic reset.
+function Step-Stall([string]$cmd, [string]$threadKey) {
+    NextOp "send '$cmd'"
+    $r0 = Read-Dump "before $cmd"
+    $seq0 = [int](Need $r0 'cur' 'a' 'seq'); $count0 = [int](Need $r0 'ring' 'x' 'count')
+    Require 'cur done=1 (RUNNING) before the stall' ((Need $r0 'cur' 'a' 'done') -eq '1') (Raw $r0 'cur' 'a')
+    Require 'calib_live=0 before the command' ((Need $r0 'ring' 'x' 'calib_live') -eq '0') (Raw $r0 'ring' 'x')
+    Require 'ring has a free slot' ($count0 -lt [int](Need $r0 'ring' 'x' 'slots')) "count=$count0"
+    $t = Exchange $cmd 20
+    NextOp "nothing more in step (only reading)"
+    Check "$cmd rc=0" ($null -ne $t -and $t -match "ZDIAG calibrate $cmd rc=0") 'rc line' | Out-Null
+    Check "$cmd no 'returned' line" ($null -eq $t -or $t -notmatch "calibrate $cmd returned") 'returned must not appear' | Out-Null
+    $left = Wait-Leave-App 20
+    Require 'device back as app within 40 s' (Wait-State 'app' 40) ("state=" + $script:lastState)
+    $r = Read-Dump "after $cmd"
+    Check-Reset $t $left $seq0 ([int](Need $r 'cur' 'a' 'seq')) 1
+    Check 'ring count +1' ([int](Need $r 'ring' 'x' 'count') -eq ($count0 + 1)) (Raw $r 'ring' 'x') | Out-Null
+    Check-Incident $r "inc$count0" $TagBase 2 $cmd 1 $SpinBase $threadKey
+    Check 'last = the stalled boot (seq)' ((Need $r 'last' 'a' 'seq') -eq "$seq0") (Raw $r 'last' 'a') | Out-Null
+    Check 'last reason=2' ((Need $r 'last' 'a' 'reason') -eq '2') (V $r 'last' 'a' 'reason') | Out-Null
+    Check 'dropped/invalid/reinit unchanged' (((Need $r 'ring' 'x' 'dropped') -eq (Need $r0 'ring' 'x' 'dropped')) -and ((Need $r 'ring' 'x' 'invalid') -eq (Need $r0 'ring' 'x' 'invalid')) -and ((Need $r 'ring' 'x' 'reinit') -eq '0')) (Raw $r 'ring' 'x') | Out-Null
 }
-function Find-Uf2Drive {
-    foreach ($d in Get-PSDrive -PSProvider FileSystem) {
-        if (Test-Path (Join-Path ($d.Name + ':\') 'INFO_UF2.TXT')) { return $d.Name }
+function Step-4 {
+    NextOp "send 'H'"
+    $r0 = Read-Dump 'before H'
+    $seq0 = Need $r0 'cur' 'a' 'seq'; $feeds0 = [int](Need $r0 'cur' 'b' 'feeds'); $count0 = Need $r0 'ring' 'x' 'count'
+    Require 'calib_live=0 before H' ((Need $r0 'ring' 'x' 'calib_live') -eq '0') (Raw $r0 'ring' 'x')
+    $t = Exchange 'H' 40
+    NextOp 'nothing more in step 4 (only reading)'
+    Check 'H rc=0' ($null -ne $t -and $t -match 'ZDIAG calibrate H rc=0') 'rc line' | Out-Null
+    Check 'H returned (after ~30 s)' ($null -ne $t -and $t -match 'ZDIAG calibrate H returned') 'returned line' | Out-Null
+    Check 'no port loss during H' ($null -ne $t -and $t -notmatch '\[calib-io\] port lost') 'port lost marker absent' | Out-Null
+    Check 'device still app' ((Get-State) -eq 'app') ("state=" + $script:lastState) | Out-Null
+    $r = Read-Dump 'after H'
+    Check 'seq unchanged (no reboot)' ((Need $r 'cur' 'a' 'seq') -eq $seq0) ("$seq0 -> " + (V $r 'cur' 'a' 'seq')) | Out-Null
+    Check 'ring count unchanged' ((Need $r 'ring' 'x' 'count') -eq $count0) (Raw $r 'ring' 'x') | Out-Null
+    Check 'calib_live=0' ((Need $r 'ring' 'x' 'calib_live') -eq '0') (V $r 'ring' 'x' 'calib_live') | Out-Null
+    $d = [int](Need $r 'cur' 'b' 'feeds') - $feeds0
+    Check 'feeds increased by ~15 (>=12)' ($d -ge 12) "delta=$d" | Out-Null
+    Check 'cur calib=H' ((Need $r 'cur' 'a' 'calib') -eq 'H') (V $r 'cur' 'a' 'calib') | Out-Null
+}
+function Step-6 {
+    NextOp "send 'S'"
+    $r0 = Read-Dump 'before S+r'
+    $seq0 = [int](Need $r0 'cur' 'a' 'seq'); $count0 = [int](Need $r0 'ring' 'x' 'count')
+    Require 'ring has a free slot' ($count0 -lt [int](Need $r0 'ring' 'x' 'slots')) "count=$count0"
+    Require 'calib_live=0 before S' ((Need $r0 'ring' 'x' 'calib_live') -eq '0') (Raw $r0 'ring' 'x')
+    $t = Exchange 'S' 3
+    NextOp "send 'r'"
+    Require 'S rc=0' ($null -ne $t -and $t -match 'ZDIAG calibrate S rc=0') 'rc line'
+    Require 'S returned' ($t -match 'ZDIAG calibrate S returned') 'returned line'
+    $t2 = Exchange 'r' 2
+    NextOp 'nothing more in step 6 (only reading)'
+    Check 'r acknowledged' ($null -ne $t2 -and $t2 -match 'ZDIAG reboot') 'ZDIAG reboot' | Out-Null
+    $left = Wait-Leave-App 10
+    # the armed boot stalls before USB init (APPLICATION 50); the net fires at 20 s; then a normal boot
+    Require 'device back as app within 60 s' (Wait-State 'app' 60) ("state=" + $script:lastState)
+    $r = Read-Dump 'after S+r'
+    Check-Reset $t2 $left $seq0 ([int](Need $r 'cur' 'a' 'seq')) 2
+    Check 'ring count +1' ([int](Need $r 'ring' 'x' 'count') -eq ($count0 + 1)) (Raw $r 'ring' 'x') | Out-Null
+    $inc = "inc$count0"
+    Check-Incident $r $inc $TagBase 1 'S' 0 $SpinBase ''
+    Check "$inc stage=6" ((Need $r $inc 'a' 'stage') -eq '6') (V $r $inc 'a' 'stage') | Out-Null
+    Check "$inc usb=0" ((Need $r $inc 'us2' 'usb') -eq '0') (Raw $r $inc 'us2') | Out-Null
+    Check "$inc seq == seq0+1" ([int](Need $r $inc 'a' 'seq') -eq ($seq0 + 1)) ("inc.seq=" + (V $r $inc 'a' 'seq') + " seq0=$seq0") | Out-Null
+}
+function Step-7 {
+    NextOp "send 'S'"
+    $r0 = Read-Dump 'before S+b'
+    $seq0 = [int](Need $r0 'cur' 'a' 'seq'); $count0 = [int](Need $r0 'ring' 'x' 'count')
+    Require 'ring has a free slot' ($count0 -lt [int](Need $r0 'ring' 'x' 'slots')) "count=$count0"
+    Require 'calib_live=0 before S' ((Need $r0 'ring' 'x' 'calib_live') -eq '0') (Raw $r0 'ring' 'x')
+    # every line of every existing incident, saved for a whole-record comparison after the flash
+    $before = @{}
+    for ($i = 0; $i -lt $count0; $i++) {
+        Require "inc$i present before flash" ($r0.ContainsKey("inc$i")) "keys=$(($r0.Keys | Sort-Object) -join ',')"
+        $before["inc$i"] = @($r0["inc$i"]['_lines'])
+        foreach ($l in $before["inc$i"]) { Log "saved $l" }
     }
-    return $null
-}
-# Returns the raw console text (dump + replies), and appends it to the step log verbatim.
-function Exchange([string]$Send = '', [int]$ReadSeconds = 0) {
-    $helper = Join-Path $PSScriptRoot 'calib-io.ps1'
-    foreach ($com in (Get-DiagPorts)) {
-        $psa = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $helper, '-Com', $com, '-ReadSeconds', $ReadSeconds)
-        if ($Send) { $psa += @('-Send', $Send) }
-        $text = (& powershell.exe @psa 2>$null) -join "`n"
-        if ($text -match 'ZDIAG begin') {
-            Add-Content -Path $LogFile -Value ("----- console $com send='$Send' read=${ReadSeconds}s -----") -Encoding UTF8
-            Add-Content -Path $LogFile -Value $text -Encoding UTF8
-            Add-Content -Path $LogFile -Value '----- end console -----' -Encoding UTF8
-            return $text
-        }
+    Log "before: count=$count0 cur.seq=$seq0 " + (Raw $r0 'ring' 'x')
+    $t = Exchange 'S' 3
+    NextOp "send 'b'"
+    Require 'S rc=0' ($null -ne $t -and $t -match 'ZDIAG calibrate S rc=0') 'rc line'
+    Require 'S returned' ($t -match 'ZDIAG calibrate S returned') 'returned line'
+    $t2 = Exchange 'b' 2
+    NextOp 'copy the alt image to the UF2 drive'
+    Require 'b acknowledged' ($null -ne $t2 -and $t2 -match 'ZDIAG bootloader') 'ZDIAG bootloader'
+    Require 'bootloader of this serial on USB within 30 s' (Wait-State 'boot' 30) ("state=" + $script:lastState)
+    Pause-Ms 500
+    $drives = @(Get-Uf2DrivesOfSerial)
+    Require 'exactly one UF2 drive tied to this serial' ($drives.Count -eq 1) ("drives of serial=[$($drives -join ',')] all uf2 drives=[$((Get-AllUf2Drives) -join ',')]")
+    Require 'exactly one bootloader on USB' ((Count-Bootloaders) -eq 1) ("count=" + (Count-Bootloaders))
+    Require 'alt image md5 (re-checked at copy time)' ((File-Md5 $Uf2Alt) -eq $Md5Alt.ToLower()) (File-Md5 $Uf2Alt)
+    $ok = Copy-Uf2 $Uf2Alt $drives[0]
+    NextOp 'nothing more in step 7 (only reading)'
+    Require 'copy raised no error' $ok ("to " + $drives[0])
+    Require 'UF2 drive vanished within 30 s (image taken)' (Wait-Uf2Gone $drives[0] 30) ("drive " + $drives[0])
+    # the first boot of the alt image stalls at APPLICATION 50 (armed), the net fires at 20 s, then a normal boot
+    Require 'device back as app within 90 s' (Wait-State 'app' 90) ("state=" + $script:lastState)
+    $r = Read-Dump 'after flash'
+    Check 'cur tag=alt' ((Need $r 'cur' 'a' 'tag') -eq $TagAlt) (V $r 'cur' 'a' 'tag') | Out-Null
+    Check 'addr cur=0x2002c818 (alt)' ((Need $r 'addr' 'x' 'cur') -eq '0x2002c818') (Raw $r 'addr' 'x') | Out-Null
+    Check 'boot number advanced by 2 (b-boot + stalled boot)' (([int](Need $r 'cur' 'a' 'seq') - $seq0) -eq 2) ("$seq0 -> " + (V $r 'cur' 'a' 'seq')) | Out-Null
+    Check 'ring count +1' ([int](Need $r 'ring' 'x' 'count') -eq ($count0 + 1)) (Raw $r 'ring' 'x') | Out-Null
+    for ($i = 0; $i -lt $count0; $i++) {
+        $after = @()
+        if ($r.ContainsKey("inc$i")) { $after = @($r["inc$i"]['_lines']) }
+        $same = ($after.Count -eq $before["inc$i"].Count)
+        if ($same) { for ($j = 0; $j -lt $after.Count; $j++) { if ($after[$j] -ne $before["inc$i"][$j]) { $same = $false } } }
+        Check "inc$i kept verbatim (every line)" $same ("lines before=$($before["inc$i"].Count) after=$($after.Count)") | Out-Null
+        if (-not $same) { foreach ($l in $after) { Log "after  $l" } }
     }
-    return $null
+    $inc = "inc$count0"
+    Check-Incident $r $inc $TagAlt 1 'S' 0 $SpinAlt ''
+    Check "$inc stage=6" ((Need $r $inc 'a' 'stage') -eq '6') (V $r $inc 'a' 'stage') | Out-Null
+    Check "$inc seq == seq0+1" ([int](Need $r $inc 'a' 'seq') -eq ($seq0 + 1)) ("inc.seq=" + (V $r $inc 'a' 'seq') + " seq0=$seq0") | Out-Null
+    Check 'reinit=0' ((Need $r 'ring' 'x' 'reinit') -eq '0') (V $r 'ring' 'x' 'reinit') | Out-Null
+    Check 'dropped unchanged' ((Need $r 'ring' 'x' 'dropped') -eq (Need $r0 'ring' 'x' 'dropped')) ((V $r0 'ring' 'x' 'dropped') + ' -> ' + (V $r 'ring' 'x' 'dropped')) | Out-Null
+    Check 'invalid unchanged' ((Need $r 'ring' 'x' 'invalid') -eq (Need $r0 'ring' 'x' 'invalid')) ((V $r0 'ring' 'x' 'invalid') + ' -> ' + (V $r 'ring' 'x' 'invalid')) | Out-Null
 }
-function Wait-State([string]$want, [int]$seconds) {
-    $t0 = Get-Date
-    while (((Get-Date) - $t0).TotalSeconds -lt $seconds) {
-        $s = Get-State (Get-Devices)
-        if ($s -eq $want -and ($want -ne 'app' -or (Get-DiagPorts))) { return $true }
-        Start-Sleep -Milliseconds 300
-    }
-    return $false
-}
-function Read-Dump() {
-    Start-Sleep -Milliseconds 700
-    $t = Exchange
-    if (-not $t) { Start-Sleep -Milliseconds 1500; $t = Exchange }
-    return $t
-}
-# Parse "ZBOOT <rec> <line> k=v k=v ..." into a nested hashtable: $r[rec][line][key] = value.
-function Parse-Zboot([string]$text) {
-    $r = @{}
-    foreach ($l in ($text -split "`n")) {
-        $l = $l.TrimEnd("`r")
-        if ($l -notmatch '^ZBOOT (\S+) (\S+) (.*)$') { continue }
-        $rec = $Matches[1]; $line = $Matches[2]; $rest = $Matches[3]
-        if ($rec -eq 'ring' -or $rec -eq 'addr') { $rest = "$line $rest"; $line = 'x' }
-        if (-not $r.ContainsKey($rec)) { $r[$rec] = @{} }
-        $h = @{}
-        foreach ($kv in ($rest -split ' ')) { if ($kv -match '^([a-z0-9_]+)=(.*)$') { $h[$Matches[1]] = $Matches[2] } }
-        $h['_raw'] = $l
-        $r[$rec][$line] = $h
-    }
-    return $r
-}
-function V($r, $rec, $line, $key) {
-    if ($r.ContainsKey($rec) -and $r[$rec].ContainsKey($line) -and $r[$rec][$line].ContainsKey($key)) { return $r[$rec][$line][$key] }
-    return $null
-}
-function Hex($s) { if ($s -match '^0x([0-9a-fA-F]+)$') { return [Convert]::ToInt64($Matches[1], 16) }; return -1 }
-function Check-Trunc([string]$text) {
-    $n = @($text -split "`n" | Where-Object { $_ -match '#TRUNC' }).Count
-    Check 'no #TRUNC line' ($n -eq 0) "trunc lines=$n"
-}
-# Common incident checks. $spin is the spin address of the image that fired.
-function Check-Incident($r, [string]$inc, [string]$tag, [int]$reason, [string]$calib, [int]$done, [long]$spin, [string]$threadKey) {
-    Check "$inc present" ($r.ContainsKey($inc)) "keys=$(($r.Keys | Sort-Object) -join ',')"
-    if (-not $r.ContainsKey($inc)) { return }
-    Check "$inc tag" ((V $r $inc 'a' 'tag') -eq $tag) (V $r $inc 'a' 'tag')
-    Check "$inc reason=$reason" ((V $r $inc 'a' 'reason') -eq "$reason") (V $r $inc 'a' 'reason')
-    Check "$inc calib=$calib" ((V $r $inc 'a' 'calib') -eq $calib) (V $r $inc 'a' 'calib')
-    Check "$inc done=$done" ((V $r $inc 'a' 'done') -eq "$done") (V $r $inc 'a' 'done')
-    $pc = Hex (V $r $inc 'fire1' 'pc')
-    Check "$inc pc in diag_spin_forever" ($pc -ge $spin -and $pc -lt ($spin + 4)) ("pc=" + (V $r $inc 'fire1' 'pc') + " spin=0x" + $spin.ToString('x'))
-    Check "$inc handler=0" ((V $r $inc 'fire2' 'handler') -eq '0') (V $r $inc 'fire2' 'handler')
-    if ($threadKey) {
-        $want = V $r 'addr' 'x' $threadKey
-        Check "$inc thread == addr.$threadKey" ((V $r $inc 'fire2' 'thread') -eq $want) ("thread=" + (V $r $inc 'fire2' 'thread') + " $threadKey=$want")
-    }
+function Step-8 {
+    NextOp "send 'c'"
+    $r0 = Read-Dump 'before final clear'
+    foreach ($k in ($r0.Keys | Where-Object { $_ -like 'inc*' } | Sort-Object)) { foreach ($l in $r0[$k]['_lines']) { Log "saved $l" } }
+    $t = Exchange 'c' 3
+    NextOp 'nothing more in step 8 (restore is calib-flash.ps1 -Expect prod)'
+    Check 'c acknowledged' ($null -ne $t -and $t -match 'ZDIAG ring cleared') 'ZDIAG ring cleared' | Out-Null
+    $r = Read-Dump 'after final clear'
+    Check 'ring count=0' ((Need $r 'ring' 'x' 'count') -eq '0') (Raw $r 'ring' 'x') | Out-Null
 }
 
-Log "STEP $Step start serial=$Serial log=$LogFile"
-if (-not (Wait-State 'app' 20)) { Log "FAIL device not on USB as app (state=$(Get-State (Get-Devices)))"; exit 2 }
-
-switch ($Step) {
-    0 {
-        $t = Read-Dump; if (-not $t) { Log 'FAIL no dump'; exit 2 }
-        $r = Parse-Zboot $t; Check-Trunc $t
-        Log ("before clear: " + (V $r 'ring' 'x' '_raw'))
-        Log ("addr: " + (V $r 'addr' 'x' '_raw'))
-        $t2 = Exchange 'c' 3; Check 'c acknowledged' ($t2 -match 'ZDIAG ring cleared') 'ZDIAG ring cleared'
-        $t3 = Read-Dump; $r3 = Parse-Zboot $t3; Check-Trunc $t3
-        Check 'ring count=0' ((V $r3 'ring' 'x' 'count') -eq '0') (V $r3 'ring' 'x' '_raw')
-        Check 'slots=6' ((V $r3 'ring' 'x' 'slots') -eq '6') (V $r3 'ring' 'x' 'slots')
-        Check 'cur tag=base' ((V $r3 'cur' 'a' 'tag') -eq $TagBase) (V $r3 'cur' 'a' 'tag')
-        Check 'addr cur=0x2002c818' ((V $r3 'addr' 'x' 'cur') -eq '0x2002c818') (V $r3 'addr' 'x' 'cur')
+$code = 1
+try {
+    switch ($Step) {
+        'pre' { Step-Pre }
+        '0' { Step-0 }
+        '1' { Step-1 }
+        '2' { Step-Stall 'h' 'sysq' }
+        '3' { Log 'SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified'; $code = 2 }
+        '4' { Step-4 }
+        '5' { Step-Stall 'G' 'calib' }
+        '6' { Step-6 }
+        '7' { Step-7 }
+        '8' { Step-8 }
+        default { Log "usage: unknown step $Step"; $code = 3 }
     }
-    1 {
-        $t = Read-Dump; $r = Parse-Zboot $t; Check-Trunc $t
-        Start-Sleep -Seconds 5
-        $t2 = Read-Dump; $r2 = Parse-Zboot $t2; Check-Trunc $t2
-        Check 'cur done=1' ((V $r2 'cur' 'a' 'done') -eq '1') (V $r2 'cur' 'a' '_raw')
-        Check 'cur running>0' ([int](V $r2 'cur' 'us2' 'running') -gt 0) (V $r2 'cur' 'us2' '_raw')
-        Check 'probes_run increases' ([int]((V $r2 'cur' 'b' 'probes') -split '/')[1] -gt [int]((V $r 'cur' 'b' 'probes') -split '/')[1]) ((V $r 'cur' 'b' 'probes') + ' -> ' + (V $r2 'cur' 'b' 'probes'))
-        Check 'feeds increases' ([int](V $r2 'cur' 'b' 'feeds') -gt [int](V $r 'cur' 'b' 'feeds')) ((V $r 'cur' 'b' 'feeds') + ' -> ' + (V $r2 'cur' 'b' 'feeds'))
-        Check 'ring count unchanged' ((V $r2 'ring' 'x' 'count') -eq (V $r 'ring' 'x' 'count')) (V $r2 'ring' 'x' '_raw')
-        Log ("cur: " + (V $r2 'cur' 'a' '_raw'))
-    }
-    2 {
-        $t0 = Read-Dump; $r0 = Parse-Zboot $t0; $seq0 = V $r0 'cur' 'a' 'seq'; $count0 = [int](V $r0 'ring' 'x' 'count')
-        $t = Exchange 'h' 20
-        Check 'h rc=0' ($t -match 'ZDIAG calibrate h rc=0') 'rc line'
-        Check 'h no returned line' ($t -notmatch 'calibrate h returned') 'returned must not appear'
-        $gone = -not (Wait-State 'app' 0); Start-Sleep -Seconds 1
-        $t2 = Get-Date; while ((Get-State (Get-Devices)) -eq 'app' -and ((Get-Date) - $t2).TotalSeconds -lt 20) { Start-Sleep -Milliseconds 200 }
-        Check 'device reset within 20 s' ((Get-State (Get-Devices)) -ne 'app') ("state=" + (Get-State (Get-Devices)))
-        Check 'device back as app within 40 s' (Wait-State 'app' 40) ("state=" + (Get-State (Get-Devices)))
-        $t3 = Read-Dump; $r = Parse-Zboot $t3; Check-Trunc $t3
-        Check 'ring count +1' ([int](V $r 'ring' 'x' 'count') -eq ($count0 + 1)) (V $r 'ring' 'x' '_raw')
-        Check-Incident $r "inc$count0" $TagBase 2 'h' 1 $SpinBase 'sysq'
-        Check 'last seq == stalled boot' ((V $r 'last' 'a' 'seq') -eq $seq0) ("last.seq=" + (V $r 'last' 'a' 'seq') + " before=$seq0")
-        Check 'cur seq == +1' ([int](V $r 'cur' 'a' 'seq') -eq ([int]$seq0 + 1)) (V $r 'cur' 'a' 'seq')
-        Check 'last reason=2' ((V $r 'last' 'a' 'reason') -eq '2') (V $r 'last' 'a' '_raw')
-    }
-    3 {
-        $t0 = Read-Dump; $r0 = Parse-Zboot $t0; $seq0 = V $r0 'cur' 'a' 'seq'; $count0 = V $r0 'ring' 'x' 'count'
-        Log "PRESS the reset button of the right half ONCE now (waiting up to 120 s for the USB drop and return)"
-        $t1 = Get-Date; while ((Get-State (Get-Devices)) -eq 'app' -and ((Get-Date) - $t1).TotalSeconds -lt 120) { Start-Sleep -Milliseconds 200 }
-        Check 'USB dropped (reset seen)' ((Get-State (Get-Devices)) -ne 'app') ("state=" + (Get-State (Get-Devices)))
-        Check 'back as app within 40 s' (Wait-State 'app' 40) ("state=" + (Get-State (Get-Devices)))
-        $t = Read-Dump; $r = Parse-Zboot $t; Check-Trunc $t
-        Check 'ring count unchanged' ((V $r 'ring' 'x' 'count') -eq $count0) (V $r 'ring' 'x' '_raw')
-        Check 'last seq == previous cur' ((V $r 'last' 'a' 'seq') -eq $seq0) (V $r 'last' 'a' '_raw')
-        Check 'last done=1 reason=0' (((V $r 'last' 'a' 'done') -eq '1') -and ((V $r 'last' 'a' 'reason') -eq '0')) (V $r 'last' 'a' '_raw')
-        Check 'cur seq == +1' ([int](V $r 'cur' 'a' 'seq') -eq ([int]$seq0 + 1)) (V $r 'cur' 'a' 'seq')
-        Check 'invalid unchanged' ((V $r 'ring' 'x' 'invalid') -eq (V $r0 'ring' 'x' 'invalid')) (V $r 'ring' 'x' 'invalid')
-    }
-    4 {
-        $t0 = Read-Dump; $r0 = Parse-Zboot $t0; $feeds0 = [int](V $r0 'cur' 'b' 'feeds'); $count0 = V $r0 'ring' 'x' 'count'
-        $t = Exchange 'H' 40
-        Check 'H rc=0' ($t -match 'ZDIAG calibrate H rc=0') 'rc line'
-        Check 'H returned (after ~30 s)' ($t -match 'ZDIAG calibrate H returned') 'returned line'
-        Check 'device stayed as app' ((Get-State (Get-Devices)) -eq 'app') ("state=" + (Get-State (Get-Devices)))
-        $t2 = Read-Dump; $r = Parse-Zboot $t2; Check-Trunc $t2
-        Check 'ring count unchanged' ((V $r 'ring' 'x' 'count') -eq $count0) (V $r 'ring' 'x' '_raw')
-        Check 'calib_live=0' ((V $r 'ring' 'x' 'calib_live') -eq '0') (V $r 'ring' 'x' 'calib_live')
-        $d = [int](V $r 'cur' 'b' 'feeds') - $feeds0
-        Check 'feeds increased by ~15 (>=12)' ($d -ge 12) "delta=$d"
-        Check 'cur calib=H' ((V $r 'cur' 'a' 'calib') -eq 'H') (V $r 'cur' 'a' 'calib')
-    }
-    5 {
-        $t0 = Read-Dump; $r0 = Parse-Zboot $t0; $seq0 = V $r0 'cur' 'a' 'seq'; $count0 = [int](V $r0 'ring' 'x' 'count')
-        Check 'calib_live=0 before G' ((V $r0 'ring' 'x' 'calib_live') -eq '0') (V $r0 'ring' 'x' 'calib_live')
-        $t = Exchange 'G' 20
-        Check 'G rc=0' ($t -match 'ZDIAG calibrate G rc=0') 'rc line'
-        Check 'G no returned line' ($t -notmatch 'calibrate G returned') 'returned must not appear'
-        $t2 = Get-Date; while ((Get-State (Get-Devices)) -eq 'app' -and ((Get-Date) - $t2).TotalSeconds -lt 20) { Start-Sleep -Milliseconds 200 }
-        Check 'device reset within 20 s' ((Get-State (Get-Devices)) -ne 'app') ("state=" + (Get-State (Get-Devices)))
-        Check 'device back as app within 40 s' (Wait-State 'app' 40) ("state=" + (Get-State (Get-Devices)))
-        $t3 = Read-Dump; $r = Parse-Zboot $t3; Check-Trunc $t3
-        Check 'ring count +1' ([int](V $r 'ring' 'x' 'count') -eq ($count0 + 1)) (V $r 'ring' 'x' '_raw')
-        Check-Incident $r "inc$count0" $TagBase 2 'G' 1 $SpinBase 'calib'
-    }
-    6 {
-        $t0 = Read-Dump; $r0 = Parse-Zboot $t0; $seq0 = [int](V $r0 'cur' 'a' 'seq'); $count0 = [int](V $r0 'ring' 'x' 'count')
-        $t = Exchange 'S' 3
-        Check 'S rc=0' ($t -match 'ZDIAG calibrate S rc=0') 'rc line'
-        Check 'S returned' ($t -match 'ZDIAG calibrate S returned') 'returned line'
-        $t2 = Exchange 'r' 2
-        Check 'r acknowledged' ($t2 -match 'ZDIAG reboot') 'ZDIAG reboot'
-        $t3 = Get-Date; while ((Get-State (Get-Devices)) -eq 'app' -and ((Get-Date) - $t3).TotalSeconds -lt 10) { Start-Sleep -Milliseconds 200 }
-        Check 'device left app' ((Get-State (Get-Devices)) -ne 'app') ("state=" + (Get-State (Get-Devices)))
-        # the armed boot stalls before USB init (APPLICATION 50) and the net fires at 20 s; then a normal boot
-        Check 'device back as app within 60 s' (Wait-State 'app' 60) ("state=" + (Get-State (Get-Devices)))
-        $t4 = Read-Dump; $r = Parse-Zboot $t4; Check-Trunc $t4
-        Check 'ring count +1' ([int](V $r 'ring' 'x' 'count') -eq ($count0 + 1)) (V $r 'ring' 'x' '_raw')
-        Check-Incident $r "inc$count0" $TagBase 1 'S' 0 $SpinBase ''
-        Check "inc$count0 stage=6" ((V $r "inc$count0" 'a' 'stage') -eq '6') (V $r "inc$count0" 'a' 'stage')
-        Check "inc$count0 usb=0" ((V $r "inc$count0" 'us2' 'usb') -eq '0') (V $r "inc$count0" 'us2' '_raw')
-        Check "inc$count0 seq == r-boot seq+1" ([int](V $r "inc$count0" 'a' 'seq') -eq ($seq0 + 1)) ("inc.seq=" + (V $r "inc$count0" 'a' 'seq') + " before=$seq0")
-        Check 'cur seq == +2' ([int](V $r 'cur' 'a' 'seq') -eq ($seq0 + 2)) (V $r 'cur' 'a' 'seq')
-    }
-    7 {
-        if (-not $Uf2Alt -or -not (Test-Path $Uf2Alt)) { Log 'FAIL -Uf2Alt missing'; exit 2 }
-        $t0 = Read-Dump; $r0 = Parse-Zboot $t0; $seq0 = [int](V $r0 'cur' 'a' 'seq'); $count0 = [int](V $r0 'ring' 'x' 'count')
-        $tags0 = @(); for ($i = 0; $i -lt $count0; $i++) { $tags0 += (V $r0 "inc$i" 'a' 'tag') }
-        Log "before: count=$count0 tags=$($tags0 -join ',') cur.seq=$seq0 invalid=$(V $r0 'ring' 'x' 'invalid') dropped=$(V $r0 'ring' 'x' 'dropped')"
-        $t = Exchange 'S' 3
-        Check 'S rc=0' ($t -match 'ZDIAG calibrate S rc=0') 'rc line'
-        $t2 = Exchange 'b' 2
-        Check 'b acknowledged' ($t2 -match 'ZDIAG bootloader') 'ZDIAG bootloader'
-        $t3 = Get-Date; $drive = $null
-        while (((Get-Date) - $t3).TotalSeconds -lt 30) {
-            $drive = Find-Uf2Drive
-            if ($drive -and (Get-State (Get-Devices)) -eq 'boot') { break }
-            $drive = $null; Start-Sleep -Milliseconds 300
-        }
-        Check 'UF2 drive of this serial' ($null -ne $drive) "drive=$drive state=$(Get-State (Get-Devices))"
-        if (-not $drive) { exit 2 }
-        $bl = @((Get-Devices) | Where-Object { $_.InstanceId -match '^USB\\VID_(239A|2886)&PID_[0-9A-F]{4}\\[0-9A-F]+$' })
-        Check 'exactly one bootloader on USB' ($bl.Count -eq 1) "count=$($bl.Count)"
-        if ($bl.Count -ne 1) { exit 2 }
-        Start-Sleep -Milliseconds 500
-        Copy-Item -Path $Uf2Alt -Destination (Join-Path ($drive + ':\') 'firmware.uf2') -Force -ErrorAction SilentlyContinue
-        Log ("copied " + (Split-Path $Uf2Alt -Leaf) + " to ${drive}:")
-        # first boot of the alt image stalls at APPLICATION 50 (armed), net fires at 20 s, then a normal boot
-        Check 'device back as app within 90 s' (Wait-State 'app' 90) ("state=" + (Get-State (Get-Devices)))
-        $t4 = Read-Dump; $r = Parse-Zboot $t4; Check-Trunc $t4
-        Check 'cur tag=alt' ((V $r 'cur' 'a' 'tag') -eq $TagAlt) (V $r 'cur' 'a' 'tag')
-        Check 'addr cur=0x2002c818 (alt)' ((V $r 'addr' 'x' 'cur') -eq '0x2002c818') (V $r 'addr' 'x' 'cur')
-        Check 'ring count +1' ([int](V $r 'ring' 'x' 'count') -eq ($count0 + 1)) (V $r 'ring' 'x' '_raw')
-        for ($i = 0; $i -lt $count0; $i++) { Check "inc$i kept (tag)" ((V $r "inc$i" 'a' 'tag') -eq $tags0[$i]) ("tag=" + (V $r "inc$i" 'a' 'tag') + " was " + $tags0[$i]) }
-        Check-Incident $r "inc$count0" $TagAlt 1 'S' 0 $SpinAlt ''
-        Check "inc$count0 stage=6" ((V $r "inc$count0" 'a' 'stage') -eq '6') (V $r "inc$count0" 'a' 'stage')
-        Check "inc$count0 seq == before+1" ([int](V $r "inc$count0" 'a' 'seq') -eq ($seq0 + 1)) ("inc.seq=" + (V $r "inc$count0" 'a' 'seq') + " before=$seq0")
-        Check 'reinit=0' ((V $r 'ring' 'x' 'reinit') -eq '0') (V $r 'ring' 'x' 'reinit')
-        Check 'dropped=0' ((V $r 'ring' 'x' 'dropped') -eq '0') (V $r 'ring' 'x' 'dropped')
-        Check 'invalid unchanged' ((V $r 'ring' 'x' 'invalid') -eq (V $r0 'ring' 'x' 'invalid')) ((V $r0 'ring' 'x' 'invalid') + ' -> ' + (V $r 'ring' 'x' 'invalid'))
-    }
-    8 {
-        $t = Exchange 'c' 3; Check 'c acknowledged' ($t -match 'ZDIAG ring cleared') 'ZDIAG ring cleared'
-        $t2 = Read-Dump; $r = Parse-Zboot $t2; Check-Trunc $t2
-        Check 'ring count=0' ((V $r 'ring' 'x' 'count') -eq '0') (V $r 'ring' 'x' '_raw')
-        if ($Uf2Prod -and (Test-Path $Uf2Prod)) {
-            $t3 = Exchange 'b' 2
-            Check 'b acknowledged' ($t3 -match 'ZDIAG bootloader') 'ZDIAG bootloader'
-            $t4 = Get-Date; $drive = $null
-            while (((Get-Date) - $t4).TotalSeconds -lt 30) { $drive = Find-Uf2Drive; if ($drive -and (Get-State (Get-Devices)) -eq 'boot') { break }; $drive = $null; Start-Sleep -Milliseconds 300 }
-            Check 'UF2 drive' ($null -ne $drive) "drive=$drive"
-            if ($drive) {
-                Start-Sleep -Milliseconds 500
-                Copy-Item -Path $Uf2Prod -Destination (Join-Path ($drive + ':\') 'firmware.uf2') -Force -ErrorAction SilentlyContinue
-                Log ("copied " + (Split-Path $Uf2Prod -Leaf) + " to ${drive}:")
-                Check 'production image back as app within 60 s' (Wait-State 'app' 60) ("state=" + (Get-State (Get-Devices)))
-                $t5 = Read-Dump; if ($t5) { Log ("prod dump: " + (($t5 -split "`n") | Where-Object { $_ -match 'ZDIAG begin' } | Select-Object -First 1)) }
-            }
-        } else { Log 'no -Uf2Prod: leaving the test image on the device' }
-    }
-    default { Log "unknown step $Step"; exit 2 }
+    if ($code -eq 1) { if ($script:fails -eq 0) { $code = 0 } }
+} catch {
+    if ($_.Exception.Message -ne 'CALIB-ABORT') { Log "ERROR $($_.Exception.Message) at $($_.InvocationInfo.PositionMessage)" ; $script:fails++ }
+    Log "STOPPED before: $script:nextOp"
+    $code = 1
 }
-if ($script:fails -eq 0) { Log "STEP $Step RESULT PASS"; exit 0 } else { Log "STEP $Step RESULT FAIL ($($script:fails) checks)"; exit 1 }
+switch ($code) {
+    0 { Log "STEP $Step RESULT PASS" }
+    1 { Log "STEP $Step RESULT FAIL ($($script:fails) failed checks)" }
+    2 { Log "STEP $Step RESULT SKIP" }
+}
+exit $code
