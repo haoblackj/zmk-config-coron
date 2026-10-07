@@ -1,0 +1,10 @@
+config CORON_DIAG_BOOT
+	bool "Boot-path test aid: stage markers, entry clock snapshot, HF-timer recovery reset"
+	select BOARD_EARLY_INIT_HOOK
+	help
+	  Test builds only. Records where each boot got to in RAM that survives a soft reset,
+	  arms TIMER4 as a recovery net, and adds the 'r' (soft reset) console command.
+
+config CORON_DIAG_BOOT_FIX
+	bool "In the early hook, bring the LF/HF clocks to a documented stopped state"
+	depends on CORON_DIAG_BOOT

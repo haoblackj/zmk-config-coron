@@ -1,0 +1,9 @@
+--- bootloader RAM layout (from the Adafruit 0.6.1 copy)
+28:  RAM (rwx) :  ORIGIN = 0x20008000, LENGTH = 0x20040000-0x20008000
+31:  DBL_RESET (rwx) :  ORIGIN = 0x20007F7C, LENGTH = 0x04
+87:  } > DBL_RESET
+43: *   __StackLimit
+44: *   __StackTop
+45: *   __stack
+155:    __StackTop = ORIGIN(RAM) + LENGTH(RAM);
+156:    __StackLimit = __StackTop - SIZEOF(.stack_dummy);
