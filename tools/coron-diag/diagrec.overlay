@@ -1,0 +1,20 @@
+/*
+ * Test builds only (passed with -DEXTRA_DTC_OVERLAY_FILE). Carves a 4 KB region out of the top of
+ * the application's RAM for the boot instrument's records, so every image places them at the same
+ * address (0x2002c000) regardless of its .bss/.noinit size. Zephyr's RAM shrinks to 176 KB; an
+ * image that needs more fails to link instead of silently moving the records.
+ * 0x2002c000 is above the bootloader's static RAM (.data/.bss end at 0x2000ce28) and 80 KB below
+ * its stack top (0x20040000); see evidence/bootloader-ram.md.
+ */
+/ {
+	diagrec: memory@2002c000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x2002c000 0x1000>;
+		zephyr,memory-region = "DIAGREC";
+		status = "okay";
+	};
+};
+
+&sram0 {
+	reg = <0x20000000 0x2c000>;
+};

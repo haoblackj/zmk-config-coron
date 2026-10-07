@@ -140,7 +140,7 @@ __weak void diag_prof_print(void (*out)(const char *fmt, ...)) { ARG_UNUSED(out)
 __weak void diag_boot_print(void (*out)(const char *fmt, ...)) { ARG_UNUSED(out); }
 __weak void diag_boot_reboot(void) { sys_reboot(SYS_REBOOT_WARM); }
 __weak void diag_boot_mark_reboot(void) {}
-__weak void diag_boot_calibrate(char which) { ARG_UNUSED(which); }
+__weak int diag_boot_calibrate(char which) { ARG_UNUSED(which); return 0; }
 __weak void diag_boot_clear_ring(void) {}
 
 static void dump(void) {
@@ -215,10 +215,16 @@ static void diag_min_thread(void *p1, void *p2, void *p3) {
                 diag_boot_reboot();
             } else if (ch == 'h' || ch == 'H' || ch == 'G' || ch == 'S') {
                 /* Instrument calibration (see diag_boot.c): 'h' cooperative stall on the system
-                 * workqueue, 'H' preemptible spinner below the feeder, 'G' preemptible spinner
-                 * above the feeder, 'S' arm a stall for the next boot. No-ops in production. */
+                 * workqueue, 'H' bounded preemptible spinner below the feeder (this console thread
+                 * is silent while it runs), 'G' preemptible spinner above the feeder, 'S' arm a
+                 * stall for the next boot. rc=-16 (EBUSY) when a previous one is still live.
+                 * No-ops in production. */
                 out("ZDIAG calibrate %c", ch);
-                diag_boot_calibrate(ch);
+
+                int rc = diag_boot_calibrate(ch);
+
+                /* For 'H' this second line only appears once the spinner has exited. */
+                out("ZDIAG calibrate %c rc=%d", ch, rc);
             } else if (ch == 'c') {
                 diag_boot_clear_ring();
                 out("ZDIAG ring cleared");

@@ -1,184 +1,222 @@
-===== coron_R-bt2 tag=bt3-R-10072355  md5=768fd1f6bdf0
+===== coron_R-bt4 tag=bt4-R-10080143  md5=ef0524695a8f
 --- symbols (nm -S)
 00027040 000000c0 T _irq_vector_table
-20027400 00000008 b arm_next
-00032b6c 000000ec T boot_net_fire
-000663a8 0000000e T boot_net_vector
-20005db0 000000c8 B calib_thread
-200279bc 00000120 b cur
-00066422 00000004 T diag_spin_forever
-20009a70 000000e8 B k_sys_work_q
-2002789c 00000120 b last
-00057fb4 00000148 T nrf_usbd_common_enable
-20027408 00000494 b ring
-20009708 000000e8 b usbd_work_queue
-200099a8 000000c8 B z_main_thread
+00032b54 00000100 T boot_net_fire
+00066228 0000000e T boot_net_vector
+20005d00 000000c8 B calib_thread
+2002c000 0000093c B diag_area
+00032f04 00000020 T diag_spin_bounded
+000662a2 00000004 T diag_spin_forever
+000660cc 0000001e T k_sys_fatal_error_handler
+20009910 000000e8 B k_sys_work_q
+00057e98 00000148 T nrf_usbd_common_enable
+200095a8 000000e8 b usbd_work_queue
+20009848 000000c8 B z_main_thread
+000318d0 00000018 T zmk_watchdog_reboot
+--- diag_area layout (offsets from 0x2002c000): arm_next +0x0 (8), ring +0x8 (0x6ec), last +0x6f4 (0x124), cur +0x818 (0x124); section DIAGREC is NOBITS (readelf -S)
+  [60] DIAGREC           NOBITS          2002c000 05c868 00093c 00  WA  0   0  4
 --- IRQ vector table slot 27 (TIMER4_IRQn = 27; section rom_start) must hold boot_net_vector|1
- 270ac a9630600                             .c..            
+ 270ac 29620600                             )b..            
 --- boot_net_vector (naked entry: r0=EXC_RETURN, r1=MSP, r2=PSP, tail-jump)
-000663a8 <boot_net_vector>:
-   663a8:	4670      	mov	r0, lr
-   663aa:	f3ef 8108 	mrs	r1, MSP
-   663ae:	f3ef 8209 	mrs	r2, PSP
-   663b2:	f7cc bbdb 	b.w	32b6c <boot_net_fire>
---- boot_net_fire (first 40 instructions with source lines)
-00032b6c <boot_net_fire>:
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:199
-   32b6c:	b510      	push	{r4, lr}
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:200
-   32b6e:	4c33      	ldr	r4, [pc, #204]	; (32c3c <boot_net_fire+0xd0>)
-   32b70:	2301      	movs	r3, #1
-   32b72:	6063      	str	r3, [r4, #4]
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:201
-   32b74:	2300      	movs	r3, #0
-   32b76:	f8c4 3140 	str.w	r3, [r4, #320]	; 0x140
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:204
-   32b7a:	4b31      	ldr	r3, [pc, #196]	; (32c40 <boot_net_fire+0xd4>)
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:207
-   32b7c:	f010 0f04 	tst.w	r0, #4
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:205
-   32b80:	e9c3 0134 	strd	r0, r1, [r3, #208]	; 0xd0
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:206
-   32b84:	f8c3 20d8 	str.w	r2, [r3, #216]	; 0xd8
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:207
-   32b88:	bf08      	it	eq
-   32b8a:	460a      	moveq	r2, r1
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:208
-   32b8c:	f8c3 20dc 	str.w	r2, [r3, #220]	; 0xdc
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:209
-   32b90:	6951      	ldr	r1, [r2, #20]
-   32b92:	f8c3 10e4 	str.w	r1, [r3, #228]	; 0xe4
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:210
-   32b96:	6991      	ldr	r1, [r2, #24]
-   32b98:	f8c3 10e0 	str.w	r1, [r3, #224]	; 0xe0
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:212
-   32b9c:	f080 0008 	eor.w	r0, r0, #8
-   32ba0:	f3c0 00c0 	ubfx	r0, r0, #3, #1
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:211
-   32ba4:	69d2      	ldr	r2, [r2, #28]
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:212
-   32ba6:	f8c3 00ec 	str.w	r0, [r3, #236]	; 0xec
-   32baa:	f040 f827 	bl	72bfc <__aeabi_read_tp>
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:211
-   32bae:	f8c3 20e8 	str.w	r2, [r3, #232]	; 0xe8
-   32bb2:	4a24      	ldr	r2, [pc, #144]	; (32c44 <boot_net_fire+0xd8>)
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:213
-   32bb4:	5812      	ldr	r2, [r2, r0]
-   32bb6:	f8c3 20f0 	str.w	r2, [r3, #240]	; 0xf0
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:214
-   32bba:	4a23      	ldr	r2, [pc, #140]	; (32c48 <boot_net_fire+0xdc>)
-   32bbc:	f8d2 1500 	ldr.w	r1, [r2, #1280]	; 0x500
-   32bc0:	f8c3 10f4 	str.w	r1, [r3, #244]	; 0xf4
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:215
-   32bc4:	f8d2 1400 	ldr.w	r1, [r2, #1024]	; 0x400
-   32bc8:	f8c3 10f8 	str.w	r1, [r3, #248]	; 0xf8
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:216
-   32bcc:	f8d2 2504 	ldr.w	r2, [r2, #1284]	; 0x504
-   32bd0:	f8c3 20fc 	str.w	r2, [r3, #252]	; 0xfc
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:217
-   32bd4:	f04f 4280 	mov.w	r2, #1073741824	; 0x40000000
-   32bd8:	f8d2 1438 	ldr.w	r1, [r2, #1080]	; 0x438
-   32bdc:	f8c3 1100 	str.w	r1, [r3, #256]	; 0x100
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:218
-   32be0:	f8d2 1418 	ldr.w	r1, [r2, #1048]	; 0x418
-   32be4:	f8c3 1104 	str.w	r1, [r3, #260]	; 0x104
---- USB READY wait (nrf_usbd_common.c:1009): PC inside this loop = waiting for EVENTCAUSE.READY
-   58010:	f8d3 2400 	ldr.w	r2, [r3, #1024]	; 0x400
-   58014:	0512      	lsls	r2, r2, #20
-   58016:	d5fb      	bpl.n	58010 <nrf_usbd_common_enable+0x5c>
---- diag_spin_forever
-   66422:	bf00      	nop
-   66424:	e7fd      	b.n	66422 <diag_spin_forever>
+00066228 <boot_net_vector>:
+   66228:	4670      	mov	r0, lr
+   6622a:	f3ef 8108 	mrs	r1, MSP
+   6622e:	f3ef 8209 	mrs	r2, PSP
+   66232:	f7cc bc8f 	b.w	32b54 <boot_net_fire>
 
-===== coron_R-bt2-alt tag=bt3A-R-10072355  md5=238d501bbe67
+--- boot_net_fire (first 40 instructions with source lines)
+00032b54 <boot_net_fire>:
+boot_net_fire():
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:250
+   32b54:	b538      	push	{r3, r4, r5, lr}
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:251
+   32b56:	4d38      	ldr	r5, [pc, #224]	; (32c38 <boot_net_fire+0xe4>)
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:255
+   32b58:	4c38      	ldr	r4, [pc, #224]	; (32c3c <boot_net_fire+0xe8>)
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:251
+   32b5a:	2301      	movs	r3, #1
+   32b5c:	606b      	str	r3, [r5, #4]
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:258
+   32b5e:	f010 0f04 	tst.w	r0, #4
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:252
+   32b62:	f04f 0300 	mov.w	r3, #0
+   32b66:	f8c5 3140 	str.w	r3, [r5, #320]	; 0x140
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:257
+   32b6a:	f8c4 28f4 	str.w	r2, [r4, #2292]	; 0x8f4
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:258
+   32b6e:	bf08      	it	eq
+   32b70:	460a      	moveq	r2, r1
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:255
+   32b72:	f8c4 08ec 	str.w	r0, [r4, #2284]	; 0x8ec
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:256
+   32b76:	f8c4 18f0 	str.w	r1, [r4, #2288]	; 0x8f0
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:259
+   32b7a:	f8c4 28f8 	str.w	r2, [r4, #2296]	; 0x8f8
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:260
+   32b7e:	6953      	ldr	r3, [r2, #20]
+   32b80:	f8c4 3900 	str.w	r3, [r4, #2304]	; 0x900
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:261
+   32b84:	6993      	ldr	r3, [r2, #24]
+   32b86:	f8c4 38fc 	str.w	r3, [r4, #2300]	; 0x8fc
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:263
+   32b8a:	f080 0008 	eor.w	r0, r0, #8
+   32b8e:	f3c0 00c0 	ubfx	r0, r0, #3, #1
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:262
+   32b92:	69d3      	ldr	r3, [r2, #28]
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:263
+   32b94:	f8c4 0908 	str.w	r0, [r4, #2312]	; 0x908
+k_current_get():
+/home/yagu001/zmk-dya-build/zephyr/include/zephyr/kernel.h:669
+   32b98:	f03f ff68 	bl	72a6c <__aeabi_read_tp>
+boot_net_fire():
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:262
+   32b9c:	f8c4 3904 	str.w	r3, [r4, #2308]	; 0x904
+k_current_get():
+/home/yagu001/zmk-dya-build/zephyr/include/zephyr/kernel.h:669
+   32ba0:	4b27      	ldr	r3, [pc, #156]	; (32c40 <boot_net_fire+0xec>)
+boot_net_fire():
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:264
+   32ba2:	581b      	ldr	r3, [r3, r0]
+   32ba4:	f8c4 390c 	str.w	r3, [r4, #2316]	; 0x90c
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:265
+   32ba8:	4b26      	ldr	r3, [pc, #152]	; (32c44 <boot_net_fire+0xf0>)
+   32baa:	f8d3 2500 	ldr.w	r2, [r3, #1280]	; 0x500
+   32bae:	f8c4 2910 	str.w	r2, [r4, #2320]	; 0x910
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:266
+   32bb2:	f8d3 2400 	ldr.w	r2, [r3, #1024]	; 0x400
+   32bb6:	f8c4 2914 	str.w	r2, [r4, #2324]	; 0x914
+--- USB READY wait (nrf_usbd_common.c:1009): PC inside this loop = waiting for EVENTCAUSE.READY
+   57ef4:	f8d3 2400 	ldr.w	r2, [r3, #1024]	; 0x400
+   57ef8:	0512      	lsls	r2, r2, #20
+   57efa:	d5fb      	bpl.n	57ef4 <nrf_usbd_common_enable+0x5c>
+--- diag_spin_forever / diag_spin_bounded
+   662a2:	bf00      	nop
+   662a4:	e7fd      	b.n	662a2 <diag_spin_forever>
+   32f04:	4a05      	ldr	r2, [pc, #20]	; (32f1c <diag_spin_bounded+0x18>)
+   32f06:	4b06      	ldr	r3, [pc, #24]	; (32f20 <diag_spin_bounded+0x1c>)
+   32f08:	6851      	ldr	r1, [r2, #4]
+   32f0a:	4358      	muls	r0, r3
+   32f0c:	6853      	ldr	r3, [r2, #4]
+   32f0e:	1a5b      	subs	r3, r3, r1
+   32f10:	4283      	cmp	r3, r0
+   32f12:	d300      	bcc.n	32f16 <diag_spin_bounded+0x12>
+   32f14:	4770      	bx	lr
+   32f16:	bf00      	nop
+   32f18:	e7f8      	b.n	32f0c <diag_spin_bounded+0x8>
+   32f1a:	bf00      	nop
+   32f1c:	e0001000 	.word	0xe0001000
+   32f20:	03d09000 	.word	0x03d09000
+
+===== coron_R-bt4-alt tag=bt4A-R-10080143  md5=bc4738657a03
 --- symbols (nm -S)
 00027040 000000c0 T _irq_vector_table
-20027400 00000008 b arm_next
-00038608 000000ec T boot_net_fire
-00038190 0000000e T boot_net_vector
-20005dc8 000000c8 B calib_thread
-200279bc 00000120 b cur
-000389b4 00000004 T diag_spin_forever
-2000b7e8 000000e8 B k_sys_work_q
-2002789c 00000120 b last
-0006c4f8 00000288 T nrf_usbd_common_enable
-20027408 00000494 b ring
-2000b440 000000e8 b usbd_work_queue
-2000b720 000000c8 B z_main_thread
+000385b0 00000104 T boot_net_fire
+00037ff8 0000000e T boot_net_vector
+20005d18 000000c8 B calib_thread
+2002c000 0000093c B diag_area
+000389f0 0000002c T diag_spin_bounded
+000389d0 00000004 T diag_spin_forever
+00036d0c 0000001e T k_sys_fatal_error_handler
+2000b688 000000e8 B k_sys_work_q
+0006c460 00000288 T nrf_usbd_common_enable
+2000b2e0 000000e8 b usbd_work_queue
+2000b5c0 000000c8 B z_main_thread
+00036be8 00000014 T zmk_watchdog_reboot
+--- diag_area layout (offsets from 0x2002c000): arm_next +0x0 (8), ring +0x8 (0x6ec), last +0x6f4 (0x124), cur +0x818 (0x124); section DIAGREC is NOBITS (readelf -S)
+  [60] DIAGREC           NOBITS          2002c000 067bb8 00093c 00  WA  0   0  4
 --- IRQ vector table slot 27 (TIMER4_IRQn = 27; section rom_start) must hold boot_net_vector|1
- 270ac 91810300                             ....            
+ 270ac f97f0300                             ....            
 --- boot_net_vector (naked entry: r0=EXC_RETURN, r1=MSP, r2=PSP, tail-jump)
-00038190 <boot_net_vector>:
-   38190:	4670      	mov	r0, lr
-   38192:	f3ef 8108 	mrs	r1, MSP
-   38196:	f3ef 8209 	mrs	r2, PSP
-   3819a:	f000 ba35 	b.w	38608 <boot_net_fire>
+00037ff8 <boot_net_vector>:
+   37ff8:	4670      	mov	r0, lr
+   37ffa:	f3ef 8108 	mrs	r1, MSP
+   37ffe:	f3ef 8209 	mrs	r2, PSP
+   38002:	f000 bad5 	b.w	385b0 <boot_net_fire>
+   38006:	bf00      	nop
 --- boot_net_fire (first 40 instructions with source lines)
-00038608 <boot_net_fire>:
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:199
-   38608:	b538      	push	{r3, r4, r5, lr}
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:200
-   3860a:	4d33      	ldr	r5, [pc, #204]	; (386d8 <boot_net_fire+0xd0>)
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:204
-   3860c:	4c33      	ldr	r4, [pc, #204]	; (386dc <boot_net_fire+0xd4>)
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:207
-   3860e:	f010 0f04 	tst.w	r0, #4
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:199
-   38612:	4603      	mov	r3, r0
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:200
-   38614:	f04f 0001 	mov.w	r0, #1
-   38618:	6068      	str	r0, [r5, #4]
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:201
-   3861a:	f04f 0000 	mov.w	r0, #0
-   3861e:	f8c5 0140 	str.w	r0, [r5, #320]	; 0x140
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:205
-   38622:	e9c4 3134 	strd	r3, r1, [r4, #208]	; 0xd0
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:206
-   38626:	f8c4 20d8 	str.w	r2, [r4, #216]	; 0xd8
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:207
-   3862a:	bf08      	it	eq
-   3862c:	460a      	moveq	r2, r1
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:208
-   3862e:	f8c4 20dc 	str.w	r2, [r4, #220]	; 0xdc
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:209
-   38632:	6951      	ldr	r1, [r2, #20]
-   38634:	f8c4 10e4 	str.w	r1, [r4, #228]	; 0xe4
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:210
-   38638:	6991      	ldr	r1, [r2, #24]
-   3863a:	f8c4 10e0 	str.w	r1, [r4, #224]	; 0xe0
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:211
-   3863e:	69d2      	ldr	r2, [r2, #28]
-   38640:	4927      	ldr	r1, [pc, #156]	; (386e0 <boot_net_fire+0xd8>)
-   38642:	f045 fabb 	bl	7dbbc <__aeabi_read_tp>
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:212
-   38646:	f083 0308 	eor.w	r3, r3, #8
-   3864a:	f3c3 03c0 	ubfx	r3, r3, #3, #1
-   3864e:	e9c4 233a 	strd	r2, r3, [r4, #232]	; 0xe8
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:213
-   38652:	5809      	ldr	r1, [r1, r0]
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:214
-   38654:	4a23      	ldr	r2, [pc, #140]	; (386e4 <boot_net_fire+0xdc>)
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:213
-   38656:	f8c4 10f0 	str.w	r1, [r4, #240]	; 0xf0
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:214
-   3865a:	f8d2 1500 	ldr.w	r1, [r2, #1280]	; 0x500
-   3865e:	f8c4 10f4 	str.w	r1, [r4, #244]	; 0xf4
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:215
-   38662:	f8d2 0400 	ldr.w	r0, [r2, #1024]	; 0x400
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:216
-   38666:	f8d2 1504 	ldr.w	r1, [r2, #1284]	; 0x504
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:215
-   3866a:	f8c4 00f8 	str.w	r0, [r4, #248]	; 0xf8
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:217
-   3866e:	f04f 4380 	mov.w	r3, #1073741824	; 0x40000000
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:171
-   38672:	4620      	mov	r0, r4
-/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:217
+000385b0 <boot_net_fire>:
+boot_net_fire():
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:250
+   385b0:	b538      	push	{r3, r4, r5, lr}
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:251
+   385b2:	4d39      	ldr	r5, [pc, #228]	; (38698 <boot_net_fire+0xe8>)
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:255
+   385b4:	4c39      	ldr	r4, [pc, #228]	; (3869c <boot_net_fire+0xec>)
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:258
+   385b6:	f010 0f04 	tst.w	r0, #4
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:250
+   385ba:	4603      	mov	r3, r0
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:251
+   385bc:	f04f 0001 	mov.w	r0, #1
+   385c0:	6068      	str	r0, [r5, #4]
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:252
+   385c2:	f04f 0000 	mov.w	r0, #0
+   385c6:	f8c5 0140 	str.w	r0, [r5, #320]	; 0x140
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:257
+   385ca:	f8c4 28f4 	str.w	r2, [r4, #2292]	; 0x8f4
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:258
+   385ce:	bf08      	it	eq
+   385d0:	460a      	moveq	r2, r1
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:255
+   385d2:	f8c4 38ec 	str.w	r3, [r4, #2284]	; 0x8ec
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:256
+   385d6:	f8c4 18f0 	str.w	r1, [r4, #2288]	; 0x8f0
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:259
+   385da:	f8c4 28f8 	str.w	r2, [r4, #2296]	; 0x8f8
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:260
+   385de:	6951      	ldr	r1, [r2, #20]
+   385e0:	f8c4 1900 	str.w	r1, [r4, #2304]	; 0x900
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:261
+   385e4:	6991      	ldr	r1, [r2, #24]
+   385e6:	f8c4 18fc 	str.w	r1, [r4, #2300]	; 0x8fc
+k_current_get():
+/home/yagu001/zmk-dya-build/zephyr/include/zephyr/kernel.h:669
+   385ea:	f045 fa3f 	bl	7da6c <__aeabi_read_tp>
+   385ee:	492c      	ldr	r1, [pc, #176]	; (386a0 <boot_net_fire+0xf0>)
+boot_net_fire():
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:262
+   385f0:	69d2      	ldr	r2, [r2, #28]
+   385f2:	f8c4 2904 	str.w	r2, [r4, #2308]	; 0x904
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:263
+   385f6:	f083 0308 	eor.w	r3, r3, #8
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:265
+   385fa:	4a2a      	ldr	r2, [pc, #168]	; (386a4 <boot_net_fire+0xf4>)
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:264
+   385fc:	5809      	ldr	r1, [r1, r0]
+   385fe:	f8c4 190c 	str.w	r1, [r4, #2316]	; 0x90c
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:263
+   38602:	f3c3 03c0 	ubfx	r3, r3, #3, #1
+   38606:	f8c4 3908 	str.w	r3, [r4, #2312]	; 0x908
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:265
+   3860a:	f8d2 1500 	ldr.w	r1, [r2, #1280]	; 0x500
+   3860e:	f8c4 1910 	str.w	r1, [r4, #2320]	; 0x910
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:266
+   38612:	f8d2 0400 	ldr.w	r0, [r2, #1024]	; 0x400
+/home/yagu001/zmk-dya-build/local/coron-diag/src/diag_boot.c:267
+   38616:	f8d2 1504 	ldr.w	r1, [r2, #1284]	; 0x504
 --- USB READY wait (nrf_usbd_common.c:1009): PC inside this loop = waiting for EVENTCAUSE.READY
-   6c51c:	f8d2 3400 	ldr.w	r3, [r2, #1024]	; 0x400
-   6c520:	051b      	lsls	r3, r3, #20
-   6c522:	d5fb      	bpl.n	6c51c <nrf_usbd_common_enable+0x24>
---- diag_spin_forever
-   389b4:	bf00      	nop
-   389b6:	e7fd      	b.n	389b4 <diag_spin_forever>
+   6c484:	f8d2 3400 	ldr.w	r3, [r2, #1024]	; 0x400
+   6c488:	051b      	lsls	r3, r3, #20
+   6c48a:	d5fb      	bpl.n	6c484 <nrf_usbd_common_enable+0x24>
+--- diag_spin_forever / diag_spin_bounded
+   389d0:	bf00      	nop
+   389d2:	e7fd      	b.n	389d0 <diag_spin_forever>
+   389f0:	b410      	push	{r4}
+   389f2:	4a08      	ldr	r2, [pc, #32]	; (38a14 <diag_spin_bounded+0x24>)
+   389f4:	4c08      	ldr	r4, [pc, #32]	; (38a18 <diag_spin_bounded+0x28>)
+   389f6:	6851      	ldr	r1, [r2, #4]
+   389f8:	6853      	ldr	r3, [r2, #4]
+   389fa:	fb04 f000 	mul.w	r0, r4, r0
+   389fe:	1a5b      	subs	r3, r3, r1
+   38a00:	4298      	cmp	r0, r3
+   38a02:	d904      	bls.n	38a0e <diag_spin_bounded+0x1e>
+   38a04:	bf00      	nop
+   38a06:	6853      	ldr	r3, [r2, #4]
+   38a08:	1a5b      	subs	r3, r3, r1
+   38a0a:	4283      	cmp	r3, r0
+   38a0c:	d3fa      	bcc.n	38a04 <diag_spin_bounded+0x14>
+   38a0e:	f85d 4b04 	ldr.w	r4, [sp], #4
+   38a12:	4770      	bx	lr
+   38a14:	e0001000 	.word	0xe0001000
+   38a18:	03d09000 	.word	0x03d09000
 

@@ -1,15 +1,17 @@
 /*
- * Boot-path instrument, version 3 (test builds only, never for production).
+ * Boot-path instrument, version 4 (test builds only, never for production).
  *
- * RECORDS (RAM that survives soft and pin resets; the bootloader uses 0x20008000.. for its data
- * and the top of RAM for its stack, these records sit in between and survived 112 b/UF2 cycles):
+ * RECORDS (RAM that survives soft and pin resets, at the fixed address 0x2002c000 (diagrec.overlay);
+ * the bootloader's .data/.bss end at 0x2000ce28 and its stack starts at 0x20040000, the records
+ * sit in between, see evidence/bootloader-ram.md):
  *  cur   the boot in progress
  *  last  the previous boot (overwritten every boot; normal-cycle log)
  *  ring  up to RING_SLOTS incident records, never overwritten (new incidents counted in dropped)
  *
  * Each record carries: magic, format version, seq, build tag, boot_done (0/1), reason, phase,
  * entry snapshot (taken in board_early_init_hook: after .bss/.data init, NOT the hand-over
- * instant), stage cycle stamps, monitor counters, and, when the net fired, the interrupted context.
+ * instant), stage cycle stamps, monitor counters, fatal-error info, and, when the net fired, the
+ * interrupted context.
  *
  * STATE TRANSITIONS (what the next boot files as an incident):
  *   event                          boot_done  reason        filed as incident?
@@ -18,18 +20,25 @@
  *   boot never reached RUNNING,
  *     net fired                    0          BOOT_TIMEOUT  yes
  *     pin reset pressed            0          NONE          yes (INCOMPLETE)
- *     armed stall ('S') + net      0          BOOT_TIMEOUT  yes (calib_flag=1)
+ *     armed stall ('S') + net      0          BOOT_TIMEOUT  yes (calib='S')
  *   RUNNING, monitor timed out     1          WQ_TIMEOUT    yes
- *   RUNNING, h/G then net fired    1          WQ_TIMEOUT    yes (calib_flag=h/G)
- *   RUNNING, H (no fire)           1          NONE          no
- *   record invalid (magic/CRC)     -          -             counted in ring.invalid, not filed
+ *   RUNNING, h/G then net fired    1          WQ_TIMEOUT    yes (calib='h'/'G')
+ *   RUNNING, H (ends, no fire)     1          NONE          no
+ *   fatal error: zmk-feature-watchdog's handler records reason/PC/LR/thread in its own pending
+ *     record (read through Studio) and reboots at once; this instrument sees only the reboot
+ *     (during boot: INCOMPLETE, filed; after RUNNING: done=1/NONE, not filed)
+ *   record invalid                 -          -             counted in ring.invalid (only when the
+ *                                                           magic matched: fmt_ver or CRC wrong), not filed
+ *   ring invalid (magic/CRC)       -          -             ring reinitialised; cur.ring_reinit=1 and
+ *                                                           the header line say so; the old counters are lost
  *   Rule: filed iff reason in {BOOT_TIMEOUT, WQ_TIMEOUT} or (boot_done == 0 and reason != REBOOT_REQ).
  *
  * MONITORS (TIMER4, 16 MHz / 2^9, independent of the 32 kHz clock):
  *  boot monitor   hard deadline BOOT_DEADLINE_S from the early hook until RUNNING. RUNNING means
- *                 main() has returned (k_thread_join(&z_main_thread) == 0: ZMK's main() returns
- *                 after settings_load(), so the whole load completed) AND the first probe ran on
- *                 the system workqueue. Stage markers never feed the net during boot.
+ *                 the main thread has exited (k_thread_join(&z_main_thread) == 0; join does not tell
+ *                 how it exited, but in this build no path other than main() returning ends that
+ *                 thread, see evidence/fatal-path.md) AND the first probe ran on the system
+ *                 workqueue. Stage markers never feed the net during boot.
  *  workqueue      after RUNNING, the feeder thread (preemptible, K_PRIO_PREEMPT(10)) submits a
  *  monitor        probe to the system workqueue every PROBE_PERIOD_S and feeds the net only when
  *                 the previous probe ran. Deadline WQ_DEADLINE_S without a feed. A timeout means
@@ -42,10 +51,28 @@
  *  EXC_RETURN bit 3 = 0 means another handler was interrupted: then PC is inside that handler and
  *  the record is "unclassifiable", never "not USB".
  *
- * CALIBRATION (console commands; test builds only):
+ * OTHER MONITORS IN THE IMAGE: the test .conf turns CONFIG_ZMK_WATCHDOG_FREEZE_DETECT off, so no
+ *  timer-driven monitor resets the chip before the net does (the freeze detector would have
+ *  rebooted 10 s after its last feed, before the 15 s deadline, without recording a PC).
+ *  CONFIG_ZMK_WATCHDOG_FATAL_DETECT stays on: it only reacts to faults, records them with PC/LR,
+ *  and reboots; the config repo's own fatal_reboot.c (reboot without a record) is compiled only
+ *  when that option is off. The three confirmed stall images predate the watchdog module
+ *  (added in 162637f): bbc509c halted on a fatal error (Zephyr default), 8d7cc27 rebooted without
+ *  a record (fatal_reboot.c), diag-min3 unknown.
+ *
+ * CONSISTENCY of cur: every thread-context writer updates the fields and recomputes the CRC
+ *  under irq_lock() (rec_lock/rec_unlock), so two threads cannot interleave an update and a seal.
+ *  The TIMER4 ISR (NVIC priority 0, above the irq_lock level) is not excluded by that lock; it is
+ *  the last writer, re-seals the whole record and never returns, so whatever it interrupted does
+ *  not matter. A pin reset inside the few microseconds of a locked update can still leave a torn
+ *  record; that is detected (CRC) and counted in ring.invalid, never read as valid data.
+ *
+ * CALIBRATION (console commands; test builds only; each returns 0 or -EBUSY):
  *  h  spin forever on the system workqueue (cooperative)      -> WQ_TIMEOUT, PC in diag_spin_forever,
  *                                                                 thread == &k_sys_work_q.thread
- *  H  spin forever in a preemptible thread at K_PRIO_PREEMPT(12) (lower than the feeder) -> no fire
+ *  H  spin H_SPIN_S seconds in a preemptible thread at K_PRIO_PREEMPT(12) (lower than the feeder,
+ *     higher than the console thread at 14: the console is silent while it runs) -> no fire,
+ *     the thread exits and can be joined; 'H'/'G' are refused (-EBUSY) until it has
  *  G  spin forever in a preemptible thread at K_PRIO_PREEMPT(0)  (starves the feeder)    -> WQ_TIMEOUT,
  *                                                                 thread == &calib_thread (monitor
  *                                                                 limit, not a workqueue stall)
@@ -53,6 +80,7 @@
  *  c  clear the ring (after the incidents were copied out)
  */
 
+#include <errno.h>
 #include <string.h>
 
 #include <zephyr/kernel.h>
@@ -69,19 +97,19 @@
 #define CORON_BUILD_TAG "untagged"
 #endif
 
-/* The kernel's main thread object (kernel/init.c); not in a public header. k_thread_join() on it
- * returns 0 once main() has returned. */
+/* The kernel's main thread object (kernel/init.c); not in a public header. */
 extern struct k_thread z_main_thread;
 
-#define REC_MAGIC 0x33544f42u  /* 'BOT3' */
-#define RING_MAGIC 0x474e4952u /* 'RING' */
+#define REC_MAGIC 0x34544f42u  /* 'BOT4' */
+#define RING_MAGIC 0x34474e52u /* 'RNG4' */
 #define ARM_MAGIC 0x4c415453u  /* 'STAL' */
-#define REC_FMT_VER 3
-#define RING_SLOTS 4
+#define REC_FMT_VER 4
+#define RING_SLOTS 6
 
 #define BOOT_DEADLINE_S 20
 #define WQ_DEADLINE_S 15
 #define PROBE_PERIOD_S 2
+#define H_SPIN_S 30
 #define NET_HZ 31250 /* 16 MHz / 2^9 */
 #define CYC_PER_US 64
 
@@ -96,7 +124,7 @@ enum boot_stage {
     STG_APP_AFTER_USB,
     STG_APP_LAST,
     STG_SETTINGS_COMMIT, /* our static settings handler's commit ran (settings_load in progress) */
-    STG_MAIN_DONE,       /* main() returned (settings_load completed) */
+    STG_MAIN_DONE,       /* main thread exited (in this build: main() returned after settings_load) */
     STG_WQ_PROBED,       /* first probe ran on the system workqueue */
     STG_RUNNING,         /* MAIN_DONE and WQ_PROBED: boot monitor off, workqueue monitor on */
     STG_COUNT,
@@ -137,6 +165,7 @@ struct boot_rec {
     uint32_t reason;    /* enum reason */
     uint32_t phase;     /* enum phase */
     uint32_t calib;     /* 0, or the calibration command character that was issued ('h','H','G','S') */
+    uint32_t ring_reinit; /* 1 if this boot found the ring invalid and reinitialised it */
     struct entry_snap entry;
     uint32_t stage;
     uint32_t stage_cyc[STG_COUNT];
@@ -150,7 +179,7 @@ struct ring_rec {
     uint32_t magic;
     uint32_t count;   /* incidents stored (<= RING_SLOTS) */
     uint32_t dropped; /* incidents not stored because the ring was full */
-    uint32_t invalid; /* previous-boot records that failed magic/CRC (not filed) */
+    uint32_t invalid; /* previous-boot records whose magic matched but fmt_ver/CRC did not (not filed) */
     struct boot_rec slot[RING_SLOTS];
     uint32_t crc;
 };
@@ -160,12 +189,24 @@ struct arm_rec {
     uint32_t crc;
 };
 
-static struct boot_rec cur __noinit;
-static struct boot_rec last __noinit;
-static struct ring_rec ring __noinit;
-static struct arm_rec arm_next __noinit;
+/* All records live in one struct in the DIAGREC section, a 4 KB RAM region that diagrec.overlay
+ * carves out of the top of the application RAM at a fixed address (0x2002c000). The address is
+ * therefore the same in every image built with the overlay, whatever its .bss/.noinit size; the
+ * section is NOLOAD, so nothing initialises it. */
+struct diag_area {
+    struct arm_rec arm_next;
+    struct ring_rec ring;
+    struct boot_rec last;
+    struct boot_rec cur;
+};
+struct diag_area diag_area Z_GENERIC_SECTION(DIAGREC); /* global so nm resolves it */
+#define cur (diag_area.cur)
+#define last (diag_area.last)
+#define ring (diag_area.ring)
+#define arm_next (diag_area.arm_next)
 static bool last_valid;
 static bool stall_this_boot;
+static bool ring_reinit_this_boot;
 
 static uint32_t rec_crc(const struct boot_rec *r) {
     return crc32_ieee((const uint8_t *)r, offsetof(struct boot_rec, crc));
@@ -179,9 +220,17 @@ static bool rec_valid(const struct boot_rec *r) {
 static void rec_seal(void) { cur.crc = rec_crc(&cur); }
 static inline uint32_t cyc(void) { return DWT->CYCCNT; }
 
+/* Thread-context writers: fields are changed and the CRC recomputed with interrupts at or below
+ * the irq_lock level masked. Nestable (the key restores the previous state). */
+static inline unsigned int rec_lock(void) { return irq_lock(); }
+static inline void rec_unlock(unsigned int key) {
+    rec_seal();
+    irq_unlock(key);
+}
+
 /* ---- TIMER4 net ---------------------------------------------------------------------------- */
 
-static void net_feed(void) {
+static void net_feed_locked(void) {
     NRF_TIMER4->TASKS_CLEAR = 1;
     cur.feeds++;
     cur.last_feed_cyc = cyc();
@@ -195,7 +244,9 @@ static void net_set_deadline(uint32_t seconds) {
     NRF_TIMER4->TASKS_START = 1;
 }
 
-/* Reached from the naked vector with EXC_RETURN, MSP and PSP as at exception entry. Never returns. */
+/* Reached from the naked vector with EXC_RETURN, MSP and PSP as at exception entry. Never returns.
+ * Not under rec_lock: this ISR runs above the lock level, re-seals the whole record last, and
+ * resets. */
 void boot_net_fire(uint32_t exc_return, uint32_t msp, uint32_t psp) {
     NRF_TIMER4->TASKS_STOP = 1;
     NRF_TIMER4->EVENTS_COMPARE[0] = 0;
@@ -254,22 +305,25 @@ static void net_arm(void) {
 /* ---- stages ---------------------------------------------------------------------------------- */
 
 static void stage(enum boot_stage s) {
+    unsigned int key = rec_lock();
+
     cur.stage = s;
     cur.stage_cyc[s] = cyc();
-    rec_seal();
+    rec_unlock(key);
 }
 
 static void maybe_running(void) {
-    if (cur.phase == PH_RUNNING) {
-        return;
-    }
-    if (cur.stage_cyc[STG_MAIN_DONE] != 0 && cur.stage_cyc[STG_WQ_PROBED] != 0) {
-        stage(STG_RUNNING);
+    unsigned int key = rec_lock();
+
+    if (cur.phase != PH_RUNNING && cur.stage_cyc[STG_MAIN_DONE] != 0 &&
+        cur.stage_cyc[STG_WQ_PROBED] != 0) {
+        cur.stage = STG_RUNNING;
+        cur.stage_cyc[STG_RUNNING] = cyc();
         cur.phase = PH_RUNNING;
         cur.boot_done = 1;
         net_set_deadline(WQ_DEADLINE_S);
-        rec_seal();
     }
+    rec_unlock(key);
 }
 
 /* ---- optional intervention (comparison arm only, off by default) ---------------------------- */
@@ -316,13 +370,16 @@ static void lf_clean_stop(void) {
 
 /* ---- early hook: file the previous boot, start this one ------------------------------------- */
 
-static void ring_init_if_needed(void) {
+/* Returns true when the ring had to be reinitialised (its counters, including invalid and
+ * dropped, are lost; the event itself is kept in cur.ring_reinit and printed in the header). */
+static bool ring_init_if_needed(void) {
     if (ring.magic == RING_MAGIC && ring.count <= RING_SLOTS && ring.crc == ring_crc(&ring)) {
-        return;
+        return false;
     }
     memset(&ring, 0, sizeof(ring));
     ring.magic = RING_MAGIC;
     ring.crc = ring_crc(&ring);
+    return true;
 }
 
 static void ring_push(const struct boot_rec *r) {
@@ -346,7 +403,7 @@ void board_early_init_hook(void) {
     DWT->CYCCNT = 0;
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 
-    ring_init_if_needed();
+    ring_reinit_this_boot = ring_init_if_needed();
 
     uint32_t seq = 1;
     if (rec_valid(&cur)) {
@@ -359,7 +416,7 @@ void board_early_init_hook(void) {
     } else {
         memset(&last, 0, sizeof(last));
         last_valid = false;
-        if (cur.magic == REC_MAGIC) { /* a record of ours that failed the CRC */
+        if (cur.magic == REC_MAGIC) { /* a record of ours that failed fmt_ver or CRC */
             ring.invalid++;
             ring.crc = ring_crc(&ring);
         }
@@ -377,6 +434,7 @@ void board_early_init_hook(void) {
     strncpy(cur.build_tag, CORON_BUILD_TAG, sizeof(cur.build_tag) - 1);
     cur.phase = PH_BOOT;
     cur.calib = stall_this_boot ? 'S' : 0;
+    cur.ring_reinit = ring_reinit_this_boot ? 1 : 0;
 
     cur.entry.lfclkstat = NRF_CLOCK->LFCLKSTAT;
     cur.entry.lfclkrun = NRF_CLOCK->LFCLKRUN;
@@ -403,6 +461,15 @@ void board_early_init_hook(void) {
 
 __attribute__((noinline)) void diag_spin_forever(void) {
     for (;;) {
+        __asm volatile("nop");
+    }
+}
+
+__attribute__((noinline)) void diag_spin_bounded(uint32_t seconds) {
+    uint32_t t0 = cyc();
+    uint32_t span = seconds * (CYC_PER_US * 1000000u); /* 30 s = 1.92e9 cycles, fits */
+
+    while ((cyc() - t0) < span) {
         __asm volatile("nop");
     }
 }
@@ -446,11 +513,14 @@ SETTINGS_STATIC_HANDLER_DEFINE(coron_diag_boot, "cdiagb", NULL, NULL, diag_setti
 
 static void probe_fn(struct k_work *w) {
     ARG_UNUSED(w);
+    unsigned int key = rec_lock();
+
     cur.probes_run++;
     if (cur.stage_cyc[STG_WQ_PROBED] == 0) {
-        stage(STG_WQ_PROBED);
+        cur.stage = STG_WQ_PROBED;
+        cur.stage_cyc[STG_WQ_PROBED] = cyc();
     }
-    rec_seal();
+    rec_unlock(key);
 }
 K_WORK_DEFINE(probe_work, probe_fn);
 
@@ -459,18 +529,26 @@ static void feeder_fn(void *a, void *b, void *c) {
     uint32_t seen = 0;
 
     for (;;) {
+        bool main_exited = (cur.stage_cyc[STG_MAIN_DONE] == 0) &&
+                           (k_thread_join(&z_main_thread, K_NO_WAIT) == 0);
+        unsigned int key = rec_lock();
+
         cur.feeder_loops++;
-        if (cur.stage_cyc[STG_MAIN_DONE] == 0 && k_thread_join(&z_main_thread, K_NO_WAIT) == 0) {
-            stage(STG_MAIN_DONE); /* main() returned: settings_load() completed */
+        if (main_exited) {
+            cur.stage = STG_MAIN_DONE;
+            cur.stage_cyc[STG_MAIN_DONE] = cyc();
         }
+        rec_unlock(key);
         maybe_running();
+
+        key = rec_lock();
         if (cur.phase == PH_RUNNING && cur.probes_run != seen) {
             seen = cur.probes_run;
-            net_feed();
+            net_feed_locked();
         }
         cur.probes_submitted++;
+        rec_unlock(key);
         k_work_submit(&probe_work);
-        rec_seal();
         k_sleep(K_SECONDS(PROBE_PERIOD_S));
     }
 }
@@ -479,14 +557,18 @@ K_THREAD_DEFINE(diag_feeder, 768, feeder_fn, NULL, NULL, NULL, K_PRIO_PREEMPT(10
 /* ---- console hooks -------------------------------------------------------------------------- */
 
 void diag_boot_reboot(void) {
+    unsigned int key = rec_lock();
+
     cur.reason = R_REBOOT_REQ;
-    rec_seal();
+    rec_unlock(key);
     sys_reboot(SYS_REBOOT_WARM);
 }
 
 void diag_boot_mark_reboot(void) {
+    unsigned int key = rec_lock();
+
     cur.reason = R_REBOOT_REQ;
-    rec_seal();
+    rec_unlock(key);
 }
 
 static void calib_coop_fn(struct k_work *w) {
@@ -495,25 +577,59 @@ static void calib_coop_fn(struct k_work *w) {
 }
 K_WORK_DEFINE(calib_coop_work, calib_coop_fn);
 
+/* a == NULL: spin forever ('G'); else spin the given number of seconds and exit ('H'). */
 static void calib_thread_fn(void *a, void *b, void *c) {
-    ARG_UNUSED(a); ARG_UNUSED(b); ARG_UNUSED(c);
-    diag_spin_forever();
+    ARG_UNUSED(b); ARG_UNUSED(c);
+    if (a == NULL) {
+        diag_spin_forever();
+    }
+    diag_spin_bounded((uint32_t)(uintptr_t)a);
 }
 static K_THREAD_STACK_DEFINE(calib_stack, 512);
 struct k_thread calib_thread; /* global so nm resolves the thread pointer */
+static bool calib_thread_started;
+static bool calib_coop_submitted;
 
-void diag_boot_calibrate(char which) {
+/* The thread object and stack are reused only after the previous calibration thread has fully
+ * terminated (k_thread_join == 0); otherwise the command is refused. 'h' is accepted once. */
+int diag_boot_calibrate(char which) {
+    unsigned int key;
+
+    switch (which) {
+    case 'h':
+        if (calib_coop_submitted) {
+            return -EBUSY;
+        }
+        calib_coop_submitted = true;
+        break;
+    case 'H':
+    case 'G':
+        if (calib_thread_started && k_thread_join(&calib_thread, K_NO_WAIT) != 0) {
+            return -EBUSY;
+        }
+        break;
+    case 'S':
+        break;
+    default:
+        return -EINVAL;
+    }
+
+    key = rec_lock();
     cur.calib = (uint32_t)which;
-    rec_seal();
+    rec_unlock(key);
+
     switch (which) {
     case 'h':
         k_work_submit(&calib_coop_work);
         break;
     case 'H':
+        calib_thread_started = true;
         k_thread_create(&calib_thread, calib_stack, K_THREAD_STACK_SIZEOF(calib_stack),
-                        calib_thread_fn, NULL, NULL, NULL, K_PRIO_PREEMPT(12), 0, K_NO_WAIT);
+                        calib_thread_fn, (void *)(uintptr_t)H_SPIN_S, NULL, NULL,
+                        K_PRIO_PREEMPT(12), 0, K_NO_WAIT);
         break;
     case 'G':
+        calib_thread_started = true;
         k_thread_create(&calib_thread, calib_stack, K_THREAD_STACK_SIZEOF(calib_stack),
                         calib_thread_fn, NULL, NULL, NULL, K_PRIO_PREEMPT(0), 0, K_NO_WAIT);
         break;
@@ -524,21 +640,22 @@ void diag_boot_calibrate(char which) {
     default:
         break;
     }
+    return 0;
 }
 
 static void print_rec(void (*out)(const char *fmt, ...), const char *tag, const struct boot_rec *r) {
     out("ZBOOT %s seq=%u tag=%s done=%u reason=%u phase=%u calib=%c stage=%u reset=0x%x "
-        "fix=%u/%u/%u probes=%u/%u feeds=%u loops=%u lastfeed_us=%u",
+        "reinit=%u fix=%u/%u/%u probes=%u/%u feeds=%u loops=%u lastfeed_us=%u",
         tag, r->seq, r->build_tag, r->boot_done, r->reason, r->phase, r->calib ? (char)r->calib : '-',
-        r->stage, r->entry.resetreas, r->fix_action, r->fix_us, r->hf_action, r->probes_submitted,
-        r->probes_run, r->feeds, r->feeder_loops, r->last_feed_cyc / CYC_PER_US);
+        r->stage, r->entry.resetreas, r->ring_reinit, r->fix_action, r->fix_us, r->hf_action,
+        r->probes_submitted, r->probes_run, r->feeds, r->feeder_loops, r->last_feed_cyc / CYC_PER_US);
     out("ZBOOT %s entry lfstat=0x%x lfrun=%u lfsrc=0x%x lfcopy=0x%x lfev=%u hfstat=0x%x hfrun=%u "
         "hfev=%u rtc1=%u usbreg=0x%x ficr130=0x%x ficr134=0x%x",
         tag, r->entry.lfclkstat, r->entry.lfclkrun, r->entry.lfclksrc, r->entry.lfclksrccopy,
         r->entry.ev_lfstarted, r->entry.hfclkstat, r->entry.hfclkrun, r->entry.ev_hfstarted,
         r->entry.rtc1_counter, r->entry.usbregstatus, r->entry.ficr_130, r->entry.ficr_134);
     out("ZBOOT %s us hook=%u pk1=%u clk=%u pk1end=%u sysclk=%u post=%u app=%u usb=%u applast=%u "
-        "commit=%u maindone=%u probed=%u running=%u",
+        "commit=%u mainexit=%u probed=%u running=%u",
         tag, r->stage_cyc[STG_HOOK] / CYC_PER_US, r->stage_cyc[STG_PK1_EARLY] / CYC_PER_US,
         r->stage_cyc[STG_PK1_AFTER_CLK] / CYC_PER_US, r->stage_cyc[STG_PK1_LAST] / CYC_PER_US,
         r->stage_cyc[STG_PK2_AFTER_SYSCLK] / CYC_PER_US, r->stage_cyc[STG_POST] / CYC_PER_US,
@@ -560,9 +677,12 @@ static void print_rec(void (*out)(const char *fmt, ...), const char *tag, const 
 }
 
 void diag_boot_print(void (*out)(const char *fmt, ...)) {
-    out("ZBOOT ring count=%u dropped=%u invalid=%u addr cur=0x%x last=0x%x ring=0x%x sysq=0x%x "
-        "main=0x%x calib=0x%x",
-        ring.count, ring.dropped, ring.invalid, (uint32_t)&cur, (uint32_t)&last, (uint32_t)&ring,
+    bool calib_live = calib_thread_started && k_thread_join(&calib_thread, K_NO_WAIT) != 0;
+
+    out("ZBOOT ring count=%u slots=%u dropped=%u invalid=%u reinit=%u calib_live=%u addr cur=0x%x "
+        "last=0x%x ring=0x%x sysq=0x%x main=0x%x calib=0x%x",
+        ring.count, RING_SLOTS, ring.dropped, ring.invalid, ring_reinit_this_boot ? 1 : 0,
+        calib_live ? 1 : 0, (uint32_t)&cur, (uint32_t)&last, (uint32_t)&ring,
         (uint32_t)&k_sys_work_q.thread, (uint32_t)&z_main_thread, (uint32_t)&calib_thread);
     for (uint32_t i = 0; i < ring.count && i < RING_SLOTS; i++) {
         char tag[12];

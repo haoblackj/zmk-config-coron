@@ -179,4 +179,9 @@ CONFIG_REBOOT=y
 `CONFIG_WATCHDOG`（ハードウェア WDT ドライバ）は無効。`TASK_WDT_HW_FALLBACK=y` でも実体のハード WDT は無い。
 
 ## 計測器側の表記の訂正
-`diag_boot.c` の `STG_MAIN_DONE` のコメント（30 行目、99 行目、464 行目）は「main() returned」と書いている。観測としては「main スレッドが終了した」が正しく、「`main()` が戻った」はこのファイルの結論に依存する解釈。像を作り直すときにコメントを直す（像と ELF の md5 を崩さないため、今回はソースを変えていない）。
+v3 の `diag_boot.c` の `STG_MAIN_DONE` のコメントは「main() returned」と書いていた。v4（2026-10-08 01:43 の像）でコメントと出力名を「main thread exited」「mainexit」に直した。
+
+## v4 像（bt4-R-10080143、bt4A-R-10080143）での確認（2026-10-08 01:46 追記）
+- `CONFIG_ZMK_WATCHDOG_FATAL_DETECT=y` のまま（変更なし）。`k_sys_fatal_error_handler` は両像とも `zmk-feature-watchdog/src/watchdog_fatal.c:65` のもの（`objdump -dl`）。上の結論はそのまま成り立つ。
+- 設定リポジトリには `src/fatal_reboot.c`（10c183c、2026-10-05 00:53。記録なしで `sys_reboot`）があり、`CMakeLists.txt` が「coron_L/coron_R かつ `CONFIG_ZMK_WATCHDOG_FATAL_DETECT` でないとき」だけ組み込む。v4 では組み込まれない（`build.ninja` に無い）。fatal 検出を切った最初の試みは、この関数と計測器の自前のハンドラの二重定義でリンクに失敗した。
+- 変えたのは `CONFIG_ZMK_WATCHDOG_FREEZE_DETECT=n` だけ。freeze 検出は `task_wdt` の期限切れ callback（タイマー ISR 文脈）から `zmk_watchdog_reboot()` → `sys_reboot` に進む別の経路で、main スレッドの終了には関わらない。
