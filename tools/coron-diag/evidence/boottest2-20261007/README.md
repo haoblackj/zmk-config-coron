@@ -1,4 +1,4 @@
-# 証拠の束（Coron 起動停止の調査、計測器 v3、2026-10-07 23:59 作成、2026-10-08 01:30 更新）
+# 証拠の束（Coron 起動停止の調査、計測器 v3、2026-10-07 23:59 作成、2026-10-08 01:12 更新）
 
 GitHub で読める写しは `haoblackj/zmk-config-coron` の `feat/dya-diagnostics` ブランチ、`tools/coron-diag/`（モジュールのソース）と `tools/coron-diag/evidence/boottest2-20261007/`（この束。ELF と UF2 は大きさの都合で入れず、md5 だけ置く。要るときは渡す）。
 
