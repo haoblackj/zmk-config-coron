@@ -1,0 +1,17 @@
+﻿14:58:59.178 MOCK mode: every child gets its scenario file from \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim18\sim\loop-mid-fail
+14:58:59.194 deadlines: t2=1420 t1=1180 flash-base=300 pre=90 baseline=120 t3=1960 flash-prod=300
+14:58:59.200 LOOP start serial=B17318CDBE9A61B1 mode=write trials=3 dwells=[13,17,26] min no_new_trial_after= restore_reserve=10min
+14:58:59.207 page difference of the two images (UF2 contents, 4 KiB pages): bt4 93 pages, bt4A 104 pages, 0 identical; how many pages the bootloader actually erases is a separate, unmeasured quantity
+14:58:59.220 launch pre (deadline 90s)
+14:59:00.446 pre rc=0
+14:59:00.454 launch flash-base (deadline 300s)
+14:59:02.645 flash-base rc=0
+14:59:02.652 launch baseline (deadline 120s)
+14:59:04.323 baseline rc=0
+14:59:04.370 launch t1 (deadline 1180s)
+14:59:07.704 trial 1 trial=1 mode=write image_planned=C:\T\coron_R-bt4-alt.uf2 image_written= tag_before=bt4-R-10080217 tag_after_planned=bt4A-R-10080217 tag_after_observed= rc=1 seq_before=1 seq_after= uptime_min_before_op=13.17 dwell_min=13 stages_unknown=False stages_source=result file dwell_started=True op_sent=True image_written_stage=False boot_observed=False running_confirmed=False completed=False ring_after= result=fail stop_reason=script FAIL before: nothing more (only reading)
+14:59:07.711 launch flash-prod (deadline 300s)
+14:59:09.452 ledger: mode=write trials started=1, b sent=1, images written=0 (boots after a write), boots observed=0, RUNNING confirmed=0, completed without event=0, not sent (child refused)=0, send not attempted=0; stop=trial 1 failed (rc=1)
+14:59:09.459 restore PASS
+14:59:09.467 LOOP FAILED | RESTORE PASS
+14:59:09.476 results: pre=0 flash-base=0 baseline=0 t1=1 t2=not-run t3=not-run restore=0 stop=trial_1_failed_(rc=1)

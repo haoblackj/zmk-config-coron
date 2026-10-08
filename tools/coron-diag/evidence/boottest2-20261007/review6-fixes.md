@@ -122,3 +122,7 @@
 2. 未送信の根拠: `Exchange` の分類を「`sent` の刻印 → true、子の明示的な `NOT sent` → false、それ以外（タイムアウト、書き込み中のエラー、落ちた）→ unknown」にし、分類の根拠をログに残す。台帳は `not sent (explicit)` と `op sent unknown` を別に数える。模擬ポートに「書き込みの中で例外」（`write_error`）を足した。追加場面 `loop-b-send-error`（unknown、未送信に加算しない、試行 FAIL、試行 2 なし）、`loop-b-not-sent`（明示的な拒否は未送信 1）。
 3. 模擬の複写刻印: 模擬の `Copy-Uf2` は「複写を試みた」（`copy attempt (mock)`）と、成功したときだけの完了刻印 `DEVICE-OP copied (mock)` を実機と同じ順序で出す。`Get-LogStages` は完了刻印だけを証拠にする。追加場面 `loop-copy-fail-noresult`（複写失敗 + 結果ファイル欠落 → `images written=0`）。
 途中で模擬が捕まえた自分の誤り: 分類のログ行の `timed out=False` が正常場面の禁止語 `timed out` に当たった（語を `timed_out` に変更）。
+
+## レビュー #18（2026-10-08、193c97b の 1 点 + 表示 1 点）への対応
+1. `unknown` を `[bool]` に変換していた: PowerShell は空でない文字列を真偽値に変換すると true にする（Microsoft の about_Booleans: `[bool]'False'` も True）。台帳は段階の値を変換せず子が書いたまま保持し（`Stage-Val`）、実績に数えるのは真偽値の true だけ（`Stage-True`）。型検査は真偽値、`unknown`、操作送信だけ `not-attempted` を許し、それ以外を拒否。成功契約の `completed` は真偽値の true を明示的に要求（`stages.completed is not boolean true (unknown)` で拒否）。追加場面 `loop-stage-unknown-fail`（失敗結果の 4 段階が `unknown` → 台帳にそのまま残り、`images written=0, boots observed=0, RUNNING confirmed=0, completed without event=0`）、`loop-completed-unknown`（終了コード 0 で `completed='unknown'` → 採用前に拒否、`completed without event=0`）。
+2. 表示: 操作送信の初期値を `not-attempted` にし、集計を `not sent (child refused)`（子の明示的な `NOT sent`）と `send not attempted`（送信段階に進まなかった）に分けた。`loop-left-app` は `not sent (child refused)=0, send not attempted=1`。

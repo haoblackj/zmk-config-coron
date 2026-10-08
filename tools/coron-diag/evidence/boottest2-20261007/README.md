@@ -102,10 +102,10 @@ GitHub で読める写しは `haoblackj/zmk-config-coron` の `feat/dya-diagnost
 無人ループの計画と実装（`calib-loop.ps1`、`calib-trial.ps1`、模擬 14 場面）は `loop-plan.md`。レビュー待ちで、実機では動かしていない。
 校正の発火は自然発生の件数に数えない。自動復帰で救えない停止（NVIC 優先度 0 まで抑止、TIMER4 準備前、ブートローダー内）は、この計測器では救えない。
 
-### 模擬試験（実機なし。`calib-sim.py`、2026-10-08 14:36〜14:45。記録は `calib-sim17-20261008/`（レビュー #17 の後。自己試験 15 件 + 校正 43 場面 + 無人ループ 31 場面。ループの場面は `loop-plan.md`）。13:51〜13:59 の 70 場面は `calib-sim16-20261008/`、13:19〜13:27 の 67 場面は `calib-sim15-20261008/`、12:25〜12:32 の 57 場面は `calib-sim14-20261008/`、11:34〜11:41 の 43 場面は `calib-sim13-20261008/`、10:52〜10:58 の 40 場面は `calib-sim12-20261008/`、レビュー #11 時点の 40 場面は `calib-sim11-20261008/`、レビュー #9 時点の 29 場面は `calib-sim9-20261008/`、レビュー #10 時点の 37 場面は `calib-sim10-20261008/`）
-`calib-sim.py` が、まず `calib-selftest.ps1`（照合関数の直接検証）を走らせ、次に `gen-scenarios.py` の 74 場面（校正 43、無人ループ 31）をすべて `calib-all.ps1` の全体実行（事前確認 → 基準像 → 第 0〜8 段 → 本番復帰）として流し、各場面の `expect.json`（終了コード、`results:` 行の全段の値、ログに必ず現れる正規表現と現れてはならない正規表現。ファイル名の glob で段を限定できる）と機械的に照合する。1 つでも不一致なら非ゼロで終わる。模擬は USB 状態、UF2 ドライブ、複写結果、ファイルの md5 を差し替え（PnP も CIM も Copy-Item も呼ばない）、コンソールの子プロセス `calib-io.ps1` は実物を起動してポートだけを缶詰（`-MockFile`）に置き換えるので、子の送信の関門、刻印、期限超過時の強制終了がそのまま試験される。異常場面も全体実行なので、「失敗した段の後の段が `not-run`」「それでも復帰が走り別に判定される」が `results:` 行で確かめられる。
+### 模擬試験（実機なし。`calib-sim.py`、2026-10-08 14:54〜15:03。記録は `calib-sim18-20261008/`（レビュー #18 の後。自己試験 15 件 + 校正 43 場面 + 無人ループ 33 場面。ループの場面は `loop-plan.md`）。14:36〜14:45 の 74 場面は `calib-sim17-20261008/`、13:51〜13:59 の 70 場面は `calib-sim16-20261008/`、13:19〜13:27 の 67 場面は `calib-sim15-20261008/`、12:25〜12:32 の 57 場面は `calib-sim14-20261008/`、11:34〜11:41 の 43 場面は `calib-sim13-20261008/`、10:52〜10:58 の 40 場面は `calib-sim12-20261008/`、レビュー #11 時点の 40 場面は `calib-sim11-20261008/`、レビュー #9 時点の 29 場面は `calib-sim9-20261008/`、レビュー #10 時点の 37 場面は `calib-sim10-20261008/`）
+`calib-sim.py` が、まず `calib-selftest.ps1`（照合関数の直接検証）を走らせ、次に `gen-scenarios.py` の 76 場面（校正 43、無人ループ 33）をすべて `calib-all.ps1` の全体実行（事前確認 → 基準像 → 第 0〜8 段 → 本番復帰）として流し、各場面の `expect.json`（終了コード、`results:` 行の全段の値、ログに必ず現れる正規表現と現れてはならない正規表現。ファイル名の glob で段を限定できる）と機械的に照合する。1 つでも不一致なら非ゼロで終わる。模擬は USB 状態、UF2 ドライブ、複写結果、ファイルの md5 を差し替え（PnP も CIM も Copy-Item も呼ばない）、コンソールの子プロセス `calib-io.ps1` は実物を起動してポートだけを缶詰（`-MockFile`）に置き換えるので、子の送信の関門、刻印、期限超過時の強制終了がそのまま試験される。異常場面も全体実行なので、「失敗した段の後の段が `not-run`」「それでも復帰が走り別に判定される」が `results:` 行で確かめられる。
 03:01 の旧版（`calib-sim.sh`、`calib-sim-20261008/`）は単段実行で期待の照合が無かったので、この版で置き換えた。08:12 の版（29 場面）の初回実行で、旧版では見えなかった欠陥を 1 つ捕まえて直した: 子の刻印 `dump incomplete (no ZDIAG end within 4 s)` に文字列 `ZDIAG end` が含まれ、親の「dump 完了」判定（`-cmatch 'ZDIAG end'`）が刻印に当たって PASS になっていた（`no dump (no ZDIAG begin …)` も同様）。判定を行頭アンカー（`(?m)^ZDIAG end\s*$`）にし、刻印の文言から印の文字列を外した。
-74 場面の結果（全部期待どおり。`report.txt`。校正の 43 場面:）
+76 場面の結果（全部期待どおり。`report.txt`。校正の 43 場面:）
 | 場面 | 内容 | 期待（終了コード、結果） | 照合した決め手 |
 |---|---|---|---|
 | normal | 本番像（`ZBOOT` なし）から始めて基準像の書き込み、第 0〜8 段、本番復帰 | 0。pre/flash-base/0/1/2/4/5/6/7/8 PASS、3 SKIP、restore PASS | pre に `no ZBOOT line`、複写 2 回、`CALIBRATION PASS`、第 2 段 `reset observed directly`、`inc0 evidence: … fire4`、`NOT sent`/`timed out`/` #TRUNC` 行末なし |
@@ -148,7 +148,7 @@ GitHub で読める写しは `haoblackj/zmk-config-coron` の `feat/dya-diagnost
 | two-ports | 同じシリアルに診断コンソール（COM5、MI_00）と Studio の RPC UART（COM7、MI_03）がある（本番像の形）で全体実行 | 0。全段 PASS | `opened COM5` あり、`opened COM7`/`console COM7`/COM7 への `sent` が 1 行も無い |
 | uf2-partial-serial | 第 7 段: UF2 ドライブの ID がシリアルの部分一致（1 文字多い F:、1 文字短い G:）だけ | 1。7=FAIL | `drives of serial=[] all uf2 drives=[F,G]`、`STOPPED before: copy the alt image`、複写なし |
 | uf2-noprefix | UF2 ドライブの ID が接頭辞なし（`\<シリアル>&0`）で全体実行 | 0。全段 PASS | `drives of serial=[E]` |
-無人ループの 31 場面（`calib-loop.ps1` の全体実行。`loop-plan.md` の表の条件。`results:` 行には事前確認 `pre` が加わる）:
+無人ループの 33 場面（`calib-loop.ps1` の全体実行。`loop-plan.md` の表の条件。`results:` 行には事前確認 `pre` が加わる）:
 | 場面 | 内容 | 期待（終了コード、結果） | 照合した決め手 |
 |---|---|---|---|
 | loop-normal | 書き込み群 3 試行（稼働 13、17、26 分）、事象なし。seq 1 の全 dump で reinit=1、以後 0 | 0。全試行 0、restore 0、stop=all-trials-done | 台帳の行（予定と実績の像が一致、seq 1→2→3→4、操作直前の稼働 13.17/17.2/26.2 分）、`up_ms 10000 -> 790000, progress 780000 ms`、`trials started=3, b sent=3, images written=3 (boots after a write), boots observed=3, RUNNING confirmed=3, completed without event=3`、事前確認で本番像の md5 PASS、EVENT 行なし |
@@ -170,11 +170,13 @@ GitHub で読める写しは `haoblackj/zmk-config-coron` の `feat/dya-diagnost
 | loop-r-sent-timeout | リセット群で同じ | 1 | `sent 'r'`、`r sent=1 (boots after a soft reset), boots observed=0`、復帰 PASS |
 | loop-b-sent-timeout-alive | 送信後のタイムアウトで終了未確認 | 3。t1=5、restore=not-attempted | `sent stamp PRESENT`、`op_sent=True`、`b sent=1`、`RESTORE NOT ATTEMPTED`、復帰の起動なし |
 | loop-result-noafter | 試行 1 が終了コード 0 で、試行番号と段階はそろうが `after` が無い結果 | 1。t1=0、stop=…after snapshot missing | `result file not usable (after snapshot missing): its stages are NOT adopted`、台帳 `completed without event=0, RUNNING confirmed=0, stages unknown=1`（1 にならない）、`b sent=1, images written=1` はログの刻印から、`LOOP FAILED \| RESTORE PASS` |
-| loop-b-send-error | `b` の書き込みの中で子が例外終了（`sent` も `NOT sent` も無し） | 1。t1=1 | `error on COM5 (… inside the write`、`send classification for 'b': unknown`、台帳 `op_sent=unknown`、`b sent=0, …, not sent (explicit)=0, op sent unknown=1`、試行 2 なし、復帰 PASS |
-| loop-b-not-sent | 子の関門が `b` を拒否（`ZDIAG endBROKEN`） | 1 | `NOT sent 'b'`、`send classification for 'b': False`、`not sent (explicit)=1`、`op sent unknown` なし |
+| loop-b-send-error | `b` の書き込みの中で子が例外終了（`sent` も `NOT sent` も無し） | 1。t1=1 | `error on COM5 (… inside the write`、`send classification for 'b': unknown`、台帳 `op_sent=unknown`、`b sent=0, …, not sent (child refused)=0, send not attempted=0, op sent unknown=1`、試行 2 なし、復帰 PASS |
+| loop-b-not-sent | 子の関門が `b` を拒否（`ZDIAG endBROKEN`） | 1 | `NOT sent 'b'`、`send classification for 'b': False`、`not sent (child refused)=1, send not attempted=0`、`op sent unknown` なし |
+| loop-stage-unknown-fail | 複写失敗の結果ファイルの `image_written`/`boot_observed`/`running_confirmed`/`completed` が文字列 `unknown` | 1。t1=1 | 台帳の試行 1 は `stages_source=result file` で各段階が `unknown` のまま（true に変換しない）、集計 `b sent=1, images written=0, boots observed=0, RUNNING confirmed=0, completed without event=0`、復帰 PASS |
+| loop-completed-unknown | 終了コード 0 の成功結果で `completed` が文字列 `unknown` | 1。t1=0、stop=…stages.completed is not boolean true (unknown) | 採用前に拒否、`stages_source=trial log stamps only`、`completed without event=0, stages unknown=1`、試行 2 なし、復帰 PASS |
 | loop-copy-fail-noresult | 複写が失敗し、結果ファイルも無い | 1。t1=1 | `copy attempt (mock)` と `copy error (mock)` はあるが `DEVICE-OP copied` は無し、台帳 `b sent=1, images written=0`（ログの刻印から）、`stages unknown=1` |
 | loop-unexpected-seq | 試行 1 の起動後に seq +2 | 10 | `boot number 1 -> 3, expected +1` |
-| loop-left-app | 稼働中（poll 3）に USB が app を離れ、復帰後の dump で seq +1 | 10。t1=10、stop=…left-app-during-dwell (unexpected-boot-count) | `the device left 'app' (state=none) at poll 3; the dwell ends here`（poll 4 以降なし、`end of dwell` なし）、`EVENT after leaving app: boot number 1 -> 2`、`b` は送らない、台帳 `b sent=0, images written=0` |
+| loop-left-app | 稼働中（poll 3）に USB が app を離れ、復帰後の dump で seq +1 | 10。t1=10、stop=…left-app-during-dwell (unexpected-boot-count) | `the device left 'app' (state=none) at poll 3; the dwell ends here`（poll 4 以降なし、`end of dwell` なし）、`EVENT after leaving app: boot number 1 -> 2`、`b` は送らない、台帳 `b sent=0, images written=0, …, not sent (child refused)=0, send not attempted=1`、試行 1 の `op_sent=not-attempted` |
 | loop-no-response | 書き込み後に app へ戻らない（USB に無い）。復帰も失敗 | 13（11 + 2）。t1=11、restore 1 | `NO EXTERNAL RESPONSE`、`images written=1 (boots after a write), boots observed=0`、復帰 `FAIL device on USB`、`LOOP STOPPED, NO OBSERVATION \| RESTORE FAIL` |
 | loop-mid-fail | 試行 1 の複写がエラー | 1。t1=1、restore 0 | `copy error (mock)`、`STOPPED before`、`b sent=1, images written=0`、`LOOP FAILED \| RESTORE PASS` |
 | loop-deadline | `-NoNewTrialAfter` が過去 | 0。t1〜t3 not-run、stop=deadline…、restore 0 | `deadline: trial 1`、試行のログなし、`LOOP DONE (no event) \| RESTORE PASS` |

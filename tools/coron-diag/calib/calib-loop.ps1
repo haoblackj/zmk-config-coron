@@ -92,10 +92,20 @@ function Test-ResultOwned($r, [int]$trialNo) {
     foreach ($k in $STAGE_KEYS) {
         $v = $r.stages.$k
         if ($null -eq $v) { return "stages.$k missing" }
-        if (-not ($v -is [bool]) -and "$v" -cne 'unknown') { return "stages.$k is not a boolean or 'unknown' ($v)" }
+        # a stage is a boolean, the string 'unknown', or (op_sent only) 'not-attempted'; nothing else.
+        # A non-empty string would be $true under PowerShell's boolean conversion (about_Booleans),
+        # so the ledger never casts these values: see Stage-Val (review #18).
+        if ($v -is [bool]) { continue }
+        if ("$v" -ceq 'unknown') { continue }
+        if ($k -ceq 'op_sent' -and "$v" -ceq 'not-attempted') { continue }
+        return "stages.$k is not a boolean, 'unknown'$(if ($k -ceq 'op_sent') { " or 'not-attempted'" }) ($v)"
     }
     return ''
 }
+# The ledger keeps a stage exactly as the child wrote it: a real boolean, or the string it carried.
+# Only a boolean $true ever counts as an achieved stage.
+function Stage-Val($v) { if ($v -is [bool]) { return $v }; return "$v" }
+function Stage-True($v) { return (($v -is [bool]) -and $v) }
 # Everything a result must satisfy before ANY of it reaches the ledger (review #17, point 1): the
 # ownership and stage structure for every result, plus the success contract when the child says 0.
 function Test-ResultUsable($r, [int]$trialNo, [string]$rc) {
@@ -123,7 +133,8 @@ function Test-ResultComplete($r, [int]$trialNo) {
     if ("$($r.result)" -cne 'ok') { return "result=$($r.result)" }
     if ($null -eq $r.after) { return 'after snapshot missing' }
     foreach ($k in @('seq', 'count', 'dropped', 'invalid', 'ring_reinit', 'up_ms', 'tag', 'done')) { if ($null -eq $r.after.$k) { return "after.$k missing" } }
-    if (-not $r.stages.completed) { return 'stages.completed is not set' }
+    # boolean $true only: the string 'unknown' is truthy in PowerShell and must not pass (review #18)
+    if (-not (($r.stages.completed -is [bool]) -and $r.stages.completed)) { return "stages.completed is not boolean true ($($r.stages.completed))" }
     return ''
 }
 
@@ -188,10 +199,10 @@ for ($i = 1; $i -le $n; $i++) {
                        seq_before = $(if ($r -and $r.before) { $r.before.seq } else { $null }); seq_after = $(if ($r -and $r.after) { $r.after.seq } else { $null })
                        uptime_min_before_op = $(if ($r -and $r.dwell) { $r.dwell.up_min } else { $null }); dwell_min = $dw
                        stages_unknown = $unknown; stages_source = $(if ($unknown) { 'trial log stamps only' } else { 'result file' })
-                       dwell_started = $(if ($st) { [bool]$st.dwell_started } else { 'unknown' })
-                       op_sent = $(if ($st) { $(if ("$($st.op_sent)" -ceq 'unknown') { 'unknown' } else { [bool]$st.op_sent }) } else { $fromLog.op_sent })
-                       image_written_stage = $(if ($st) { [bool]$st.image_written } else { $fromLog.image_written }); boot_observed = $(if ($st) { [bool]$st.boot_observed } else { 'unknown' })
-                       running_confirmed = $(if ($st) { [bool]$st.running_confirmed } else { 'unknown' }); completed = $(if ($st) { [bool]$st.completed } else { 'unknown' })
+                       dwell_started = $(if ($st) { Stage-Val $st.dwell_started } else { 'unknown' })
+                       op_sent = $(if ($st) { Stage-Val $st.op_sent } else { $fromLog.op_sent })
+                       image_written_stage = $(if ($st) { Stage-Val $st.image_written } else { $fromLog.image_written }); boot_observed = $(if ($st) { Stage-Val $st.boot_observed } else { 'unknown' })
+                       running_confirmed = $(if ($st) { Stage-Val $st.running_confirmed } else { 'unknown' }); completed = $(if ($st) { Stage-Val $st.completed } else { 'unknown' })
                        ring_after = $(if ($r -and $r.after) { "count=$($r.after.count) dropped=$($r.after.dropped) invalid=$($r.after.invalid) reinit=$($r.after.ring_reinit)" } else { '' })
                        result = $(if ($r) { $r.result } else { 'no result file' }); stop_reason = $(if ($r) { $r.stop_reason } else { '' }) }
     $ledger += $row
@@ -224,17 +235,19 @@ $csv | Set-Content -Path (Join-Path $LogDir 'ledger.csv') -Encoding UTF8
 # denominators from what actually happened (review #15 point 6), never from the plan
 $known = @($ledger | Where-Object { -not $_.stages_unknown })
 $nUnknown = @($ledger | Where-Object { $_.stages_unknown }).Count
-$nStarted = @($known | Where-Object { $_.dwell_started }).Count
-# an operation counts when its stage is $true, from the result file OR from the trial's own log stamp
-$nSent = @($ledger | Where-Object { $_.op_sent -is [bool] -and $_.op_sent }).Count
+# a stage counts ONLY as a boolean $true (Stage-True), from the result file OR from the trial's own
+# log stamp; 'unknown' and 'not-attempted' are never counted as achieved (review #18)
+$nStarted = @($known | Where-Object { Stage-True $_.dwell_started }).Count
+$nSent = @($ledger | Where-Object { Stage-True $_.op_sent }).Count
 $nSentUnknown = @($ledger | Where-Object { "$($_.op_sent)" -ceq 'unknown' }).Count
-$nNotSent = @($ledger | Where-Object { $_.op_sent -is [bool] -and -not $_.op_sent }).Count
-$nWritten = @($ledger | Where-Object { $_.image_written_stage -is [bool] -and $_.image_written_stage }).Count
-$nBoot = @($known | Where-Object { $_.boot_observed }).Count
-$nRun = @($known | Where-Object { $_.running_confirmed }).Count
-$nOk = @($known | Where-Object { $_.completed -and $_.rc -ceq '0' }).Count
+$nNotSent = @($ledger | Where-Object { ($_.op_sent -is [bool]) -and -not $_.op_sent }).Count   # the child's explicit 'NOT sent' only
+$nNotAttempted = @($ledger | Where-Object { "$($_.op_sent)" -ceq 'not-attempted' }).Count      # stopped before the send stage
+$nWritten = @($ledger | Where-Object { Stage-True $_.image_written_stage }).Count
+$nBoot = @($known | Where-Object { Stage-True $_.boot_observed }).Count
+$nRun = @($known | Where-Object { Stage-True $_.running_confirmed }).Count
+$nOk = @($known | Where-Object { (Stage-True $_.completed) -and $_.rc -ceq '0' }).Count
 $unk = $(if ($nUnknown -gt 0) { ", stages unknown=$nUnknown (no usable result file; only log stamps counted for those)" } else { '' })
-$unk += ", not sent (explicit)=$nNotSent"
+$unk += ", not sent (child refused)=$nNotSent, send not attempted=$nNotAttempted"
 if ($nSentUnknown -gt 0) { $unk += ", op sent unknown=$nSentUnknown (no 'sent' and no 'NOT sent' stamp: timeout or error inside the write)" }
 if ($Mode -ceq 'write') { S "ledger: mode=write trials started=$nStarted, b sent=$nSent, images written=$nWritten (boots after a write), boots observed=$nBoot, RUNNING confirmed=$nRun, completed without event=$nOk$unk; stop=$stop" }
 else { S "ledger: mode=reset trials started=$nStarted, r sent=$nSent (boots after a soft reset), boots observed=$nBoot, RUNNING confirmed=$nRun, completed without event=$nOk$unk; stop=$stop" }

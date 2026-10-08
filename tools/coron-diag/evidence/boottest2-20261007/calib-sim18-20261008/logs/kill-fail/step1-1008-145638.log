@@ -1,0 +1,18 @@
+﻿14:56:38.567 MOCK scenario \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim18\sim\kill-fail\1.json
+14:56:38.597 STEP 1 start serial=B17318CDBE9A61B1
+14:56:41.691 deadline 3s passed for pid 90752: terminating through calib-kill.ps1 (deadline 20s for enumeration + request + confirmation)
+14:56:47.396 kill: phase=enumerate pid=90752
+14:56:47.404 kill: tree=[90752]
+14:56:47.411 kill: phase=terminate
+14:56:47.418 kill: taskkill rc=1: (mock) taskkill NOT invoked: simulated failure
+14:56:47.426 kill: phase=confirm
+14:56:47.433 kill: alive=[90752] confirmed=False (after 5 s)
+14:56:47.447 termination confirmed=False (kill helper rc=1; pids still alive: [90752])
+----- console COM5 send='' read=0s exit= timed_out=True deadline=3s -----
+
+----- end console -----
+14:56:47.487 FAIL console child returned within 3s (timed out; termination NOT confirmed, pids still alive [90752]; sent stamp absent)
+14:56:47.495 ABORT a console child may still be alive and could still write to the port; no further device operation; not performing: nothing (read only)
+14:56:47.506 STOPPED before: nothing (read only)
+14:56:47.513 a console child may still be alive (termination not confirmed): exit 5, the caller must not start any device operation
+14:56:47.521 STEP 1 RESULT FAIL (1 failed checks; a console child may still be alive)

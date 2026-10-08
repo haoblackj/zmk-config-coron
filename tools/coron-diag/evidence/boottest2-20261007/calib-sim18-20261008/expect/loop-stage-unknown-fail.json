@@ -1,0 +1,31 @@
+{
+ "exit": 1,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "1",
+  "t2": "not-run",
+  "t3": "not-run",
+  "restore": "0",
+  "stop": "trial_1_failed_(rc=1)"
+ },
+ "must": [
+  "trial 1 .*stages_source=result file .*op_sent=True image_written_stage=unknown boot_observed=unknown running_confirmed=unknown completed=unknown",
+  "b sent=1, images written=0 \\(boots after a write\\), boots observed=0, RUNNING confirmed=0, completed without event=0, not sent \\(child refused\\)=0, send not attempted=0",
+  "LOOP FAILED \\| RESTORE PASS"
+ ],
+ "must_not": [
+  "images written=1",
+  "boots observed=1",
+  "RUNNING confirmed=1",
+  "completed without event=1"
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

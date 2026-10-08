@@ -1,0 +1,35 @@
+{
+ "exit": 1,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "1",
+  "t2": "not-run",
+  "t3": "not-run",
+  "restore": "0",
+  "stop": "trial_1_failed_(rc=1)"
+ },
+ "must": [
+  {
+   "glob": "trial1-*.log",
+   "re": "NOT sent 'b'"
+  },
+  {
+   "glob": "trial1-*.log",
+   "re": "send classification for 'b': False"
+  },
+  "trial 1 .*op_sent=False",
+  "b sent=0, images written=0 .*, not sent \\(child refused\\)=1, send not attempted=0"
+ ],
+ "must_not": [
+  "op sent unknown"
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

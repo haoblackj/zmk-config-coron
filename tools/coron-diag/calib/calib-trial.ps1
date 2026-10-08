@@ -46,7 +46,7 @@ if (-not (Test-Path -LiteralPath $LogDir)) { New-Item -ItemType Directory -Path 
 $script:Serial = $Serial
 $script:LogFile = Join-Path $LogDir ("trial$Trial-$Mode-" + (Get-Date).ToString('MMdd-HHmmss') + '.log')
 $script:Scn = $null
-$mockNoResult = $false; $mockStale = $false; $mockDropAfter = $false
+$mockNoResult = $false; $mockStale = $false; $mockDropAfter = $false; $mockUnknownStages = $false; $mockCompletedUnknown = $false
 if ($Mock) {
     try { Load-Mock $Mock } catch { Log "MOCK ERROR $($_.Exception.Message); nothing done"; exit 4 }
     if ($script:Scn.step_hang_s -gt 0) { Log "MOCK: this trial hangs for $($script:Scn.step_hang_s) s"; Start-Sleep -Seconds $script:Scn.step_hang_s }
@@ -54,18 +54,25 @@ if ($Mock) {
     if ($j.mock_no_result_file) { $mockNoResult = $true; Log 'MOCK: the result file will NOT be written (simulated inconsistent child)' }
     if ($j.mock_stale_result) { $mockStale = $true; Log 'MOCK: the result file will carry the previous trial number (simulated stale file)' }
     if ($j.mock_drop_after) { $mockDropAfter = $true; Log 'MOCK: the result file will lack the after snapshot (simulated incomplete success)' }
+    if ($j.mock_unknown_stages) { $mockUnknownStages = $true; Log "MOCK: a failed result will carry the string 'unknown' in image_written/boot_observed/running_confirmed/completed" }
+    if ($j.mock_completed_unknown) { $mockCompletedUnknown = $true; Log "MOCK: a successful result will carry completed='unknown'" }
 }
 Log "TRIAL $Trial mode=$Mode dwell=${DwellMin}min serial=$Serial image=$Uf2 tag_now=$TagNow tag_next=$TagNext"
 $DWELL_EARLY_MS = 2000; $DWELL_LATE_MS = 120000   # tolerance of the dwell check (documented in loop-plan.md)
 $res = [ordered]@{ trial = $Trial; mode = $Mode; dwell_min = $DwellMin; image_planned = $Uf2; image_written = ''; tag_now = $TagNow; tag_next = $TagNext;
                    result = 'fail'; stop_reason = ''; before = $null; dwell = $null; after = $null; note = @();
-                   stages = [ordered]@{ dwell_started = $false; dwell_done = $false; op_sent = $false; image_written = $false; boot_observed = $false; running_confirmed = $false; completed = $false } }
+                   stages = [ordered]@{ dwell_started = $false; dwell_done = $false; op_sent = 'not-attempted'; image_written = $false; boot_observed = $false; running_confirmed = $false; completed = $false } }
+# op_sent: 'not-attempted' until the send stage, then $true / $false (child's explicit refusal) /
+# 'unknown' from the child's stamps. Every other stage is a boolean (the mock hooks below can
+# write the string 'unknown' to prove that the orchestrator never counts it; review #18).
 $script:saveFailed = $false
 function Save-Result {
     if ($mockNoResult) { return }
     try {
         if ($mockStale) { $res.trial = $Trial - 1 }
         if ($mockDropAfter -and $res.result -ceq 'ok') { $res.after = $null }
+        if ($mockUnknownStages -and $res.result -cne 'ok') { foreach ($k in @('image_written', 'boot_observed', 'running_confirmed', 'completed')) { $res.stages[$k] = 'unknown' } }
+        if ($mockCompletedUnknown -and $res.result -ceq 'ok') { $res.stages['completed'] = 'unknown' }
         $res | ConvertTo-Json -Depth 6 | Set-Content -Path $ResultFile -Encoding UTF8 -ErrorAction Stop
         if (-not (Test-Path -LiteralPath $ResultFile)) { throw 'result file absent after writing' }
     } catch { Log "FAIL result file saved ($($_.Exception.Message))"; $script:fails++; $script:saveFailed = $true }

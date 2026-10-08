@@ -557,7 +557,8 @@ LF = loop_files(D3)
 LF['t1'] = scen(['app', 'app', 'app', 'none', 'none', 'app', 'app'], [ex('', ldump(B, 1, [], up_ms=10000)), ex('', ldump(B, 2, [], up_ms=20000, lst=last(B, 1, reason=0, reinit=1)))], drives=OUR)
 add_loop('loop-left-app', LF, loop_expect(10, loop_stopped(3, 1, '10', 'event:_left-app-during-dwell_(unexpected-boot-count)_(trial_1)'),
          must=[in_file('trial1-*.log', "EVENT dwell: the device left 'app' \\(state=none\\) at poll 3; the dwell ends here"), in_file('trial1-*.log', 'EVENT after leaving app: boot number 1 -> 2'),
-               'ledger: mode=write trials started=1, b sent=0, images written=0 \\(boots after a write\\), boots observed=0, RUNNING confirmed=0, completed without event=0'],
+               'ledger: mode=write trials started=1, b sent=0, images written=0 \\(boots after a write\\), boots observed=0, RUNNING confirmed=0, completed without event=0, not sent \\(child refused\\)=0, send not attempted=1',
+               'trial 1 .*op_sent=not-attempted'],
          must_not=[in_file('trial1-*.log', "sent 'b'"), in_file('trial1-*.log', 'first seen at poll [4-9]'), in_file('trial1-*.log', 'end of dwell')]))
 LF = loop_files(D3)
 LF['t1'] = loop_trial(B, A, 1, 13, states=['app'] * 14 + ['boot'] + ['none'] * 200, start_up_ms=10000)
@@ -660,13 +661,13 @@ LF = loop_files(D3)
 e = LF['t1']['exchanges'][2]; assert e['send'] == 'b'; e['write_error'] = True
 add_loop('loop-b-send-error', LF, loop_expect(1, loop_stopped(3, 1, '1', 'trial_1_failed_(rc=1)'),
          must=[in_file('trial1-*.log', "\\[calib-io\\] error on COM5 \\(.*inside the write"), in_file('trial1-*.log', "send classification for 'b': unknown \\(sent stamp=False, NOT-sent stamp=False, timed_out=False, child exit=1\\)"),
-               in_file('trial1-*.log', 'stage op_sent=unknown'), 'trial 1 .*op_sent=unknown', 'b sent=0, images written=0 .*, not sent \\(explicit\\)=0, op sent unknown=1', 'LOOP FAILED \\| RESTORE PASS'],
+               in_file('trial1-*.log', 'stage op_sent=unknown'), 'trial 1 .*op_sent=unknown', 'b sent=0, images written=0 .*, not sent \\(child refused\\)=0, send not attempted=0, op sent unknown=1', 'LOOP FAILED \\| RESTORE PASS'],
          must_not=[in_file('trial2-*.log', '.'), in_file('trial1-*.log', "sent 'b'"), in_file('trial1-*.log', "NOT sent 'b'")]))
 # 2b. the explicit refusal still counts as not sent
 LF = loop_files(D3)
 e = LF['t1']['exchanges'][2]; e['pre'] = e['pre'].replace('ZDIAG end\r\n', 'ZDIAG endBROKEN\r\n')
 add_loop('loop-b-not-sent', LF, loop_expect(1, loop_stopped(3, 1, '1', 'trial_1_failed_(rc=1)'),
-         must=[in_file('trial1-*.log', "NOT sent 'b'"), in_file('trial1-*.log', "send classification for 'b': False"), 'trial 1 .*op_sent=False', 'b sent=0, images written=0 .*, not sent \\(explicit\\)=1'],
+         must=[in_file('trial1-*.log', "NOT sent 'b'"), in_file('trial1-*.log', "send classification for 'b': False"), 'trial 1 .*op_sent=False', 'b sent=0, images written=0 .*, not sent \\(child refused\\)=1, send not attempted=0'],
          must_not=['op sent unknown']))
 # 3. copy failed AND no result file: the mock's completion stamp must not appear, so images written=0
 LF = loop_files(D3)
@@ -675,6 +676,19 @@ add_loop('loop-copy-fail-noresult', LF, loop_expect(1, loop_stopped(3, 1, '1', '
          must=[in_file('trial1-*.log', 'copy attempt \\(mock\\)'), in_file('trial1-*.log', 'copy error \\(mock\\)'), 'trial 1 result file not usable \\(result file missing or not JSON\\)',
                'b sent=1, images written=0 \\(boots after a write\\), boots observed=0, RUNNING confirmed=0, completed without event=0, stages unknown=1'],
          must_not=[in_file('trial1-*.log', 'DEVICE-OP copied'), 'images written=1']))
+# ---- review #18: the string 'unknown' in a stage is never counted (PowerShell would cast it to $true)
+LF = loop_files(D3)
+LF['t1'] = dict(loop_trial(B, A, 1, 13, copy='fail', start_up_ms=10000), mock_unknown_stages=True)
+add_loop('loop-stage-unknown-fail', LF, loop_expect(1, loop_stopped(3, 1, '1', 'trial_1_failed_(rc=1)'),
+         must=['trial 1 .*stages_source=result file .*op_sent=True image_written_stage=unknown boot_observed=unknown running_confirmed=unknown completed=unknown',
+               'b sent=1, images written=0 \\(boots after a write\\), boots observed=0, RUNNING confirmed=0, completed without event=0, not sent \\(child refused\\)=0, send not attempted=0', 'LOOP FAILED \\| RESTORE PASS'],
+         must_not=['images written=1', 'boots observed=1', 'RUNNING confirmed=1', 'completed without event=1']))
+LF = loop_files(D3)
+LF['t1'] = dict(LF['t1'], mock_completed_unknown=True)
+add_loop('loop-completed-unknown', LF, loop_expect(1, loop_stopped(3, 1, '0', "trial_1_returned_0_but_its_result_is_invalid:_stages.completed_is_not_boolean_true_(unknown)"),
+         must=["trial 1 result file not usable \\(stages.completed is not boolean true \\(unknown\\)\\): its stages are NOT adopted", 'trial 1 .*stages_source=trial log stamps only',
+               'b sent=1, images written=1 \\(boots after a write\\), boots observed=0, RUNNING confirmed=0, completed without event=0, stages unknown=1', 'LOOP FAILED \\| RESTORE PASS'],
+         must_not=[in_file('trial2-*.log', '.'), 'completed without event=1', 'RUNNING confirmed=1']))
 
 
 def main():
