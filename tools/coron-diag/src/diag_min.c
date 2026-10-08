@@ -152,6 +152,8 @@ __weak void diag_boot_mark_reboot(void) {}
 __weak int diag_boot_calibrate_check(char which) { ARG_UNUSED(which); return 0; }
 __weak void diag_boot_calibrate_start(char which) { ARG_UNUSED(which); }
 __weak void diag_boot_clear_ring(void) {}
+/* diag_entry.c is built only with CONFIG_CORON_DIAG_ENTRY (production: entry clean + breadcrumb). */
+__weak void diag_entry_print(void (*out)(const char *fmt, ...)) { ARG_UNUSED(out); }
 
 static void dump(void) {
     out("ZDIAG begin version=prof1 up_ms=%u boot=1 reset=0x%x", k_uptime_get_32(), reset_cause);
@@ -168,6 +170,7 @@ static void dump(void) {
     }
     diag_prof_print(out);
     diag_boot_print(out);
+    diag_entry_print(out);
     out("ZDIAG end");
 }
 

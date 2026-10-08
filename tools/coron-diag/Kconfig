@@ -12,6 +12,17 @@ config CORON_DIAG_BOOT_FIX
 	  Not used: its HFXO wait condition is wrong (it waits for HFCLKSTAT.STATE == 0, but
 	  stopping the HFXO only falls back to HFINT, STATE stays running). Kept for the record.
 
+config CORON_DIAG_ENTRY
+	bool "Production: clean the boot entry the bootloader's DFU exit leaves behind, and keep a boot breadcrumb"
+	depends on !CORON_DIAG_BOOT
+	select BOARD_EARLY_INIT_HOOK
+	help
+	  For the production image. In board_early_init_hook: clear the POWER/CLOCK interrupt
+	  enables, every NVIC enable and pending bit, the stale HFCLKSTARTED event and SysTick
+	  (stores only, no waits, no clock operations); then keep a one-word stage breadcrumb at
+	  the fixed address 0x2002c000 (needs diagrec.overlay) that the next boot prints in the
+	  console dump ('ZDIAG crumb ...'). See src/diag_entry.c.
+
 config CORON_DIAG_ENTRY_CLEAN
 	bool "In the early hook, right after the net is armed, clear what the bootloader's DFU exit leaves behind"
 	depends on CORON_DIAG_BOOT

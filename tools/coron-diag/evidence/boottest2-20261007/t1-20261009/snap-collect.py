@@ -8,7 +8,7 @@ usage: snap-collect.py <logdir> [<logdir> ...]
 """
 import glob, os, re, sys
 
-PTS = ('hook', 'clk', 'usb')
+PTS = ('hook', 'clean', 'clk', 'usb')
 LINES = ('k', 'c', 'p', 'r', 'u', 's')
 POWER_CLOCK_IRQ = 0     # nRF52840 IRQ 0 = POWER_CLOCK
 RTC1_IRQ = 17
@@ -26,7 +26,7 @@ def parse_log(path):
             cur_seq = int(m.group(1))
             boots.setdefault(cur_seq, {'_taken': int(m.group(2), 16)})
             continue
-        m = re.match(r'^ZBOOT snap (hook|clk|usb)([kcprus]) (.*)$', line)
+        m = re.match(r'^ZBOOT snap (hook|clean|clk|usb)([kcprus]) (.*)$', line)
         if m and cur_seq is not None:
             pt, ln, rest = m.group(1), m.group(2), m.group(3)
             d = boots[cur_seq].setdefault(pt, {})
