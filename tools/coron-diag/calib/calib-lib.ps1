@@ -23,6 +23,10 @@ $script:fails = 0
 $script:nextOp = 'start'
 $script:xn = 0
 $script:childAlive = $false   # set when a timed-out console child could not be confirmed dead (exit 5)
+# After an Exchange with a command: $true = the child's 'sent' stamp was seen, $false = the child
+# returned without writing (its 'NOT sent' stamp), 'unknown' = the child timed out and no stamp was
+# read (the write cannot be ruled out). Trials carry this into their result (review #16, point 2).
+$script:lastSentStamp = $null
 
 function Log($m) {
     $line = (Get-Date).ToString('HH:mm:ss.fff') + " $m"
@@ -299,6 +303,7 @@ function Exchange([string]$Send = '', [int]$ReadSeconds = 0) {
         if ($stderr) { Add-Content -Path $script:LogFile -Value ("[stderr] " + $stderr) -Encoding UTF8 }
         Add-Content -Path $script:LogFile -Value '----- end console -----' -Encoding UTF8
         $sentStamp = ($Send -and ($stdout -cmatch ("\[calib-io\] sent '" + [regex]::Escape($Send) + "'")))
+        if ($Send) { $script:lastSentStamp = $(if ($sentStamp) { $true } elseif ($res.timedOut) { 'unknown' } else { $false }) }
         if ($res.timedOut) {
             $stampTxt = $(if ($sentStamp) { 'PRESENT' } else { 'absent' })
             if ($res.killed) {

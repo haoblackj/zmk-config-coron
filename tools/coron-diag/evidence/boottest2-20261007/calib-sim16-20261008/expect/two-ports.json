@@ -1,0 +1,29 @@
+{
+ "exit": 0,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "0": "0",
+  "1": "0",
+  "2": "0",
+  "3": "2",
+  "4": "0",
+  "5": "0",
+  "6": "0",
+  "7": "0",
+  "8": "0",
+  "restore": "0"
+ },
+ "must": [
+  "opened COM5",
+  {
+   "glob": "flash-prod-*.log",
+   "re": "sent 'b'"
+  }
+ ],
+ "must_not": [
+  "opened COM7",
+  "console COM7",
+  "COM7.*sent"
+ ]
+}

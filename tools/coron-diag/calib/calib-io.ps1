@@ -20,7 +20,8 @@
 #
 # -MockFile <json>: replaces the SerialPort by a canned port (fields: pre = text the device
 # emits before the command, post = text after it, lost = the port vanishes after post,
-# hang_s = block that long inside Open (a child that never returns), open_error = fail to open,
+# hang_s = block that long inside Open (a child that never returns), hang_after_send_s = block that
+# long on the first read after the command was written (the 'sent' stamp is out), open_error = fail to open,
 # stderr = text to print on stderr, dump_on_request = pre is delivered only after a 'd' write,
 # like the test images). Used by the simulation only; the gate and the stamps are the real code
 # paths.
@@ -45,7 +46,7 @@ function New-MockPort {
         switch ($this.phase) {
             0 { $this.phase = 1; if ($script:mock.dump_on_request) { return '' }; return [string]$script:mock.pre }
             5 { $this.phase = 1; return [string]$script:mock.pre }
-            2 { $this.phase = 3; return [string]$script:mock.post }
+            2 { $this.phase = 3; if ($script:mock.hang_after_send_s) { Start-Sleep -Seconds ([int]$script:mock.hang_after_send_s) }; return [string]$script:mock.post }
             3 { if ($script:mock.lost) { $this.phase = 4; throw (New-Object System.IO.IOException 'The device does not recognize the command.') }; return '' }
             default { return '' }
         }

@@ -1,0 +1,33 @@
+{
+ "exit": 13,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "11",
+  "t2": "not-run",
+  "t3": "not-run",
+  "restore": "1",
+  "stop": "no-observation:_no-external-response_(state=none)_(trial_1)"
+ },
+ "must": [
+  {
+   "glob": "trial1-*.log",
+   "re": "NO EXTERNAL RESPONSE"
+  },
+  {
+   "glob": "flash-prod-*.log",
+   "re": "FAIL device on USB"
+  },
+  "LOOP STOPPED, NO OBSERVATION \\| RESTORE FAIL",
+  "images written=1 \\(boots after a write\\), boots observed=0"
+ ],
+ "must_not": [],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

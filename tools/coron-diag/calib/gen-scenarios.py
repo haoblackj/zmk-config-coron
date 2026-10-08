@@ -614,11 +614,39 @@ add_loop('loop-uptime-regress', loop_files(D3, trial_override={1: dict(end_up_ms
 LF = loop_files(D3)
 LF['t1'] = dict(LF['t1'], mock_no_result_file=True)
 add_loop('loop-result-missing', LF, loop_expect(1, loop_stopped(3, 1, '0', 'trial_1_returned_0_but_its_result_is_invalid:_result_file_missing_or_not_JSON'),
-         must=['result file missing or not JSON', 'stages unknown=1 \\(no result file; these trials may have operated the device\\)', 'LOOP FAILED \\| RESTORE PASS'], must_not=[in_file('trial2-*.log', '.')]))
+         must=['result file missing or not JSON', 'b sent=1, images written=1 \\(boots after a write\\), boots observed=0, RUNNING confirmed=0, completed without event=0, stages unknown=1 \\(no usable result file; only log stamps counted for those\\)',
+               'trial 1 .*stages_source=trial log stamps only', 'LOOP FAILED \\| RESTORE PASS'], must_not=[in_file('trial2-*.log', '.')]))
 LF = loop_files(D3)
 LF['t2'] = dict(LF['t2'], mock_stale_result=True)
 add_loop('loop-result-stale', LF, loop_expect(1, loop_stopped(3, 2, '0', 'trial_2_returned_0_but_its_result_is_invalid:_result_file_is_of_trial_1,_not_2'),
-         must=['result file is of trial 1, not 2'], must_not=[in_file('trial3-*.log', '.')]))
+         must=['result file is of trial 1, not 2', 'trial 2 result file not usable \\(result file is of trial 1, not 2\\): its stages are NOT adopted',
+               'trials started=1, b sent=2, images written=2 \\(boots after a write\\), boots observed=1, RUNNING confirmed=1, completed without event=1, stages unknown=1 \\(no usable result file; only log stamps counted for those\\)',
+               'trial 2 .*stages_unknown=True stages_source=trial log stamps only .*op_sent=True image_written_stage=True boot_observed=unknown running_confirmed=unknown completed=unknown'],
+         must_not=[in_file('trial3-*.log', '.'), 'RUNNING confirmed=2', 'completed without event=2']))
+# ---- review #16 point 2: the command was written (stamp out), then the console child timed out
+def sent_then_timeout(mode, kill_mode=None):
+    f = loop_files(D3 if mode == 'write' else (13, 26), mode=mode)
+    t1 = f['t1']
+    cmd = 'b' if mode == 'write' else 'r'
+    e = t1['exchanges'][2]
+    assert e['send'] == cmd
+    e['hang_after_send_s'] = 60; e['io_timeout_s'] = 3; e['lost'] = False
+    if kill_mode:
+        t1['kill_mode'] = kill_mode
+    return f
+add_loop('loop-b-sent-timeout', sent_then_timeout('write'), loop_expect(1, loop_stopped(3, 1, '1', 'trial_1_failed_(rc=1)'),
+         must=[in_file('trial1-*.log', "\\[calib-io\\] sent 'b'"), in_file('trial1-*.log', 'timed out; killed with its process tree, termination confirmed; sent stamp PRESENT'),
+               in_file('trial1-*.log', 'stage op_sent=True \\(from the console child.s stamp'), 'trial 1 .*op_sent=True image_written_stage=False',
+               'trials started=1, b sent=1, images written=0 \\(boots after a write\\), boots observed=0', 'LOOP FAILED \\| RESTORE PASS'],
+         must_not=[in_file('trial2-*.log', '.'), in_file('trial1-*.log', 'DEVICE-OP cop')]))
+add_loop('loop-r-sent-timeout', sent_then_timeout('reset'), loop_expect(1, loop_stopped(2, 1, '1', 'trial_1_failed_(rc=1)'),
+         must=[in_file('trial1-*.log', "\\[calib-io\\] sent 'r'"), in_file('trial1-*.log', 'sent stamp PRESENT'), 'trial 1 .*op_sent=True',
+               'trials started=1, r sent=1 \\(boots after a soft reset\\), boots observed=0', 'LOOP FAILED \\| RESTORE PASS'],
+         must_not=[in_file('trial2-*.log', '.')], mode='reset', dwells=(13, 26)))
+add_loop('loop-b-sent-timeout-alive', sent_then_timeout('write', kill_mode='linger'), loop_expect(3, loop_stopped(3, 1, '5', 'trial_1_failed_(rc=5)', restore='not-attempted'),
+         must=[in_file('trial1-*.log', "\\[calib-io\\] sent 'b'"), in_file('trial1-*.log', 'termination NOT confirmed, pids still alive .*; sent stamp PRESENT'), 'trial 1 .*op_sent=True',
+               'b sent=1, images written=0', 'RESTORE NOT ATTEMPTED'],
+         must_not=['FLASH prod start']))
 
 def main():
     ap = argparse.ArgumentParser()

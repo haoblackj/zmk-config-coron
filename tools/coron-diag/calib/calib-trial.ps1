@@ -21,7 +21,9 @@
 #     60 s (6 reads 10 s apart; mock: 3 reads) - a dump without done=1 is never a success.
 # Stages recorded in the result (review #15 point 6): dwell_started, dwell_done, op_sent,
 #   image_written, boot_observed, running_confirmed, completed - the ledger's denominators are
-#   built from these, not from the plan.
+#   built from these, not from the plan. op_sent comes from the console child's 'sent' stamp and
+#   survives a failed exchange ($true / $false / 'unknown' when the child timed out without a
+#   stamp; review #16 point 2).
 # Exit: 0 = trial done (result file written and complete), 1 = script FAIL / condition not met /
 # result could not be saved (stopped before the next device operation); 5 = a console child could
 # not be confirmed dead; 10 = event detected (records saved); 11 = the device gave no external
@@ -208,8 +210,8 @@ try {
     if ($Mode -ceq 'write') {
         NextOp "send 'b'"
         Require-File 'image to write' $Uf2 $Md5
-        $t = Send-Cmd 'b' 2
-        $res.stages.op_sent = $true
+        $script:lastSentStamp = $null
+        try { $t = Send-Cmd 'b' 2 } finally { $res.stages.op_sent = $(if ($null -eq $script:lastSentStamp) { 'unknown' } else { $script:lastSentStamp }); Log "stage op_sent=$($res.stages.op_sent) (from the console child's stamp, independent of the exchange's outcome)" }
         NextOp 'copy the image to the UF2 drive'
         Require 'b acknowledged' ($t -cmatch 'ZDIAG bootloader') 'ZDIAG bootloader'
         Require 'bootloader of this serial on USB within 30 s' (Wait-State 'boot' 30) ("state=" + $script:lastState)
@@ -227,8 +229,8 @@ try {
         $back = Wait-State 'app' 90
     } else {
         NextOp "send 'r'"
-        $t = Send-Cmd 'r' 2
-        $res.stages.op_sent = $true
+        $script:lastSentStamp = $null
+        try { $t = Send-Cmd 'r' 2 } finally { $res.stages.op_sent = $(if ($null -eq $script:lastSentStamp) { 'unknown' } else { $script:lastSentStamp }); Log "stage op_sent=$($res.stages.op_sent) (from the console child's stamp, independent of the exchange's outcome)" }
         NextOp 'nothing more (only reading)'
         Require 'r acknowledged' ($t -cmatch 'ZDIAG reboot') 'ZDIAG reboot'
         $left = Wait-Leave-App 10
