@@ -25,6 +25,7 @@
 
 #include <string.h>
 
+#include <zephyr/devicetree.h>
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/util.h>
@@ -63,6 +64,10 @@ struct crumb {
  * different magic) uses the same region in test builds; the two never coexist in one image. */
 struct crumb diag_crumb Z_GENERIC_SECTION(DIAGREC);
 BUILD_ASSERT(sizeof(struct crumb) == 32, "crumb is 8 words");
+/* The build must carry diagrec.overlay: without the node this fails to compile instead of
+ * silently placing the crumb somewhere else (review). */
+BUILD_ASSERT(DT_REG_ADDR(DT_NODELABEL(diagrec)) == 0x2002c000 && DT_REG_SIZE(DT_NODELABEL(diagrec)) >= 0x1000,
+             "DIAGREC must be the 4 KB region at 0x2002c000 (diagrec.overlay)");
 
 static struct crumb prev;
 static bool prev_valid;
@@ -80,26 +85,36 @@ void board_early_init_hook(void) {
     /* the previous boot's crumb, before anything here overwrites it */
     prev = diag_crumb;
     prev_valid = (prev.magic == CRUMB_MAGIC && prev.fmt_ver == CRUMB_FMT_VER &&
-                  prev.stage == ~prev.stage_inv);
+                  prev.stage == ~prev.stage_inv && prev.stage >= CS_HOOK && prev.stage <= CS_RUNNING);
 
-    /* entry clean (see the header) */
+    /* Invalidate the record NOW: a reset anywhere between here and crumb_set(CS_HOOK) below must
+     * not leave the previous boot's valid stage pair next to this boot's metadata (review). The
+     * pair stage/~stage written last is the commit point; no CRC needed. */
+    diag_crumb.stage_inv = diag_crumb.stage;
+    __DSB();
+
+    /* entry clean (see the header). The USBD is disabled here and every IRQ is masked, so the
+     * leftover SUSPEND/RESUME causes and the USBEVENT event are cleared with plain stores. */
     NRF_POWER->INTENCLR = 0xFFFFFFFFu; /* POWER and CLOCK share this register */
     NVIC->ICER[0] = 0xFFFFFFFFu;
     NVIC->ICPR[0] = 0xFFFFFFFFu;
     NVIC->ICER[1] = 0xFFFFFFFFu;
     NVIC->ICPR[1] = 0xFFFFFFFFu;
     NRF_CLOCK->EVENTS_HFCLKSTARTED = 0;
+    NRF_USBD->EVENTCAUSE = USBD_EVENTCAUSE_SUSPEND_Msk | USBD_EVENTCAUSE_RESUME_Msk; /* W1C */
+    NRF_USBD->EVENTS_USBEVENT = 0;
     SysTick->CTRL = 0;
     __DSB();
     __ISB();
 
-    /* this boot's crumb */
+    /* this boot's crumb; the stage pair last */
     diag_crumb.magic = CRUMB_MAGIC;
     diag_crumb.fmt_ver = CRUMB_FMT_VER;
     diag_crumb.seq = prev_valid ? prev.seq + 1 : 1;
     diag_crumb.resetreas = NRF_POWER->RESETREAS;
     diag_crumb.entry_inten = inten;
     diag_crumb.entry_iser1 = iser1;
+    __DSB();
     crumb_set(CS_HOOK);
 }
 
@@ -118,6 +133,9 @@ SYS_INIT(cs_app_early, APPLICATION, 1);
 static int cs_app_after_usb(void) { crumb_set(CS_APP_AFTER_USB); return 0; }
 SYS_INIT(cs_app_after_usb, APPLICATION, 97);
 
+/* CS_RUNNING means exactly: APPLICATION 99 was reached and the system workqueue processed this
+ * work once (it runs at priority -1, so possibly right at submit). It does not say that main(),
+ * settings_load(), BLE, USB enumeration or Studio got anywhere. */
 static void running_fn(struct k_work *w) {
     ARG_UNUSED(w);
     crumb_set(CS_RUNNING);
@@ -131,9 +149,11 @@ static int cs_app_last(void) {
 }
 SYS_INIT(cs_app_last, APPLICATION, 99);
 
-/* One line in the console dump (diag_min.c). Under 150 characters with the longest values. */
+/* One line in the console dump (diag_min.c): pv = previous crumb valid, pseq/pst/prst/pint/
+ * piser1 = the previous boot's seq, stage, RESETREAS, POWER/CLOCK INTEN and NVIC ISER[1] at its
+ * hook, seq/st = this boot. Longest possible line: 104 characters (under the 150 limit). */
 void diag_entry_print(void (*out)(const char *fmt, ...)) {
-    out("ZDIAG crumb prev_valid=%u prev_seq=%u prev_stage=%u prev_reset=0x%x prev_inten=0x%x prev_iser1=0x%x cur_seq=%u cur_stage=%u",
+    out("ZDIAG crumb pv=%u pseq=%u pst=%u prst=0x%x pint=0x%x piser1=0x%x seq=%u st=%u",
         prev_valid ? 1 : 0, prev_valid ? prev.seq : 0, prev_valid ? prev.stage : 0,
         prev_valid ? prev.resetreas : 0, prev_valid ? prev.entry_inten : 0,
         prev_valid ? prev.entry_iser1 : 0, diag_crumb.seq, diag_crumb.stage);

@@ -451,6 +451,9 @@ static void entry_clean(void) {
     NVIC->ICER[1] = 0xFFFFFFFFu;
     NVIC->ICPR[1] = 0xFFFFFFFFu;
     NRF_CLOCK->EVENTS_HFCLKSTARTED = 0;
+    /* the USBD's leftover SUSPEND/RESUME causes and USBEVENT (review of diag_entry.c; same here) */
+    NRF_USBD->EVENTCAUSE = USBD_EVENTCAUSE_SUSPEND_Msk | USBD_EVENTCAUSE_RESUME_Msk; /* W1C */
+    NRF_USBD->EVENTS_USBEVENT = 0;
     SysTick->CTRL = 0;
     __DSB();
     __ISB();

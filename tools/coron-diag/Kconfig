@@ -19,9 +19,11 @@ config CORON_DIAG_ENTRY
 	help
 	  For the production image. In board_early_init_hook: clear the POWER/CLOCK interrupt
 	  enables, every NVIC enable and pending bit, the stale HFCLKSTARTED event and SysTick
-	  (stores only, no waits, no clock operations); then keep a one-word stage breadcrumb at
-	  the fixed address 0x2002c000 (needs diagrec.overlay) that the next boot prints in the
-	  console dump ('ZDIAG crumb ...'). See src/diag_entry.c.
+	  (stores only, no waits, no clock operations); then keep an 8-word boot breadcrumb at
+	  the fixed address 0x2002c000 (diagrec.overlay is required: the build fails without the
+	  node) that the next boot prints in the console dump ('ZDIAG crumb ...'). Not together
+	  with CORON_DIAG_BOOT (same early hook). See src/diag_entry.c. Re-review if EARLY init,
+	  a SoC early hook or SoftDevice/MPSL is ever enabled.
 
 config CORON_DIAG_ENTRY_CLEAN
 	bool "In the early hook, right after the net is armed, clear what the bootloader's DFU exit leaves behind"
