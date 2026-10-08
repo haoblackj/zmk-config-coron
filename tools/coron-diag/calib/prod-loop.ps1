@@ -59,7 +59,10 @@ for ($i = 1; $i -le $Iterations; $i++) {
     }
     $rc = $p.ExitCode
     if ($null -eq $rc) { $rc = -1 }   # unreadable exit code counts as a failure (never as a pass)
-    $io2 =Get-ChildItem -LiteralPath $ld -Filter 'flash-prod-*-io2.out' -ErrorAction SilentlyContinue | Select-Object -First 1
+    # the post-write dump is the LAST console exchange: io2 when the write started from the app
+    # ('b' first), io1 when the half was already in its bootloader (08:50 on 2026-10-09: io1 only,
+    # and requiring io2 stopped the loop on a good boot)
+    $io2 = Get-ChildItem -LiteralPath $ld -Filter 'flash-prod-*-io*.out' -ErrorAction SilentlyContinue | Sort-Object Name | Select-Object -Last 1
     $crumb = ''
     if ($io2) { $crumb = (Get-Content -LiteralPath $io2.FullName | Where-Object { $_ -cmatch '^ZDIAG crumb ' } | Select-Object -First 1) }
     $crumbOk = $false; $seq = $null
