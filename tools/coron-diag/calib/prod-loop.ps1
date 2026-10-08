@@ -27,7 +27,14 @@ New-Item -ItemType Directory -Force -Path $RunDir | Out-Null
 $script:Summary = Join-Path $RunDir 'summary.log'
 function Log([string]$m) {
     $line = (Get-Date).ToString('HH:mm:ss.fff') + ' ' + $m
-    Add-Content -LiteralPath $script:Summary -Value $line -Encoding UTF8
+    # A watcher on the WSL side reads this file through the drvfs bridge; a read that overlaps the
+    # append makes Add-Content throw ("stream could not be read", 02:30 on 2026-10-09, which ended
+    # a 31-iteration run). Retry a few times; logging must never end the loop.
+    $written = $false
+    for ($k = 0; $k -lt 10 -and -not $written; $k++) {
+        try { Add-Content -LiteralPath $script:Summary -Value $line -Encoding UTF8; $written = $true }
+        catch { Start-Sleep -Milliseconds 200 }
+    }
     Write-Host $line
 }
 $imgA = @{ Name = 'A'; Uf2 = $Uf2A; Md5 = $Md5A }
