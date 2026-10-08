@@ -1,0 +1,39 @@
+﻿00:20:18.477 STEP pre start serial=B17318CDBE9A61B1
+00:20:18.547 PASS base image exists (C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-bt5.uf2)
+00:20:18.551 PASS base image md5 (have=93007e3e2fe44cdeeda9a8306047664d want=93007e3e2fe44cdeeda9a8306047664d)
+00:20:18.555 PASS alt image exists (C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-bt5-alt.uf2)
+00:20:18.558 PASS alt image md5 (have=60fcf92d78be701c5d73e1c21c533fbb want=60fcf92d78be701c5d73e1c21c533fbb)
+00:20:18.563 PASS production image exists (C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-prod-2725423.uf2)
+00:20:18.566 PASS production image md5 (have=889f3a4816c82bdd4adc253b16f28689 want=889f3a4816c82bdd4adc253b16f28689)
+00:20:20.004 PASS device on USB as app with a diag port (state=app)
+----- console COM5 send='' read=0s exit=0 timed_out=False deadline=20s -----
+[calib-io] opened COM5 at 00:20:21.564
+ZDIAG begin version=prof1 up_ms=7225726 boot=1 reset=0x2
+ZDIAG now count host_conn=1 host_disc=0 split_conn=1 split_disc=0
+ZDIAG ev boot=1 ms=1255 type=split-conn a=6 b=30
+ZDIAG ev boot=1 ms=2394 type=split-param a=23 b=7
+ZDIAG ev boot=1 ms=4059 type=host-conn a=12 b=10
+ZDIAG ev boot=1 ms=4867 type=split-param a=6 b=30
+ZPROF snap #1 why=host-conn up_ms=4359
+ZPROF profile 0* addr=50:BB:B5:73:A4:C9 (public) open=0 connected=1
+ZPROF profile 1 addr=7C:70:DB:D6:8E:D5 (public) open=0 connected=0
+ZPROF profile 2 addr=00:00:00:00:00:00 (public) open=1 connected=0
+ZPROF profile 3 addr=00:00:00:00:00:00 (public) open=1 connected=0
+ZPROF bond 7C:70:DB:D6:8E:D5 (public)
+ZPROF bond 50:BB:B5:73:A4:C9 (public)
+ZPROF bond E5:8F:CD:66:97:1D (random)
+ZPROF conn idx=0 role=periph state=CONNECTED id=0 dst=50:BB:B5:73:A4:C9 (public) get_dst=50:BB:B5:73:A4:C9 (public) sec=2
+ZPROF conn idx=1 role=central state=CONNECTED id=0 dst=E5:8F:CD:66:97:1D (random) get_dst=E5:8F:CD:66:97:1D (random) sec=2
+ZPROF lookup(active) -> idx=0 state=CONNECTED
+ZPROF active_is_connected=1
+ZDIAG end
+[calib-io] dump complete at 00:20:23.092
+[calib-io] closing at 00:20:23.092
+
+----- end console -----
+00:20:23.133 PASS preflight:dump present (ZDIAG begin)
+00:20:23.140 PASS preflight:dump complete (ZDIAG end line)
+00:20:23.145 PASS preflight:no #TRUNC line (trunc lines=0)
+00:20:23.148 preflight: no ZBOOT line (the running image has no boot instrument)
+00:20:23.151 preflight: running image answers without ZBOOT lines (no boot instrument; the base image will be written next)
+00:20:23.152 STEP pre RESULT PASS

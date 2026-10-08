@@ -151,7 +151,8 @@ if ("$($results['pre'])" -cne '0') { $stop = "pre-failed (rc=$($results['pre']))
 # 1. base image (the boot after it is NOT a trial: no dwell preceded it; its ring state is the baseline)
 if (-not $stop) {
     $deviceChanged = $true
-    $results['flash-base'] = Run-Child 'flash-base' $flash (@('-Serial', $Serial, '-LogDir', $LogDir, '-Uf2', $Uf2Base, '-Md5', $Md5Base, '-Expect', 'base') + (MockArg 'flash-base'))
+    # -TagBase is forwarded (T1, 2026-10-09: with new image tags the flash child compared against its own default and failed)
+    $results['flash-base'] = Run-Child 'flash-base' $flash (@('-Serial', $Serial, '-LogDir', $LogDir, '-Uf2', $Uf2Base, '-Md5', $Md5Base, '-Expect', 'base', '-TagBase', $TagBase) + (MockArg 'flash-base'))
     S "flash-base rc=$($results['flash-base'])"
     if ("$($results['flash-base'])" -cne '0') { $stop = 'flash-base-failed' }
 }

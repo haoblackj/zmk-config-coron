@@ -195,6 +195,35 @@ struct arm_rec {
     uint32_t crc;
 };
 
+/* T1 (2026-10-09): raw register snapshot at three points of this boot (the hook, after the clock
+ * driver, after USB enable), kept OUTSIDE boot_rec so the ring slots do not grow. Reads only, no
+ * waits, no locks. The core words are read before the hook enables DWT and arms the net; the
+ * peripheral words right after the net is armed. What to measure and why: evidence/
+ * boottest2-20261007/rootcause-plan-20261008/t0-spec-snapshot-and-crumb.md and t0-summary.md. */
+#define SNAP_MAGIC 0x31504e53u /* 'SNP1' */
+#define SNAP_FMT_VER 1
+enum snap_point { SNAP_HOOK = 0, SNAP_AFTER_CLK = 1, SNAP_AFTER_USB = 2, SNAP_AFTER_CLEAN = 3, SNAP_COUNT };
+struct snap_regs {
+    uint32_t t0, t1; /* DWT CYCCNT at the start and end of the peripheral reads (0 = DWT off) */
+    /* core: not written by Zephyr or SystemInit before the hook in this build (t0-boot-normalization.md) */
+    uint32_t primask, faultmask, control, aircr, iser0, iser1, ispr0, ispr1, demcr;
+    /* CLOCK */
+    uint32_t lfclkstat, lfclkrun, lfclksrc, hfclkstat, hfclkrun, clk_inten, ev_lf, ev_hf, ev_done, ev_ctto;
+    /* POWER */
+    uint32_t pwr_inten, ev_usbdet, ev_usbrem, ev_usbrdy, usbreg, resetreas;
+    /* RTC1 (COUNTER read twice: a change means it is running) */
+    uint32_t rtc_cnt_a, rtc_cnt_b, rtc_inten, rtc_evten, rtc_presc, rtc_cc0, rtc_ev_cmp0, rtc_ev_tick, rtc_ev_ovr;
+    /* USBD */
+    uint32_t usbd_en, usbd_pullup, usbd_inten, usbd_epin, usbd_epout, usbd_ec;
+    /* SysTick, SCB, PPI, GPIOTE */
+    uint32_t syst_csr, syst_rvr, syst_cvr, scb_icsr, scb_shcsr, ppi_chen, gpiote_inten;
+};
+struct snap_rec {
+    uint32_t magic, fmt_ver, seq, taken; /* taken: one bit per snap_point */
+    struct snap_regs at[SNAP_COUNT];
+    uint32_t crc;
+};
+
 /* All records live in one struct in the DIAGREC section, a 4 KB RAM region that diagrec.overlay
  * carves out of the top of the application RAM at a fixed address (0x2002c000). The address is
  * therefore the same in every image built with the overlay, whatever its .bss/.noinit size; the
@@ -204,12 +233,15 @@ struct diag_area {
     struct ring_rec ring;
     struct boot_rec last;
     struct boot_rec cur;
+    struct snap_rec snap; /* appended last: the addresses of the records above do not move */
 };
 struct diag_area diag_area Z_GENERIC_SECTION(DIAGREC); /* global so nm resolves it */
+BUILD_ASSERT(sizeof(struct diag_area) <= 0x1000, "diag_area exceeds the 4 KB DIAGREC region");
 #define cur (diag_area.cur)
 #define last (diag_area.last)
 #define ring (diag_area.ring)
 #define arm_next (diag_area.arm_next)
+#define snap (diag_area.snap)
 static bool last_valid;
 static bool stall_this_boot;
 static bool ring_reinit_this_boot;
@@ -332,6 +364,99 @@ static void maybe_running(void) {
     rec_unlock(key);
 }
 
+/* ---- T1 snapshot (reads only) --------------------------------------------------------------- */
+
+static void snap_seal(void) {
+    snap.crc = crc32_ieee((const uint8_t *)&snap, offsetof(struct snap_rec, crc));
+}
+
+static void snap_core(struct snap_regs *s) {
+    s->primask = __get_PRIMASK();
+    s->faultmask = __get_FAULTMASK();
+    s->control = __get_CONTROL();
+    s->aircr = SCB->AIRCR;
+    s->iser0 = NVIC->ISER[0];
+    s->iser1 = NVIC->ISER[1];
+    s->ispr0 = NVIC->ISPR[0];
+    s->ispr1 = NVIC->ISPR[1];
+    s->demcr = CoreDebug->DEMCR;
+}
+
+static void snap_periph(struct snap_regs *s) {
+    bool dwt = (DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk) != 0;
+
+    s->t0 = dwt ? cyc() : 0;
+    s->lfclkstat = NRF_CLOCK->LFCLKSTAT;
+    s->lfclkrun = NRF_CLOCK->LFCLKRUN;
+    s->lfclksrc = NRF_CLOCK->LFCLKSRC;
+    s->hfclkstat = NRF_CLOCK->HFCLKSTAT;
+    s->hfclkrun = NRF_CLOCK->HFCLKRUN;
+    s->clk_inten = NRF_CLOCK->INTENSET;
+    s->ev_lf = NRF_CLOCK->EVENTS_LFCLKSTARTED;
+    s->ev_hf = NRF_CLOCK->EVENTS_HFCLKSTARTED;
+    s->ev_done = NRF_CLOCK->EVENTS_DONE;
+    s->ev_ctto = NRF_CLOCK->EVENTS_CTTO;
+    s->pwr_inten = NRF_POWER->INTENSET;
+    s->ev_usbdet = NRF_POWER->EVENTS_USBDETECTED;
+    s->ev_usbrem = NRF_POWER->EVENTS_USBREMOVED;
+    s->ev_usbrdy = NRF_POWER->EVENTS_USBPWRRDY;
+    s->usbreg = NRF_POWER->USBREGSTATUS;
+    s->resetreas = NRF_POWER->RESETREAS;
+    s->rtc_cnt_a = NRF_RTC1->COUNTER;
+    s->rtc_inten = NRF_RTC1->INTENSET;
+    s->rtc_evten = NRF_RTC1->EVTEN;
+    s->rtc_presc = NRF_RTC1->PRESCALER;
+    s->rtc_cc0 = NRF_RTC1->CC[0];
+    s->rtc_ev_cmp0 = NRF_RTC1->EVENTS_COMPARE[0];
+    s->rtc_ev_tick = NRF_RTC1->EVENTS_TICK;
+    s->rtc_ev_ovr = NRF_RTC1->EVENTS_OVRFLW;
+    s->rtc_cnt_b = NRF_RTC1->COUNTER;
+    s->usbd_en = NRF_USBD->ENABLE;
+    s->usbd_pullup = NRF_USBD->USBPULLUP;
+    s->usbd_inten = NRF_USBD->INTEN;
+    s->usbd_epin = NRF_USBD->EPINEN;
+    s->usbd_epout = NRF_USBD->EPOUTEN;
+    s->usbd_ec = NRF_USBD->EVENTCAUSE;
+    s->syst_csr = SysTick->CTRL;
+    s->syst_rvr = SysTick->LOAD;
+    s->syst_cvr = SysTick->VAL;
+    s->scb_icsr = SCB->ICSR;
+    s->scb_shcsr = SCB->SHCSR;
+    s->ppi_chen = NRF_PPI->CHEN;
+    s->gpiote_inten = NRF_GPIOTE->INTENSET;
+    s->t1 = dwt ? cyc() : 0;
+}
+
+/* The two later points: core and peripherals in one go. */
+static void snap_take(enum snap_point p) {
+    snap_core(&snap.at[p]);
+    snap_periph(&snap.at[p]);
+    snap.taken |= BIT(p);
+    snap_seal();
+}
+
+static bool snap_valid(void) {
+    return snap.magic == SNAP_MAGIC && snap.fmt_ver == SNAP_FMT_VER &&
+           snap.crc == crc32_ieee((const uint8_t *)&snap, offsetof(struct snap_rec, crc));
+}
+
+#if IS_ENABLED(CONFIG_CORON_DIAG_ENTRY_CLEAN)
+/* What the bootloader's DFU exit leaves behind and a plain reset does not (T1, 2026-10-09):
+ * POWER.INTEN 0x380, the USBD IRQ enabled in NVIC, EVENTS_HFCLKSTARTED. Stores only. The net's
+ * TIMER4 (IRQ 27), armed just before this runs, is the one NVIC bit kept. */
+static void entry_clean(void) {
+    NRF_POWER->INTENCLR = 0xFFFFFFFFu; /* POWER and CLOCK share this register */
+    NVIC->ICER[0] = ~(1u << TIMER4_IRQn);
+    NVIC->ICPR[0] = ~(1u << TIMER4_IRQn);
+    NVIC->ICER[1] = 0xFFFFFFFFu;
+    NVIC->ICPR[1] = 0xFFFFFFFFu;
+    NRF_CLOCK->EVENTS_HFCLKSTARTED = 0;
+    SysTick->CTRL = 0;
+    __DSB();
+    __ISB();
+}
+#endif
+
 /* ---- optional intervention (comparison arm only, off by default) ---------------------------- */
 
 #if IS_ENABLED(CONFIG_CORON_DIAG_BOOT_FIX)
@@ -405,9 +530,27 @@ static bool is_incident(const struct boot_rec *r) {
 }
 
 void board_early_init_hook(void) {
+    /* T1: the core words first, before this hook touches DWT/DEMCR and before the net is armed */
+    snap.magic = SNAP_MAGIC;
+    snap.fmt_ver = SNAP_FMT_VER;
+    snap.seq = 0;
+    snap.taken = 0;
+    snap_core(&snap.at[SNAP_HOOK]);
+
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
     DWT->CYCCNT = 0;
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+
+    /* The net first (it does not depend on the records), then the peripheral words. Until T1 the
+     * net was armed after the record handling below; moving it up adds nothing before it. */
+    net_arm();
+    snap_periph(&snap.at[SNAP_HOOK]);
+    snap.taken |= BIT(SNAP_HOOK);
+    snap_seal();
+#if IS_ENABLED(CONFIG_CORON_DIAG_ENTRY_CLEAN)
+    entry_clean();
+    snap_take(SNAP_AFTER_CLEAN);
+#endif
 
     ring_reinit_this_boot = ring_init_if_needed();
 
@@ -456,7 +599,8 @@ void board_early_init_hook(void) {
     cur.entry.ficr_130 = *(volatile uint32_t *)0x10000130ul;
     cur.entry.ficr_134 = *(volatile uint32_t *)0x10000134ul;
 
-    net_arm();
+    snap.seq = seq;
+    snap_seal();
 
 #if IS_ENABLED(CONFIG_CORON_DIAG_BOOT_FIX)
     lf_clean_stop();
@@ -482,7 +626,7 @@ __attribute__((noinline)) void diag_spin_bounded(uint32_t seconds) {
 
 static int st_pk1_early(void) { stage(STG_PK1_EARLY); return 0; }
 SYS_INIT(st_pk1_early, PRE_KERNEL_1, 1);
-static int st_pk1_after_clk(void) { stage(STG_PK1_AFTER_CLK); return 0; }
+static int st_pk1_after_clk(void) { snap_take(SNAP_AFTER_CLK); stage(STG_PK1_AFTER_CLK); return 0; }
 SYS_INIT(st_pk1_after_clk, PRE_KERNEL_1, 31);
 static int st_pk1_last(void) { stage(STG_PK1_LAST); return 0; }
 SYS_INIT(st_pk1_last, PRE_KERNEL_1, 99);
@@ -502,7 +646,7 @@ static int st_armed_stall(void) {
 }
 SYS_INIT(st_armed_stall, APPLICATION, 50);
 
-static int st_app_after_usb(void) { stage(STG_APP_AFTER_USB); return 0; }
+static int st_app_after_usb(void) { snap_take(SNAP_AFTER_USB); stage(STG_APP_AFTER_USB); return 0; }
 SYS_INIT(st_app_after_usb, APPLICATION, 97);
 static int st_app_last(void) { stage(STG_APP_LAST); return 0; }
 SYS_INIT(st_app_last, APPLICATION, 99);
@@ -709,6 +853,38 @@ void diag_boot_print(void (*out)(const char *fmt, ...)) {
         out("ZBOOT last none");
     }
     print_rec(out, "cur", &cur);
+
+    /* T1 snapshot of this boot: 6 lines per point taken, every line under 150 characters. */
+    if (snap_valid()) {
+        static const char *const pt[SNAP_COUNT] = {"hook", "clk", "usb", "clean"};
+
+        out("ZBOOT snap hdr seq=%u taken=0x%x", snap.seq, snap.taken);
+        for (int p = 0; p < SNAP_COUNT; p++) {
+            const struct snap_regs *s = &snap.at[p];
+
+            if (!(snap.taken & BIT(p))) {
+                continue;
+            }
+            out("ZBOOT snap %sk primask=%u faultmask=%u control=0x%x aircr=0x%x iser=0x%x/0x%x ispr=0x%x/0x%x demcr=0x%x",
+                pt[p], s->primask, s->faultmask, s->control, s->aircr, s->iser0, s->iser1, s->ispr0,
+                s->ispr1, s->demcr);
+            out("ZBOOT snap %sc t=%u/%u lfstat=0x%x lfrun=%u lfsrc=0x%x hfstat=0x%x hfrun=%u inten=0x%x lfev=%u hfev=%u done=%u ctto=%u",
+                pt[p], s->t0 / CYC_PER_US, s->t1 / CYC_PER_US, s->lfclkstat, s->lfclkrun, s->lfclksrc,
+                s->hfclkstat, s->hfclkrun, s->clk_inten, s->ev_lf, s->ev_hf, s->ev_done, s->ev_ctto);
+            out("ZBOOT snap %sp inten=0x%x det=%u rem=%u rdy=%u reg=0x%x reset=0x%x", pt[p], s->pwr_inten,
+                s->ev_usbdet, s->ev_usbrem, s->ev_usbrdy, s->usbreg, s->resetreas);
+            out("ZBOOT snap %sr cnt=%u/%u inten=0x%x evten=0x%x presc=%u cc0=%u cmp0=%u tick=%u ovr=%u",
+                pt[p], s->rtc_cnt_a, s->rtc_cnt_b, s->rtc_inten, s->rtc_evten, s->rtc_presc, s->rtc_cc0,
+                s->rtc_ev_cmp0, s->rtc_ev_tick, s->rtc_ev_ovr);
+            out("ZBOOT snap %su en=%u pullup=%u inten=0x%x epin=0x%x epout=0x%x ec=0x%x", pt[p], s->usbd_en,
+                s->usbd_pullup, s->usbd_inten, s->usbd_epin, s->usbd_epout, s->usbd_ec);
+            out("ZBOOT snap %ss csr=0x%x rvr=%u cvr=%u icsr=0x%x shcsr=0x%x chen=0x%x gpiote=0x%x", pt[p],
+                s->syst_csr, s->syst_rvr, s->syst_cvr, s->scb_icsr, s->scb_shcsr, s->ppi_chen,
+                s->gpiote_inten);
+        }
+    } else {
+        out("ZBOOT snap none");
+    }
 }
 
 void diag_boot_clear_ring(void) {

@@ -8,3 +8,17 @@ config CORON_DIAG_BOOT
 config CORON_DIAG_BOOT_FIX
 	bool "In the early hook, bring the LF/HF clocks to a documented stopped state"
 	depends on CORON_DIAG_BOOT
+	help
+	  Not used: its HFXO wait condition is wrong (it waits for HFCLKSTAT.STATE == 0, but
+	  stopping the HFXO only falls back to HFINT, STATE stays running). Kept for the record.
+
+config CORON_DIAG_ENTRY_CLEAN
+	bool "In the early hook, right after the net is armed, clear what the bootloader's DFU exit leaves behind"
+	depends on CORON_DIAG_BOOT
+	help
+	  T1 (2026-10-09) measured at the hook after a UF2 write: POWER.INTEN = 0x380 (the USB
+	  power-event interrupt enables), the USBD IRQ still enabled in NVIC, EVENTS_HFCLKSTARTED
+	  set. None of these is left by a plain reset path. This option clears the POWER/CLOCK
+	  interrupt enables, every NVIC enable and pending bit except the net's own TIMER4, the
+	  stale HFCLKSTARTED event and SysTick. Stores only, no waits, no clock operations
+	  (LFCLKSRC is never touched). The snapshot point 'clean' records the state after it.
