@@ -1,0 +1,17 @@
+﻿12:29:00.344 MOCK mode: every child gets its scenario file from \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim14\sim\loop-new-incident
+12:29:00.361 deadlines: t2=1420 t1=1180 flash-base=300 baseline=120 t3=1960 flash-prod=300
+12:29:00.368 LOOP start serial=B17318CDBE9A61B1 mode=write trials=3 dwells=[13,17,26] min no_new_trial_after= restore_reserve=10min
+12:29:00.375 page difference of the two images (UF2 contents, 4 KiB pages): bt4 93 pages, bt4A 104 pages, 0 identical; how many pages the bootloader actually erases is a separate, unmeasured quantity
+12:29:00.388 launch flash-base (deadline 300s)
+12:29:02.559 flash-base rc=0
+12:29:02.568 launch baseline (deadline 120s)
+12:29:04.207 baseline rc=0
+12:29:04.234 launch t1 (deadline 1180s)
+12:29:08.717 trial 1 trial=1 mode=write image=C:\T\coron_R-bt4-alt.uf2 tag_before=bt4-R-10080217 tag_after=bt4A-R-10080217 rc=0 seq_before=1 seq_after=2 uptime_min_before_op=13.1 dwell_min=13 ring_after=count=0 dropped=0 invalid=0 reinit=0 result=ok stop_reason=
+12:29:08.726 launch t2 (deadline 1420s)
+12:29:13.622 trial 2 trial=2 mode=write image=C:\T\coron_R-bt4.uf2 tag_before=bt4A-R-10080217 tag_after=bt4-R-10080217 rc=10 seq_before=2 seq_after=3 uptime_min_before_op=17.1 dwell_min=17 ring_after=count=1 dropped=0 invalid=0 reinit=0 result=event stop_reason=new-incident
+12:29:13.630 launch flash-prod (deadline 300s)
+12:29:15.309 ledger: mode=write boots after a write = 2 tried, 1 without event; stop=event: new-incident (trial 2)
+12:29:15.316 restore PASS
+12:29:15.324 LOOP STOPPED ON EVENT | RESTORE PASS
+12:29:15.332 results: flash-base=0 baseline=0 t1=0 t2=10 t3=not-run restore=0 stop=event:_new-incident_(trial_2)

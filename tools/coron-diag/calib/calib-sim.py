@@ -48,7 +48,7 @@ def check_regex(logs, item, want_present):
         glob, rx = '*', item
     else:
         glob, rx = item['glob'], item['re']
-    text = '\n'.join(t for fn, t in logs.items() if fnmatch.fnmatch(fn, glob))
+    text = '\n'.join(t for fn, t in logs.items() if any(fnmatch.fnmatch(fn, g) for g in glob.split('|')))
     found = re.search(rx, text, re.M) is not None
     return found == want_present, f"{'must' if want_present else 'must not'} [{glob}] /{rx}/ -> {'found' if found else 'absent'}"
 
@@ -56,14 +56,15 @@ def check_regex(logs, item, want_present):
 def run_one(name, simdir, logroot, allps):
     logdir = os.path.join(logroot, name)
     os.makedirs(logdir, exist_ok=True)
+    with open(os.path.join(simdir, name, 'expect.json')) as f:
+        exp = json.load(f)
+    script = wpath(os.path.join(HERE, exp.get('script', 'calib-all.ps1')))   # calib-all.ps1 or calib-loop.ps1
     t0 = time.time()
     with open(os.path.join(logdir, 'console.txt'), 'w') as con:
-        rc = subprocess.call(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', allps] + COMMON +
+        rc = subprocess.call(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script] + COMMON + exp.get('args', []) +
                              ['-LogDir', wpath(logdir), '-MockDir', wpath(os.path.join(simdir, name))],
                              stdout=con, stderr=subprocess.STDOUT)
     secs = time.time() - t0
-    with open(os.path.join(simdir, name, 'expect.json')) as f:
-        exp = json.load(f)
     logs = read_logs(logdir)
     problems = []
     if rc != exp['exit']:
@@ -102,7 +103,6 @@ def main():
     names = sorted(os.listdir(simdir))
     if a.only:
         names = [n for n in names if n in a.only.split(',')]
-    allps = wpath(os.path.join(HERE, 'calib-all.ps1'))
     # the identification matchers, on instance ids read from the real PC (no device needed)
     st = subprocess.run(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', wpath(os.path.join(HERE, 'calib-selftest.ps1'))],
                         capture_output=True, text=True)
@@ -111,7 +111,7 @@ def main():
         f.write(selftest)
     print(selftest.strip().splitlines()[-1], f'(exit {st.returncode})', flush=True)
     with concurrent.futures.ThreadPoolExecutor(max_workers=a.jobs) as pool:
-        futs = {pool.submit(run_one, n, simdir, logroot, allps): n for n in names}
+        futs = {pool.submit(run_one, n, simdir, logroot, None): n for n in names}
         res = {}
         for fut in concurrent.futures.as_completed(futs):
             r = fut.result()

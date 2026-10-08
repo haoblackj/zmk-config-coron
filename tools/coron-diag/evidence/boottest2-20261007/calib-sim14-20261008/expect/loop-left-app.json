@@ -1,0 +1,35 @@
+{
+ "exit": 10,
+ "results": {
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "10",
+  "t2": "not-run",
+  "t3": "not-run",
+  "restore": "0",
+  "stop": "event:_unexpected-boot-count_(trial_1)"
+ },
+ "must": [
+  {
+   "glob": "trial1-*.log",
+   "re": "EVENT dwell: the device left 'app' \\(state=none\\)"
+  },
+  {
+   "glob": "trial1-*.log",
+   "re": "EVENT end of dwell: boot number 1 -> 2"
+  }
+ ],
+ "must_not": [
+  {
+   "glob": "trial1-*.log",
+   "re": "sent 'b'"
+  }
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

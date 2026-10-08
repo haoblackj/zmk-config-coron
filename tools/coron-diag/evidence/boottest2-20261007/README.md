@@ -99,12 +99,13 @@ GitHub で読める写しは `haoblackj/zmk-config-coron` の `feat/dya-diagnost
 | 7 | `d` で既存事故記録の全行を保存 → `S` → `b` → 最適化像を複写 | `S rc=0`/`returned`、`b` 受理、シリアル一致の UF2 ドライブ 1 つ、ブートローダー 1 台、md5 再確認、複写エラーなし、ドライブ消失、app 復帰。dump: cur tag=bt4A-R、addr cur=0x2002c818、seq +2、ring count +1、`inc0`〜`inc2` の全行が 1 文字も変わらず残る（行の欠落も、大文字小文字の違いも FAIL）、`inc3`: tag=bt4A-R、reason=1、calib=S、done=0、stage=6、seq=前の seq+1、pc ∈ 最適化像の `diag_spin_forever`（0x38a08〜）、reinit=0、dropped/invalid 不変 |
 | 8 | `d` で保存 → `c` → `d` | `ring count=0`。本番復帰はこの段に含めない（別スクリプト、上の条件） |
 実機での実施（2026-10-08 10:41〜11:04、3 回目で校正 PASS・本番復帰 PASS。1、2 回目が止まった理由と修正は `calib-real-20261008/README.md` と `review6-fixes.md` の「実機初回」。3 回目の子は `d` を MI_03 にも送っていたので、レビュー #13 で送信先を診断コンソールに限定した）。
+無人ループの計画と実装（`calib-loop.ps1`、`calib-trial.ps1`、模擬 14 場面）は `loop-plan.md`。レビュー待ちで、実機では動かしていない。
 校正の発火は自然発生の件数に数えない。自動復帰で救えない停止（NVIC 優先度 0 まで抑止、TIMER4 準備前、ブートローダー内）は、この計測器では救えない。
 
-### 模擬試験（実機なし。`calib-sim.py`、2026-10-08 11:34〜11:41。記録は `calib-sim13-20261008/`（レビュー #13 の後。自己試験 15 件 + 43 場面）。10:52〜10:58 の 40 場面は `calib-sim12-20261008/`、レビュー #11 時点の 40 場面は `calib-sim11-20261008/`、レビュー #9 時点の 29 場面は `calib-sim9-20261008/`、レビュー #10 時点の 37 場面は `calib-sim10-20261008/`）
-`calib-sim.py` が、まず `calib-selftest.ps1`（照合関数の直接検証）を走らせ、次に `gen-scenarios.py` の 43 場面をすべて `calib-all.ps1` の全体実行（事前確認 → 基準像 → 第 0〜8 段 → 本番復帰）として流し、各場面の `expect.json`（終了コード、`results:` 行の全段の値、ログに必ず現れる正規表現と現れてはならない正規表現。ファイル名の glob で段を限定できる）と機械的に照合する。1 つでも不一致なら非ゼロで終わる。模擬は USB 状態、UF2 ドライブ、複写結果、ファイルの md5 を差し替え（PnP も CIM も Copy-Item も呼ばない）、コンソールの子プロセス `calib-io.ps1` は実物を起動してポートだけを缶詰（`-MockFile`）に置き換えるので、子の送信の関門、刻印、期限超過時の強制終了がそのまま試験される。異常場面も全体実行なので、「失敗した段の後の段が `not-run`」「それでも復帰が走り別に判定される」が `results:` 行で確かめられる。
+### 模擬試験（実機なし。`calib-sim.py`、2026-10-08 12:25〜12:32。記録は `calib-sim14-20261008/`（レビュー #14 の後。自己試験 15 件 + 校正 43 場面 + 無人ループ 14 場面。ループの場面は `loop-plan.md`）。11:34〜11:41 の 43 場面は `calib-sim13-20261008/`、10:52〜10:58 の 40 場面は `calib-sim12-20261008/`、レビュー #11 時点の 40 場面は `calib-sim11-20261008/`、レビュー #9 時点の 29 場面は `calib-sim9-20261008/`、レビュー #10 時点の 37 場面は `calib-sim10-20261008/`）
+`calib-sim.py` が、まず `calib-selftest.ps1`（照合関数の直接検証）を走らせ、次に `gen-scenarios.py` の 57 場面（校正 43、無人ループ 14）をすべて `calib-all.ps1` の全体実行（事前確認 → 基準像 → 第 0〜8 段 → 本番復帰）として流し、各場面の `expect.json`（終了コード、`results:` 行の全段の値、ログに必ず現れる正規表現と現れてはならない正規表現。ファイル名の glob で段を限定できる）と機械的に照合する。1 つでも不一致なら非ゼロで終わる。模擬は USB 状態、UF2 ドライブ、複写結果、ファイルの md5 を差し替え（PnP も CIM も Copy-Item も呼ばない）、コンソールの子プロセス `calib-io.ps1` は実物を起動してポートだけを缶詰（`-MockFile`）に置き換えるので、子の送信の関門、刻印、期限超過時の強制終了がそのまま試験される。異常場面も全体実行なので、「失敗した段の後の段が `not-run`」「それでも復帰が走り別に判定される」が `results:` 行で確かめられる。
 03:01 の旧版（`calib-sim.sh`、`calib-sim-20261008/`）は単段実行で期待の照合が無かったので、この版で置き換えた。08:12 の版（29 場面）の初回実行で、旧版では見えなかった欠陥を 1 つ捕まえて直した: 子の刻印 `dump incomplete (no ZDIAG end within 4 s)` に文字列 `ZDIAG end` が含まれ、親の「dump 完了」判定（`-cmatch 'ZDIAG end'`）が刻印に当たって PASS になっていた（`no dump (no ZDIAG begin …)` も同様）。判定を行頭アンカー（`(?m)^ZDIAG end\s*$`）にし、刻印の文言から印の文字列を外した。
-43 場面の結果（全部期待どおり。`report.txt`）:
+57 場面の結果（全部期待どおり。`report.txt`。校正の 43 場面:）
 | 場面 | 内容 | 期待（終了コード、結果） | 照合した決め手 |
 |---|---|---|---|
 | normal | 本番像（`ZBOOT` なし）から始めて基準像の書き込み、第 0〜8 段、本番復帰 | 0。pre/flash-base/0/1/2/4/5/6/7/8 PASS、3 SKIP、restore PASS | pre に `no ZBOOT line`、複写 2 回、`CALIBRATION PASS`、第 2 段 `reset observed directly`、`inc0 evidence: … fire4`、`NOT sent`/`timed out`/` #TRUNC` 行末なし |
@@ -147,6 +148,23 @@ GitHub で読める写しは `haoblackj/zmk-config-coron` の `feat/dya-diagnost
 | two-ports | 同じシリアルに診断コンソール（COM5、MI_00）と Studio の RPC UART（COM7、MI_03）がある（本番像の形）で全体実行 | 0。全段 PASS | `opened COM5` あり、`opened COM7`/`console COM7`/COM7 への `sent` が 1 行も無い |
 | uf2-partial-serial | 第 7 段: UF2 ドライブの ID がシリアルの部分一致（1 文字多い F:、1 文字短い G:）だけ | 1。7=FAIL | `drives of serial=[] all uf2 drives=[F,G]`、`STOPPED before: copy the alt image`、複写なし |
 | uf2-noprefix | UF2 ドライブの ID が接頭辞なし（`\<シリアル>&0`）で全体実行 | 0。全段 PASS | `drives of serial=[E]` |
+無人ループの 14 場面（`calib-loop.ps1` の全体実行。`loop-plan.md` の表の条件）:
+| 場面 | 内容 | 期待（終了コード、結果） | 照合した決め手 |
+|---|---|---|---|
+| loop-normal | 書き込み群 3 試行（稼働 13、17、26 分）、事象なし | 0。全試行 0、restore 0、stop=all-trials-done | 台帳の行（像の交互、seq 1→2→3→4、操作直前の稼働 13.1/17.1/26.1 分）、`boots after a write = 3 tried, 3 without event`、`LOOP DONE (no event) \| RESTORE PASS`、EVENT 行なし |
+| loop-reset-normal | リセット群 2 試行 | 0 | `boots after a soft reset = 2 tried, 2 without event`、`sent 'r'`、複写なし |
+| loop-new-incident | 試行 2 の起動後に自然の事故記録（count 0→1） | 10。t2=10、t3 not-run、restore 0 | `EVENT after write: incident records count 0 -> 1`、`saved [natural] ZBOOT inc0 …`（保存が復帰より先）、`LOOP STOPPED ON EVENT \| RESTORE PASS`、試行 3 のログなし |
+| loop-dropped | 基準で ring が満杯（6 件の校正の名残）、試行 1 の後に dropped 0→1 | 10。t1=10 | `count 6 -> 6, dropped 0 -> 1`、基準に `calibration artifact` |
+| loop-reinit | 試行 1 の起動後に reinit=1 | 10 | `EVENT after write: the ring was reinitialised` |
+| loop-unexpected-seq | 試行 1 の起動後に seq +2 | 10 | `boot number 1 -> 3, expected +1` |
+| loop-left-app | 稼働中に USB が app を離れ、稼働終了の dump で seq +1 | 10。t1=10 | `EVENT dwell: the device left 'app' (state=none)`、`EVENT end of dwell: boot number 1 -> 2`、`b` は送らない |
+| loop-no-response | 書き込み後に app へ戻らない（USB に無い）。復帰も失敗 | 13（11 + 2）。t1=11、restore 1 | `NO EXTERNAL RESPONSE`、復帰 `FAIL device on USB`、`LOOP STOPPED, NO OBSERVATION \| RESTORE FAIL` |
+| loop-mid-fail | 試行 1 の複写がエラー | 1。t1=1、restore 0 | `copy error (mock)`、`STOPPED before`、`LOOP FAILED \| RESTORE PASS` |
+| loop-deadline | `-NoNewTrialAfter` が過去 | 0。t1〜t3 not-run、stop=deadline…、restore 0 | `deadline: trial 1`、試行のログなし、`LOOP DONE (no event) \| RESTORE PASS` |
+| loop-kill-unconfirmed | 試行 1 が戻らず終了要求が効かない | 3。t1=TIMEOUT-ALIVE、restore=not-attempted | `termination confirmed=False`、`RESTORE NOT ATTEMPTED`、復帰の起動なし |
+| loop-restore-fail | 復帰後も `ZBOOT` 行 | 2 | `LOOP DONE (no event) \| RESTORE FAIL` |
+| loop-old-calib-records | 基準に校正の名残 2 件（h、G）があり、試行は事象なし | 0 | `saved [calibration artifact] ZBOOT inc1 a`、EVENT 行なし |
+| loop-incident-at-baseline | 基準に自然の事故記録 | 10。baseline=10、t1〜t3 not-run、restore 0 | `EVENT baseline: 1 natural incident record`（起源は曖昧と記録） |
 | kill-enum-hang | 第 4 段の子が戻らず、終了処理のプロセス列挙が戻らない（模擬: 列挙の前で止まる） | 3。4=TIMEOUT-ALIVE、以後 not-run、restore=not-attempted | `kill: phase=enumerate` まで、`termination confirmed=False: kill helper did not return within 20s (last phase=enumerate)`、`RESTORE NOT ATTEMPTED`、`tree=`/`taskkill rc=` なし、復帰のログなし |
 | kill-req-hang | 同上、終了要求が戻らない（模擬: `taskkill` の代わりに止まる） | 3。同上 | `kill: tree=[…]`、`kill: phase=terminate` まで、`… did not return within 20s (last phase=terminate)`、`RESTORE NOT ATTEMPTED`、`taskkill rc=` なし |
 | io-kill-req-hang | 第 1 段の交換の子が戻らず、その終了要求が戻らない | 3。1=5、以後 not-run、restore=not-attempted | 第 1 段に `kill helper did not return within 20s (last phase=terminate)`、`exit 5`、`RESTORE NOT ATTEMPTED` |

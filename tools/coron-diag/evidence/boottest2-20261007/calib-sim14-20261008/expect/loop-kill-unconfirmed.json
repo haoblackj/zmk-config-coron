@@ -1,0 +1,26 @@
+{
+ "exit": 3,
+ "results": {
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "TIMEOUT-ALIVE",
+  "t2": "not-run",
+  "t3": "not-run",
+  "restore": "not-attempted",
+  "stop": "trial_1_failed_(rc=TIMEOUT-ALIVE)"
+ },
+ "must": [
+  "termination confirmed=False",
+  "RESTORE NOT ATTEMPTED"
+ ],
+ "must_not": [
+  "FLASH prod start"
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

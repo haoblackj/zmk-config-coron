@@ -78,11 +78,11 @@ def inc_abort(img, seq):   # boot interrupted (boot_done=0) without a requested 
 
 
 def dump(img, cur, incs=(), last=None, count=None, dropped=0, invalid=0, reinit=0, calib_live=0, trunc=False,
-         no_end=False, drop_line=None, end_text='ZDIAG end'):
+         no_end=False, drop_line=None, end_text='ZDIAG end', up_ms=65000, hosts=(1, 0, 1, 0)):
     """A full console dump as the device emits it: ZDIAG begin, ZBOOT lines, ZDIAG end."""
     n = len(incs) if count is None else count
-    out = ['ZDIAG begin version=prof1 up_ms=65000 boot=1 reset=0x4',
-           'ZDIAG now count host_conn=1 host_disc=0 split_conn=1 split_disc=0',
+    out = [f'ZDIAG begin version=prof1 up_ms={up_ms} boot=1 reset=0x4',
+           f'ZDIAG now count host_conn={hosts[0]} host_disc={hosts[1]} split_conn={hosts[2]} split_disc={hosts[3]}',
            f'ZBOOT ring count={n} slots=6 dropped={dropped} invalid={invalid} reinit={reinit} calib_live={calib_live}',
            ADDR.format(**img)]
     for i, lines in enumerate(incs):
@@ -435,6 +435,132 @@ NP = {k: v for k, v in N.items() if not k.startswith('_')}
 for k in ('flash-base', '7', 'flash-prod'):
     NP[k] = dict(NP[k], uf2=dict(NP[k]['uf2'], drives=[dict(letter='E', pnp='USBSTOR\\DISK&VEN_ADAFRUIT&PROD_NRF_UF2&REV_1.0\\' + SERIAL + '&0')]))
 add('uf2-noprefix', NP, expect(0, results(), must=['drives of serial=\\[E\\]']))
+
+
+# ================================================================== unattended loop (review #14)
+# calib-loop.ps1: flash-base -> baseline (trial 0) -> trials t1..tn (dwell, then ONE write or ONE
+# soft reset, ONE boot) -> restore. Files: flash-base, baseline, t1..tn, flash-prod.
+def loop_trial(img_now, img_next, seq, dwell, mode='write', incs=(), after_incs=None, after_seq=None, after_reinit=0,
+               after_dropped=0, dropped=0, states=None, last_fn=None, count=None, after_count=None, **extra):
+    """One trial's scenario. seq = boot number at the trial start; the boot after the operation is seq+1."""
+    lst = last_fn(seq - 1) if last_fn else None
+    d_before = dump(img_now, cur(img_now, seq), incs, last=lst, up_ms=4000, dropped=dropped, count=count)
+    d_end = dump(img_now, cur(img_now, seq, probes=(dwell * 30, dwell * 30), feeds=dwell * 29), incs, last=lst, up_ms=dwell * 60000 + 4000, dropped=dropped, count=count, hosts=(1, 0, 1, 0))
+    a_incs = incs if after_incs is None else after_incs
+    a_seq = seq + 1 if after_seq is None else after_seq
+    d_after = dump(img_next, cur(img_next, a_seq, reinit=after_reinit), a_incs, last=last(img_now, seq, reason=3), up_ms=5000, reinit=after_reinit, dropped=after_dropped, count=after_count)
+    if mode == 'write':
+        exs = [ex('', d_before), ex('', d_end), ex('b', d_end, post=BOOTLOADER, lost=True), ex('', d_after)]
+        st = ['app'] * (1 + dwell) + ['boot', 'app']
+    else:
+        exs = [ex('', d_before), ex('', d_end), ex('r', d_end, post='ZDIAG reboot\r\n', lost=True), ex('', d_after)]
+        st = ['app'] * (1 + dwell) + ['none', 'app']
+    return scen(states if states is not None else st, exs, drives=OUR, **extra)
+
+
+def loop_files(dwells=(13, 17, 26), mode='write', trial_override=None, baseline_incs=(), baseline_dropped=0, baseline_count=None):
+    f = {}
+    f['flash-base'] = scen(['app', 'boot', 'app'], [ex('b', PROD, post=BOOTLOADER, lost=True),
+                                                    ex('', dump(B, cur(B, 1, reinit=1), baseline_incs, reinit=1, dropped=baseline_dropped, count=baseline_count))], drives=OUR)
+    f['baseline'] = scen(['app'], [ex('', dump(B, cur(B, 1, reinit=1), baseline_incs, up_ms=9000, dropped=baseline_dropped, count=baseline_count))])
+    seq = 1; img = B
+    for i, dw in enumerate(dwells, 1):
+        nxt = (A if img is B else B) if mode == 'write' else img
+        ov = (trial_override or {}).get(i, {})
+        f[f't{i}'] = loop_trial(img, nxt, seq, dw, mode=mode, incs=baseline_incs, dropped=baseline_dropped, count=baseline_count,
+                                after_dropped=ov.pop('after_dropped', baseline_dropped), **ov)
+        seq += 1; img = nxt
+    f['flash-prod'] = scen(['app', 'boot', 'app'], [ex('b', dump(img, cur(img, seq), baseline_incs, dropped=baseline_dropped, count=baseline_count), post=BOOTLOADER, lost=True), ex('', PROD)], drives=OUR)
+    return f
+
+
+def loop_results(n, **over):
+    r = {'flash-base': '0', 'baseline': '0'}
+    for i in range(1, n + 1):
+        r[f't{i}'] = '0'
+    r['restore'] = '0'
+    r.update(over)
+    return r
+
+
+def loop_stopped(n, at, rc, stop, **over):
+    r = loop_results(n)
+    r[f't{at}'] = rc
+    for i in range(at + 1, n + 1):
+        r[f't{i}'] = 'not-run'
+    r['stop'] = stop
+    r.update(over)
+    return r
+
+
+def loop_expect(exit_code, res, must=(), must_not=(), mode='write', dwells=(13, 17, 26), extra_args=()):
+    e = expect(exit_code, res, must, must_not)
+    e['script'] = 'calib-loop.ps1'
+    e['args'] = ['-Mode', mode, '-Dwells', ','.join(str(d) for d in dwells)] + list(extra_args)
+    return e
+
+
+def add_loop(name, files, exp):
+    SCENARIOS[name] = dict(steps=files, expect=exp, raw={})
+
+
+D3 = (13, 17, 26)
+add_loop('loop-normal', loop_files(D3), loop_expect(0, loop_results(3, stop='all-trials-done'),
+         must=['trial 1 .*tag_before=bt4-R-10080217 tag_after=bt4A-R-10080217 .*seq_before=1 seq_after=2 uptime_min_before_op=13.1', 'trial 3 .*seq_after=4 uptime_min_before_op=26.1',
+               'ledger: mode=write boots after a write = 3 tried, 3 without event', 'LOOP DONE \\(no event\\) \\| RESTORE PASS',
+               in_file('trial1-*.log', 'dwell: USB state .app. first seen'), in_file('trial2-*.log', "sent 'b'"), in_file('trial2-*.log', 'DEVICE-OP copy')],
+         must_not=['NOT sent', 'timed out', 'EVENT']))
+add_loop('loop-reset-normal', loop_files((13, 26), mode='reset'), loop_expect(0, loop_results(2, stop='all-trials-done'),
+         must=['ledger: mode=reset boots after a soft reset = 2 tried, 2 without event', in_file('trial1-*.log', "sent 'r'")],
+         must_not=['DEVICE-OP copy \\(mock\\) C:\\\\T\\\\coron_R-bt4-alt', 'EVENT'], mode='reset', dwells=(13, 26)))
+nat = inc_abort(B, 2)   # a natural incident filed for boot 2 (the boot after trial 1's write would be seq 2 on image A: use the image accordingly)
+natA = inc_abort(A, 2)
+add_loop('loop-new-incident', loop_files(D3, trial_override={2: dict(after_incs=[natA])}),
+         loop_expect(10, loop_stopped(3, 2, '10', 'event:_new-incident_(trial_2)'),
+                     must=[in_file('trial2-*.log', 'EVENT after write: incident records count 0 -> 1'), in_file('trial2-*.log', 'saved \\[natural\\] ZBOOT inc0 us2'),
+                           in_file('trial2-*.log', 'new natural incident: inc0 seq=2 reason=0'), 'LOOP STOPPED ON EVENT \\| RESTORE PASS', in_file('flash-prod-*.log', 'FLASH prod RESULT PASS')],
+                     must_not=[in_file('trial3-*.log', '.')]))
+full = [inc_h(B, 1)] * 6
+add_loop('loop-dropped', loop_files(D3, baseline_incs=full, trial_override={1: dict(after_dropped=1)}),
+         loop_expect(10, loop_stopped(3, 1, '10', 'event:_new-incident_(trial_1)'),
+                     must=[in_file('trial1-*.log', 'EVENT after write: incident records count 6 -> 6, dropped 0 -> 1'), in_file('baseline-*.log|trial0-*.log', 'calibration artifact')]))
+add_loop('loop-reinit', loop_files(D3, trial_override={1: dict(after_reinit=1)}),
+         loop_expect(10, loop_stopped(3, 1, '10', 'event:_ring-reinit_(trial_1)'), must=[in_file('trial1-*.log', 'EVENT after write: the ring was reinitialised')]))
+add_loop('loop-unexpected-seq', loop_files(D3, trial_override={1: dict(after_seq=3)}),
+         loop_expect(10, loop_stopped(3, 1, '10', 'event:_unexpected-boot-count_(trial_1)'), must=[in_file('trial1-*.log', 'EVENT after write: boot number 1 -> 3, expected \\+1')]))
+# the device reboots on its own during the dwell: USB leaves 'app' and the end-of-dwell dump shows seq+1
+d_left_states = ['app', 'app', 'app', 'none', 'none', 'app'] + ['app'] * 20
+LF = loop_files(D3)
+d_end_rebooted = dump(B, cur(B, 2), [], last=last(B, 1, reason=0), up_ms=300000)
+LF['t1'] = scen(d_left_states, [ex('', dump(B, cur(B, 1, reinit=1), [], up_ms=4000)), ex('', d_end_rebooted)], drives=OUR)
+add_loop('loop-left-app', LF, loop_expect(10, loop_stopped(3, 1, '10', 'event:_unexpected-boot-count_(trial_1)'),
+         must=[in_file('trial1-*.log', "EVENT dwell: the device left 'app' \\(state=none\\)"), in_file('trial1-*.log', 'EVENT end of dwell: boot number 1 -> 2')],
+         must_not=[in_file('trial1-*.log', "sent 'b'")]))
+# no external response after the write: never back as app; the restore then finds no device
+LF = loop_files(D3)
+LF['t1'] = loop_trial(B, A, 1, 13, states=['app'] * 14 + ['boot'] + ['none'] * 200)
+LF['flash-prod'] = scen(['none'], [], drives=[])
+add_loop('loop-no-response', LF, loop_expect(13, loop_stopped(3, 1, '11', 'no-observation:_no-external-response_(state=none)_(trial_1)', restore='1'),
+         must=[in_file('trial1-*.log', 'NO EXTERNAL RESPONSE'), in_file('flash-prod-*.log', 'FAIL device on USB'), 'LOOP STOPPED, NO OBSERVATION \\| RESTORE FAIL']))
+LF = loop_files(D3)
+LF['t1'] = loop_trial(B, A, 1, 13, copy='fail')
+add_loop('loop-mid-fail', LF, loop_expect(1, loop_stopped(3, 1, '1', 'trial_1_failed_(rc=1)'),
+         must=[in_file('trial1-*.log', 'copy error \\(mock\\)'), in_file('trial1-*.log', 'STOPPED before'), 'LOOP FAILED \\| RESTORE PASS']))
+add_loop('loop-deadline', loop_files(D3), loop_expect(0, {'flash-base': '0', 'baseline': '0', 't1': 'not-run', 't2': 'not-run', 't3': 'not-run', 'restore': '0',
+                                                       'stop': 'deadline:_trial_1_(dwell_13_min_+_reserve)_would_end_after_2026-01-01_00:00'},
+         must=['deadline: trial 1', 'LOOP DONE \\(no event\\) \\| RESTORE PASS'], must_not=[in_file('trial1-*.log', '.')], extra_args=('-NoNewTrialAfter', '2026-01-01 00:00')))
+LF = loop_files(D3)
+LF['t1'] = dict(LF['t1'], step_hang_s=60, step_timeout_s=8, kill_mode='linger')
+add_loop('loop-kill-unconfirmed', LF, loop_expect(3, loop_stopped(3, 1, 'TIMEOUT-ALIVE', 'trial_1_failed_(rc=TIMEOUT-ALIVE)', restore='not-attempted'),
+         must=['termination confirmed=False', 'RESTORE NOT ATTEMPTED'], must_not=['FLASH prod start']))
+LF = loop_files(D3)
+LF['flash-prod'] = scen(['app', 'boot', 'app'], [ex('b', dump(A, cur(A, 4), []), post=BOOTLOADER, lost=True), ex('', dump(A, cur(A, 5), []))], drives=OUR)
+add_loop('loop-restore-fail', LF, loop_expect(2, loop_results(3, stop='all-trials-done', restore='1'), must=['LOOP DONE \\(no event\\) \\| RESTORE FAIL']))
+old_cal = [inc_h(B, 1), inc_G(B, 1)]
+add_loop('loop-old-calib-records', loop_files(D3, baseline_incs=old_cal), loop_expect(0, loop_results(3, stop='all-trials-done'),
+         must=[in_file('trial0-*.log', 'saved \\[calibration artifact\\] ZBOOT inc1 a '), 'ledger: mode=write boots after a write = 3 tried, 3 without event'], must_not=['EVENT']))
+add_loop('loop-incident-at-baseline', loop_files(D3, baseline_incs=[nat]), loop_expect(10, {'flash-base': '0', 'baseline': '10', 't1': 'not-run', 't2': 'not-run', 't3': 'not-run', 'restore': '0', 'stop': 'event-at-baseline:_incident-at-baseline'},
+         must=[in_file('trial0-*.log', 'EVENT baseline: 1 natural incident record'), 'LOOP STOPPED ON EVENT \\| RESTORE PASS']))
 
 
 def main():

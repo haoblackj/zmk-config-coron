@@ -1,0 +1,31 @@
+{
+ "exit": 1,
+ "results": {
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "1",
+  "t2": "not-run",
+  "t3": "not-run",
+  "restore": "0",
+  "stop": "trial_1_failed_(rc=1)"
+ },
+ "must": [
+  {
+   "glob": "trial1-*.log",
+   "re": "copy error \\(mock\\)"
+  },
+  {
+   "glob": "trial1-*.log",
+   "re": "STOPPED before"
+  },
+  "LOOP FAILED \\| RESTORE PASS"
+ ],
+ "must_not": [],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

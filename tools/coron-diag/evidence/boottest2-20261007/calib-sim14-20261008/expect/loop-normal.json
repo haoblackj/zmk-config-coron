@@ -1,0 +1,42 @@
+{
+ "exit": 0,
+ "results": {
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "0",
+  "t2": "0",
+  "t3": "0",
+  "restore": "0",
+  "stop": "all-trials-done"
+ },
+ "must": [
+  "trial 1 .*tag_before=bt4-R-10080217 tag_after=bt4A-R-10080217 .*seq_before=1 seq_after=2 uptime_min_before_op=13.1",
+  "trial 3 .*seq_after=4 uptime_min_before_op=26.1",
+  "ledger: mode=write boots after a write = 3 tried, 3 without event",
+  "LOOP DONE \\(no event\\) \\| RESTORE PASS",
+  {
+   "glob": "trial1-*.log",
+   "re": "dwell: USB state .app. first seen"
+  },
+  {
+   "glob": "trial2-*.log",
+   "re": "sent 'b'"
+  },
+  {
+   "glob": "trial2-*.log",
+   "re": "DEVICE-OP copy"
+  }
+ ],
+ "must_not": [
+  "NOT sent",
+  "timed out",
+  "EVENT"
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}
