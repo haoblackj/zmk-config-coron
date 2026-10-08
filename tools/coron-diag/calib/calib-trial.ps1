@@ -1,24 +1,31 @@
-# One trial of the unattended natural-stall loop (review #14), run as a child of calib-loop.ps1
-# under a deadline. No manual operation, no waiting for a person.
+# One trial of the unattended natural-stall loop (review #14, #15), run as a child of
+# calib-loop.ps1 under a deadline. No manual operation, no waiting for a person.
 #   calib-trial.ps1 -Trial <n> -Mode <baseline|write|reset> -DwellMin <m> -Serial <s> -LogDir <dir>
 #                   -ResultFile <json> [-Uf2 <image> -Md5 <md5>] -TagNow <tag of the running image>
 #                   [-TagNext <tag after the write>] [-Expect <json of the previous trial's "after">]
 #                   [-Mock <scenario.json>]
 # Flow (write mode): baseline dump (every record saved to the PC, compared with -Expect) ->
-# dwell for -DwellMin minutes while polling the USB state (the device must stay 'app') -> dump
-# at the end of the dwell (up_ms = the uptime the firmware itself reports; the DWT-based at_us /
-# lastfeed_us wrap every 67.1 s and are never used for time) -> 'b' -> write -Uf2 -> the device
-# must come back as 'app' -> dump -> judge. Reset mode: 'r' instead of the write. Baseline mode:
-# the first dump only (right after the base image was written).
-# Judgement after a boot (all from the firmware's own counters, review #14 point 3):
-#   seq == before + 1, ring count/dropped/invalid unchanged, reinit == 0, cur tag == -TagNext.
-#   Otherwise: a new incident record (count or dropped grew), a ring reinitialisation (counters
-#   lost) or an unexpected boot count is an EVENT: every record is saved to the PC first, then the
-#   trial stops with exit 10 so that no further write happens before the restore.
-# Exit: 0 = trial done, continue; 1 = script FAIL (precondition, stopped before the next device
-# operation); 5 = a console child could not be confirmed dead; 10 = event detected (records
-# saved); 11 = the device gave no external response / no dump after the operation (observation
-# failed: the stall mechanism is NOT decided, the state seen is saved).
+# dwell for -DwellMin minutes while polling the USB state every 10 s (the first state other than
+# 'app' ENDS the dwell at once) -> dump at the end of the dwell (the uptime is the firmware's own
+# up_ms; the DWT-based at_us / lastfeed_us wrap every 67.1 s and are never used for time) -> the
+# reproduction condition is checked from up_ms -> 'b' -> write -Uf2 -> the device must come back
+# as 'app' -> dump(s) until done=1 (RUNNING reached) -> judge. Reset mode: 'r' instead of the
+# write. Baseline mode: the first dump only (right after the base image was written).
+# Judgement (from the firmware's own counters; review #14 point 3, #15 points 1 and 3):
+#   same boot (baseline -> end of dwell): seq, count, dropped, invalid and the reinit flag all
+#     unchanged (ring_reinit_this_boot is fixed for the whole boot), up_ms strictly increasing and
+#     consistent with the dwell: up_ms(end) - up_ms(start) in [dwell*60 s - 2 s, dwell*60 s + 120 s]
+#     (the +120 s covers the dump reads and retries), and up_ms(end) >= dwell*60 s.
+#   new boot (after the operation): seq == before + 1, count/dropped/invalid unchanged,
+#     reinit == 0 (a reinitialisation in a NEW boot is an event), tag == -TagNext, done == 1 within
+#     60 s (6 reads 10 s apart; mock: 3 reads) - a dump without done=1 is never a success.
+# Stages recorded in the result (review #15 point 6): dwell_started, dwell_done, op_sent,
+#   image_written, boot_observed, running_confirmed, completed - the ledger's denominators are
+#   built from these, not from the plan.
+# Exit: 0 = trial done (result file written and complete), 1 = script FAIL / condition not met /
+# result could not be saved (stopped before the next device operation); 5 = a console child could
+# not be confirmed dead; 10 = event detected (records saved); 11 = the device gave no external
+# response / no dump (observation failed: the stall mechanism is NOT decided, the state is saved).
 param(
     [Parameter(Mandatory = $true)][int]$Trial,
     [Parameter(Mandatory = $true)][ValidateSet('baseline', 'write', 'reset')][string]$Mode,
@@ -37,24 +44,35 @@ if (-not (Test-Path -LiteralPath $LogDir)) { New-Item -ItemType Directory -Path 
 $script:Serial = $Serial
 $script:LogFile = Join-Path $LogDir ("trial$Trial-$Mode-" + (Get-Date).ToString('MMdd-HHmmss') + '.log')
 $script:Scn = $null
+$mockNoResult = $false; $mockStale = $false
 if ($Mock) {
     try { Load-Mock $Mock } catch { Log "MOCK ERROR $($_.Exception.Message); nothing done"; exit 4 }
     if ($script:Scn.step_hang_s -gt 0) { Log "MOCK: this trial hangs for $($script:Scn.step_hang_s) s"; Start-Sleep -Seconds $script:Scn.step_hang_s }
+    $j = Get-Content -Path $Mock -Raw | ConvertFrom-Json
+    if ($j.mock_no_result_file) { $mockNoResult = $true; Log 'MOCK: the result file will NOT be written (simulated inconsistent child)' }
+    if ($j.mock_stale_result) { $mockStale = $true; Log 'MOCK: the result file will carry the previous trial number (simulated stale file)' }
 }
 Log "TRIAL $Trial mode=$Mode dwell=${DwellMin}min serial=$Serial image=$Uf2 tag_now=$TagNow tag_next=$TagNext"
-$res = [ordered]@{ trial = $Trial; mode = $Mode; dwell_min = $DwellMin; image = $Uf2; tag_now = $TagNow; tag_next = $TagNext;
-                   result = 'fail'; stop_reason = ''; before = $null; dwell = $null; after = $null; note = @() }
-function Save-Result { $res | ConvertTo-Json -Depth 6 | Set-Content -Path $ResultFile -Encoding UTF8 }
-
-# "ZDIAG begin version=.. up_ms=N .." and "ZDIAG now count host_conn=.. ..": the firmware's own
-# uptime and connection counters.
+$DWELL_EARLY_MS = 2000; $DWELL_LATE_MS = 120000   # tolerance of the dwell check (documented in loop-plan.md)
+$res = [ordered]@{ trial = $Trial; mode = $Mode; dwell_min = $DwellMin; image_planned = $Uf2; image_written = ''; tag_now = $TagNow; tag_next = $TagNext;
+                   result = 'fail'; stop_reason = ''; before = $null; dwell = $null; after = $null; note = @();
+                   stages = [ordered]@{ dwell_started = $false; dwell_done = $false; op_sent = $false; image_written = $false; boot_observed = $false; running_confirmed = $false; completed = $false } }
+$script:saveFailed = $false
+function Save-Result {
+    if ($mockNoResult) { return }
+    try {
+        if ($mockStale) { $res.trial = $Trial - 1 }
+        $res | ConvertTo-Json -Depth 6 | Set-Content -Path $ResultFile -Encoding UTF8 -ErrorAction Stop
+        if (-not (Test-Path -LiteralPath $ResultFile)) { throw 'result file absent after writing' }
+    } catch { Log "FAIL result file saved ($($_.Exception.Message))"; $script:fails++; $script:saveFailed = $true }
+}
 function Parse-Zdiag([string]$t) {
     $h = @{}
     if ($t -cmatch '(?m)^ZDIAG begin .*up_ms=(\d+)') { $h['up_ms'] = [long]$Matches[1] }
     if ($t -cmatch '(?m)^ZDIAG now count (.*)$') { foreach ($kv in ($Matches[1].Trim() -split ' ')) { if ($kv -cmatch '^([a-z_]+)=(\d+)$') { $h[$Matches[1]] = [long]$Matches[2] } } }
     return $h
 }
-# A dump read for the ledger: the parsed ZBOOT table plus the ZDIAG header values.
+# A dump for the ledger: the ZBOOT table plus the ZDIAG header values; up_ms is required.
 function Read-Snapshot([string]$what) {
     Pause-Ms 700
     $t = Exchange
@@ -62,10 +80,11 @@ function Read-Snapshot([string]$what) {
     if ($null -eq $t) { return $null }
     $r = Validate-Dump $t $what $true
     $z = Parse-Zdiag $t
+    Require "${what}:up_ms present in the ZDIAG begin line" ($null -ne $z['up_ms']) 'up_ms'
     $snap = [ordered]@{
         seq = [int](Need $r 'cur' 'a' 'seq'); tag = (Need $r 'cur' 'a' 'tag'); done = (Need $r 'cur' 'a' 'done'); reinit = (Need $r 'cur' 'a' 'reinit')
         count = [int](Need $r 'ring' 'x' 'count'); dropped = [int](Need $r 'ring' 'x' 'dropped'); invalid = [int](Need $r 'ring' 'x' 'invalid')
-        ring_reinit = (Need $r 'ring' 'x' 'reinit'); up_ms = $z['up_ms']; up_min = $(if ($null -ne $z['up_ms']) { [math]::Round($z['up_ms'] / 60000.0, 1) } else { $null })
+        ring_reinit = (Need $r 'ring' 'x' 'reinit'); up_ms = $z['up_ms']; up_min = [math]::Round($z['up_ms'] / 60000.0, 2)
         host_conn = $z['host_conn']; host_disc = $z['host_disc']; split_conn = $z['split_conn']; split_disc = $z['split_disc']
         incidents = @()
     }
@@ -74,16 +93,21 @@ function Read-Snapshot([string]$what) {
         $snap.incidents += [ordered]@{ id = "inc$i"; seq = (V $r "inc$i" 'a' 'seq'); reason = (V $r "inc$i" 'a' 'reason'); calib = $calib;
                                        kind = $(if ($calib -cne '-') { 'calibration artifact' } else { 'natural' }); lines = @($r["inc$i"]['_lines']) }
     }
-    Log ("${what}: seq=$($snap.seq) tag=$($snap.tag) count=$($snap.count) dropped=$($snap.dropped) invalid=$($snap.invalid) reinit=$($snap.ring_reinit) up_ms=$($snap.up_ms) (" + $snap.up_min + " min) host_conn=$($snap.host_conn) host_disc=$($snap.host_disc) split_conn=$($snap.split_conn) split_disc=$($snap.split_disc)")
+    Log ("${what}: seq=$($snap.seq) tag=$($snap.tag) done=$($snap.done) count=$($snap.count) dropped=$($snap.dropped) invalid=$($snap.invalid) reinit=$($snap.ring_reinit) up_ms=$($snap.up_ms) (" + $snap.up_min + " min) host_conn=$($snap.host_conn) host_disc=$($snap.host_disc) split_conn=$($snap.split_conn) split_disc=$($snap.split_disc)")
     foreach ($inc in $snap.incidents) { foreach ($l in $inc.lines) { Log "saved [$($inc.kind)] $l" } }
     return $snap
 }
-# Compares a snapshot with the expected ring state; returns '' or the stop reason.
+# Same-boot comparison (seqDelta 0) or new-boot comparison (seqDelta 1). Returns '' or the reason.
 function Judge($snap, $exp, [int]$seqDelta, [string]$tag, [string]$what) {
     if ($null -eq $exp) { return '' }
     $r = ''
     if ($snap.seq -ne ($exp.seq + $seqDelta)) { Log "EVENT ${what}: boot number $($exp.seq) -> $($snap.seq), expected +$seqDelta (an unexpected reboot happened)"; $r = 'unexpected-boot-count' }
-    if ($snap.ring_reinit -cne '0') { Log "EVENT ${what}: the ring was reinitialised this boot (its counters are lost; cur.ring_reinit=1)"; $r = 'ring-reinit' }
+    if ($seqDelta -eq 0) {
+        if ("$($snap.ring_reinit)" -cne "$($exp.ring_reinit)") { Log "EVENT ${what}: the reinit flag changed within the same boot ($($exp.ring_reinit) -> $($snap.ring_reinit)); the firmware holds it for the whole boot"; if (-not $r) { $r = 'reinit-flag-changed-within-boot' } }
+        if ($null -ne $exp.up_ms -and $snap.up_ms -le $exp.up_ms) { Log "EVENT ${what}: up_ms went backwards or stood still within the same boot ($($exp.up_ms) -> $($snap.up_ms))"; if (-not $r) { $r = 'uptime-regressed' } }
+    } else {
+        if ("$($snap.ring_reinit)" -cne '0') { Log "EVENT ${what}: the ring was reinitialised in this new boot (its counters are lost; reinit=1)"; if (-not $r) { $r = 'ring-reinit' } }
+    }
     if ($snap.count -ne $exp.count -or $snap.dropped -ne $exp.dropped) {
         Log "EVENT ${what}: incident records count $($exp.count) -> $($snap.count), dropped $($exp.dropped) -> $($snap.dropped) (a new incident was filed)"
         $r = 'new-incident'
@@ -93,8 +117,8 @@ function Judge($snap, $exp, [int]$seqDelta, [string]$tag, [string]$what) {
     if ($tag -and $snap.tag -cne $tag) { Log "EVENT ${what}: cur tag=$($snap.tag), expected $tag"; if (-not $r) { $r = 'unexpected-image' } }
     return $r
 }
-# Dwell: the device runs as 'app' for $min minutes; the USB state is polled every 10 s (mock: once
-# per minute, no sleep). Returns a summary; a state other than 'app' is an event.
+# Dwell: poll the USB state every 10 s (mock: one poll per minute, no sleep); the FIRST state other
+# than 'app' ends the dwell at once (review #15 point 4).
 function Wait-Dwell([int]$min) {
     $t0 = Get-Date; $polls = 0; $seen = @{}; $left = ''
     while ($true) {
@@ -102,13 +126,30 @@ function Wait-Dwell([int]$min) {
         $s = Get-State; $polls++
         if (-not $seen.ContainsKey($s)) { $seen[$s] = 0; Log "dwell: USB state '$s' first seen at poll $polls" }
         $seen[$s]++
-        if ($s -cne 'app' -and -not $left) { $left = $s; Log "EVENT dwell: the device left 'app' (state=$s) at poll $polls" }
+        if ($s -cne 'app') { $left = $s; Log "EVENT dwell: the device left 'app' (state=$s) at poll $polls; the dwell ends here"; break }
         Pause-Ms 10000
     }
     return [ordered]@{ polls = $polls; states = $seen; left_app = $left; minutes = [math]::Round(((Get-Date) - $t0).TotalMinutes, 1) }
 }
+function Stop-Trial([string]$result, [string]$reason, [int]$exitCode) {
+    $res.result = $result; $res.stop_reason = $reason; Save-Result
+    $script:code = $exitCode
+    throw 'TRIAL-STOP'
+}
+# After a boot: dumps until done=1 (RUNNING reached), at most $maxReads 10 s apart.
+function Read-UntilRunning([string]$what, [int]$maxReads) {
+    $snap = $null
+    for ($k = 1; $k -le $maxReads; $k++) {
+        $snap = Read-Snapshot "$what (read $k)"
+        if ($null -eq $snap) { return $null }
+        if ("$($snap.done)" -ceq '1') { return $snap }
+        Log "${what}: done=$($snap.done) (RUNNING not reached yet) at read $k of $maxReads"
+        Pause-Ms 10000
+    }
+    return $snap
+}
 
-$code = 1
+$script:code = 1
 try {
     $exp = $null
     if ($Expect) { $exp = ($Expect | ConvertFrom-Json) }
@@ -121,30 +162,54 @@ try {
     $naturalAtStart = @($before.incidents | Where-Object { $_.kind -ceq 'natural' }).Count
     if ($exp) {
         $why = Judge $before $exp 0 '' 'baseline vs previous trial'
-        if ($why) { $res.result = 'event'; $res.stop_reason = $why; Save-Result; $code = 10; throw 'TRIAL-STOP' }
+        if ($why) { Stop-Trial 'event' $why 10 }
     } elseif ($naturalAtStart -gt 0) {
         Log "EVENT baseline: $naturalAtStart natural incident record(s) already present (origin ambiguous: the boot after the base write, or earlier); saved above"
-        $res.result = 'event'; $res.stop_reason = 'incident-at-baseline'; Save-Result; $code = 10; throw 'TRIAL-STOP'
+        Stop-Trial 'event' 'incident-at-baseline' 10
     }
-    if ($Mode -ceq 'baseline') { $res.result = 'ok'; $res.after = $before; Save-Result; $code = 0; throw 'TRIAL-DONE' }
+    if ($Mode -ceq 'baseline') {
+        Require 'baseline boot reached RUNNING (done=1)' ("$($before.done)" -ceq '1') "done=$($before.done)"
+        $res.after = $before; $res.stages.completed = $true; $res.result = 'ok'; Save-Result
+        if (-not $script:saveFailed) { $script:code = 0 }
+        throw 'TRIAL-DONE'
+    }
 
     NextOp 'nothing (dwell, read only)'
+    $res.stages.dwell_started = $true
     Log "dwell start: $DwellMin min (the uptime is taken from up_ms of the dump at the end)"
     $dw = Wait-Dwell $DwellMin
     $res.dwell = $dw
+    if ($dw.left_app) {
+        # bounded recovery wait, then the records if the device is back; never the test operation
+        $back = Wait-State 'app' 90
+        if (-not $back) { Log "after leaving 'app' the device did not come back within 90 s (last state=$($script:lastState))"; Stop-Trial 'no-response' "left-app-during-dwell, no return (state=$($script:lastState))" 11 }
+        $snap = Read-Snapshot 'after leaving app'
+        if ($null -eq $snap) { Stop-Trial 'no-dump' 'left-app-during-dwell, no dump after return' 11 }
+        $res.after = $snap
+        # no reboot was expected during the dwell: the same-boot comparison reports one as unexpected
+        $why = Judge $snap $before 0 $before.tag 'after leaving app'
+        Stop-Trial 'event' ("left-app-during-dwell" + $(if ($why) { " ($why)" } else { '' })) 10
+    }
+    $res.stages.dwell_done = $true
     $endDwell = Read-Snapshot 'end of dwell'
     Require 'dump at the end of the dwell' ($null -ne $endDwell) 'ZDIAG begin'
     $res.dwell.up_ms = $endDwell.up_ms; $res.dwell.up_min = $endDwell.up_min
     $res.dwell.counters = [ordered]@{ host_conn = $endDwell.host_conn; host_disc = $endDwell.host_disc; split_conn = $endDwell.split_conn; split_disc = $endDwell.split_disc }
-    Log "dwell done: polls=$($dw.polls) left_app='$($dw.left_app)' uptime=$($endDwell.up_min) min (up_ms=$($endDwell.up_ms))"
     $why = Judge $endDwell $before 0 $before.tag 'end of dwell'
-    if ($dw.left_app -and -not $why) { $why = 'left-app-during-dwell' }
-    if ($why) { $res.result = 'event'; $res.stop_reason = $why; Save-Result; $code = 10; throw 'TRIAL-STOP' }
+    if ($why) { Stop-Trial 'event' $why 10 }
+    # the reproduction condition, from the firmware's uptime (review #15 point 3)
+    $progress = $endDwell.up_ms - $before.up_ms
+    $want = $DwellMin * 60000
+    Log "dwell measured by the firmware: up_ms $($before.up_ms) -> $($endDwell.up_ms), progress ${progress} ms for a dwell of ${want} ms (tolerance -$DWELL_EARLY_MS/+$DWELL_LATE_MS ms); uptime before the operation $($endDwell.up_min) min"
+    Require 'dwell progress within tolerance' ($progress -ge ($want - $DWELL_EARLY_MS) -and $progress -le ($want + $DWELL_LATE_MS)) "progress=$progress want=$want"
+    Require 'uptime before the operation >= dwell' ($endDwell.up_ms -ge $want) "up_ms=$($endDwell.up_ms)"
+    $res.dwell.progress_ms = $progress
 
     if ($Mode -ceq 'write') {
         NextOp "send 'b'"
         Require-File 'image to write' $Uf2 $Md5
         $t = Send-Cmd 'b' 2
+        $res.stages.op_sent = $true
         NextOp 'copy the image to the UF2 drive'
         Require 'b acknowledged' ($t -cmatch 'ZDIAG bootloader') 'ZDIAG bootloader'
         Require 'bootloader of this serial on USB within 30 s' (Wait-State 'boot' 30) ("state=" + $script:lastState)
@@ -157,11 +222,13 @@ try {
         NextOp 'nothing more (only reading)'
         Require 'copy raised no error' $ok ("to " + $drives[0])
         Require 'UF2 drive vanished within 30 s (image taken)' (Wait-Uf2Gone $drives[0] 30) ("drive " + $drives[0])
+        $res.stages.image_written = $true; $res.image_written = $Uf2
         $res.note += "written $Uf2 at " + (Get-Date).ToString('HH:mm:ss')
         $back = Wait-State 'app' 90
     } else {
         NextOp "send 'r'"
         $t = Send-Cmd 'r' 2
+        $res.stages.op_sent = $true
         NextOp 'nothing more (only reading)'
         Require 'r acknowledged' ($t -cmatch 'ZDIAG reboot') 'ZDIAG reboot'
         $left = Wait-Leave-App 10
@@ -170,30 +237,34 @@ try {
     }
     if (-not $back) {
         Log "EVENT after ${Mode}: NO EXTERNAL RESPONSE: the device did not come back as 'app' (last USB state=$($script:lastState)); the stall mechanism is not decided by this trial; nothing more is done to the device"
-        $res.result = 'no-response'; $res.stop_reason = "no-external-response (state=$($script:lastState))"; Save-Result; $code = 11; throw 'TRIAL-STOP'
+        Stop-Trial 'no-response' "no-external-response (state=$($script:lastState))" 11
     }
-    $after = Read-Snapshot "after $Mode"
+    $after = Read-UntilRunning "after $Mode" $(if ($script:Scn) { 3 } else { 6 })
     if ($null -eq $after) {
         Log "EVENT after ${Mode}: the device is on USB as app but gave no dump (observation failed; saved as such)"
-        $res.result = 'no-dump'; $res.stop_reason = 'observation-failed (no dump)'; Save-Result; $code = 11; throw 'TRIAL-STOP'
+        Stop-Trial 'no-dump' 'observation-failed (no dump)' 11
     }
+    $res.stages.boot_observed = $true
     $res.after = $after
     $why = Judge $after $before 1 $TagNext "after $Mode"
-    if ($why) { $res.result = 'event'; $res.stop_reason = $why; Save-Result; $code = 10; throw 'TRIAL-STOP' }
-    Log "trial $Trial ok: boot $($before.seq) -> $($after.seq), ring unchanged (count=$($after.count) dropped=$($after.dropped) invalid=$($after.invalid)), tag=$($after.tag), uptime before the operation $($endDwell.up_min) min"
-    $res.result = 'ok'; Save-Result
-    if ($script:fails -eq 0) { $code = 0 }
+    if ($why) { Stop-Trial 'event' $why 10 }
+    if ("$($after.done)" -cne '1') { Log "EVENT after ${Mode}: the boot never reported done=1 (RUNNING) within the window; the console answers but the instrument did not reach RUNNING"; Stop-Trial 'event' 'running-not-reached' 10 }
+    $res.stages.running_confirmed = $true
+    Log "trial $Trial ok: boot $($before.seq) -> $($after.seq), done=1, ring unchanged (count=$($after.count) dropped=$($after.dropped) invalid=$($after.invalid)), tag=$($after.tag), uptime before the operation $($endDwell.up_min) min"
+    $res.stages.completed = $true; $res.result = 'ok'; Save-Result
+    if ($script:fails -eq 0 -and -not $script:saveFailed) { $script:code = 0 }
 } catch {
     $m = $_.Exception.Message
-    if ($m -cne 'CALIB-ABORT' -and $m -cne 'TRIAL-STOP' -and $m -cne 'TRIAL-DONE') { Log "ERROR $m at $($_.InvocationInfo.PositionMessage)"; $script:fails++; $code = 1 }
-    if ($m -ceq 'CALIB-ABORT') { Log "STOPPED before: $script:nextOp"; $res.result = 'fail'; $res.stop_reason = "script FAIL before: $script:nextOp"; Save-Result; $code = 1 }
-    if ($script:childAlive) { Log "a console child may still be alive (termination not confirmed): exit 5"; $code = 5 }
+    if ($m -cne 'CALIB-ABORT' -and $m -cne 'TRIAL-STOP' -and $m -cne 'TRIAL-DONE') { Log "ERROR $m at $($_.InvocationInfo.PositionMessage)"; $script:fails++; $script:code = 1 }
+    if ($m -ceq 'CALIB-ABORT') { Log "STOPPED before: $script:nextOp"; $res.result = 'fail'; $res.stop_reason = "script FAIL before: $script:nextOp"; Save-Result; $script:code = 1 }
+    if ($script:childAlive) { Log "a console child may still be alive (termination not confirmed): exit 5"; $script:code = 5 }
 }
-switch ($code) {
+if ($script:saveFailed -and $script:code -eq 0) { Log 'the result file could not be saved: the trial counts as FAILED'; $script:code = 1 }
+switch ($script:code) {
     0 { Log "TRIAL $Trial RESULT OK (continue)" }
     1 { Log "TRIAL $Trial RESULT FAIL ($($script:fails) failed checks)" }
     5 { Log "TRIAL $Trial RESULT FAIL (console child may be alive)" }
     10 { Log "TRIAL $Trial RESULT EVENT ($($res.stop_reason)); records saved; stop" }
     11 { Log "TRIAL $Trial RESULT NO OBSERVATION ($($res.stop_reason)); stop" }
 }
-exit $code
+exit $script:code

@@ -399,6 +399,8 @@ function Validate-Dump([string]$t, [string]$what, [bool]$zbootRequired) {
     Require "${what}:incident records == ring count" ($incKeys -eq $n) "records=$incKeys count=$n"
     if ($r.ContainsKey('last') -and $r['last'].ContainsKey('none')) { Log "${what}: last none" } else { Validate-Record $r 'last' $what 'optional' }
     Validate-Record $r 'cur' $what 'optional'
+    # ring_reinit_this_boot is one per-boot flag printed in both places (diag_boot.c 443/696)
+    Require "${what}:ring header reinit == cur reinit" ("$($r['ring']['x']['reinit'])" -ceq "$($r['cur']['a']['reinit'])") ("header=$($r['ring']['x']['reinit']) cur=$($r['cur']['a']['reinit'])")
     return $r
 }
 # A dump for analysis. -ZbootOptional: accept an image without ZBOOT lines (preflight on whatever

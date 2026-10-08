@@ -103,3 +103,12 @@
 3. 停止条件: 基準（試行 0）で既存記録を全部 PC へ保存し、seq/count/dropped/invalid/reinit を確定。新規記録（count か dropped の増加）、予想外の起動数、ring 再初期化、無効記録の増加、稼働中の離脱、外部応答なし、dump 欠落のどれでも次の書き込みへ進まず停止。校正の名残（`calib=` 印あり）と自然の記録（`-`）を分類。事象は PC へ保存してから本番復帰。dump が取れなければ「観測失敗」として停止機構は未確定のまま保存。
 4. 期限と復帰: 司令側はデバイスにも CIM にもシリアルにも触れず、全操作を `Invoke-Child`（`calib-kill.ps1` の 20 秒期限つき終了処理）で実行。周回数の上限、新しい試行を始めない時刻（`-NoNewTrialAfter`、復帰の予約込み）、終了未確認なら復帰を試みない。模擬 14 場面（新規事故、予想外の起動番号、ring 再初期化、途中 FAIL、期限到達、終了未確認、本番復帰 FAIL、外部応答なし、稼働中の離脱、満杯の dropped、校正の名残、基準の自然記録、リセット群、正常）を機械照合した（`calib-sim14-20261008/`）。
 実装中に模擬が捕まえた自分の誤り 2 件: `"$Mode:"` のドライブ修飾（3 度目。`${Mode}:` に修正）、`[string]` 型の引数 `$Dwells` と同名の `$dwells` に配列を代入して文字列に戻っていた（PowerShell の変数名は大文字小文字を区別しない。別名 `$dwellList` に修正）。
+
+## レビュー #15（2026-10-08、57f24b0 の無人ループの 6 点）への対応
+実機では動かしていない。計画書 `loop-plan.md` を更新。
+1. reinit の意味: `ring_reinit_this_boot` は起動時に 1 回決まり、ヘッダと cur の両方に同じ値が出る（`diag_boot.c` 412/443/696 行）。`Judge` を同じ起動の比較（旗が基準と同じこと）と新しい起動の比較（0 であること）に分け、`Validate-Dump` にヘッダと cur の不一致の拒否を足した。模擬は seq 1 の全 dump で 1、以後 0 に直した（校正の模擬も同じ矛盾を抱えていて、新しい検査が 28 場面で捕まえた。直した）。追加場面 `loop-reinit-flag-change`、`loop-header-cur-mismatch`。
+2. 事前確認: 司令側は最初に `calib-run.ps1 -Step pre`（期限 90 秒）を走らせ、基準像、最適化像、本番像の存在と md5、いまの像の dump を確かめる。失敗なら実機変更を始めず、復帰も「不要」として終わる（`$deviceChanged` で区別）。追加場面 `loop-prod-missing`、`loop-alt-md5`（`FLASH base start` も `DEVICE-OP` も `sent` も無い）。
+3. done と up_ms: 起動後は done=1 になるまで 10 秒おきに最大 6 回読み、未到達なら事象（`running-not-reached`）。基準の試行も done=1 を要求。`up_ms` は必須項目で、同じ起動で単調増加（逆行・停滞は事象）、再現条件は `up_ms` の進みが [稼働 − 2 秒, 稼働 + 120 秒] かつ操作直前の `up_ms ≥ 稼働`（許容差は計画書に明記。丸めた分の値では判定しない）。追加場面 `loop-done0`、`loop-upms-missing`、`loop-dwell-short`、`loop-uptime-regress`。
+4. 稼働中の離脱: 最初の app 以外の状態で稼働を打ち切り、90 秒の期限つきで復帰を待って記録を読み（同じ起動として比較し、再起動は予想外として報告）、保存して停止。`b`/`r`/複写には進まない。`loop-left-app` は poll 3 で止まり、残りを消化せず、分母 0。
+5. 結果ファイル: 子は保存失敗を失敗（終了コード 1）にする。司令側は終了コード 0 を、その試行番号の完全な結果（`result=ok`、起動後の seq/count/dropped/invalid/reinit/up_ms/tag/done、`completed`）がそろうときだけ受理し、欠落・不正・別試行なら停止して比較対象を空にしたまま続けない。試行ループを try/catch で包み、例外も失敗として記録して復帰の方針を維持。追加場面 `loop-result-missing`、`loop-result-stale`。
+6. 台帳の分母: 各試行に段階（dwell_started、op_sent、image_written、boot_observed、running_confirmed、completed）を実績として記録し、分母はそこから数える（「書き込み後の起動」= 像の複写完了）。予定した像・tag と実績（`image_written`、`tag_after_observed`）を分けた。離脱場面は `b sent=0, images written=0`、複写失敗は `b sent=1, images written=0`、外部応答なしは `images written=1, boots observed=0`。結果ファイルが無い試行は「段階不明」として分母から外し別に数える（`stages unknown=1 (no result file; these trials may have operated the device)`）。

@@ -1,0 +1,54 @@
+{
+ "exit": 0,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "0": "0",
+  "1": "0",
+  "2": "0",
+  "3": "2",
+  "4": "0",
+  "5": "0",
+  "6": "0",
+  "7": "0",
+  "8": "0",
+  "restore": "0"
+ },
+ "must": [
+  {
+   "glob": "steppre-*.log",
+   "re": "no ZBOOT line"
+  },
+  {
+   "glob": "step0-*.log",
+   "re": "sent 'd' \\(dump request"
+  },
+  {
+   "glob": "flash-prod-*.log",
+   "re": "ZDIAG begin version=prof1"
+  },
+  "DEVICE-OP copy \\(mock\\)",
+  "CALIBRATION PASS",
+  {
+   "glob": "step2-*.log",
+   "re": "reset observed directly"
+  },
+  {
+   "glob": "step2-*.log",
+   "re": "inc0 evidence: ZBOOT inc0 fire4"
+  }
+ ],
+ "must_not": [
+  "NOT sent",
+  "timed out",
+  " #TRUNC\\s*$",
+  {
+   "glob": "steppre-*.log",
+   "re": "sent 'd'"
+  },
+  {
+   "glob": "flash-prod-*-io2.out",
+   "re": "sent 'd'"
+  }
+ ]
+}

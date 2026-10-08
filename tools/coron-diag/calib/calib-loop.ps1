@@ -33,11 +33,13 @@ $script:LogFile = Join-Path $LogDir 'summary.log'
 function S($m) { Log $m }
 $dwellList = @("$Dwells" -split '[,\s]+' | Where-Object { $_ } | ForEach-Object { [int]$_ })   # '13,17,26' arrives as '13 17 26' through -File; a separate name: $Dwells is [string]-typed, so assigning an array to it would turn it back into a string
 $n = $dwellList.Count
-$deadline = @{ 'flash-base' = 300; 'flash-prod' = 300; 'baseline' = 120 }
+$deadline = @{ 'pre' = 90; 'flash-base' = 300; 'flash-prod' = 300; 'baseline' = 120 }
 for ($i = 1; $i -le $n; $i++) { $deadline["t$i"] = $dwellList[$i - 1] * 60 + 400 }
 $killModes = @{}
 $flash = Join-Path $PSScriptRoot 'calib-flash.ps1'
 $trial = Join-Path $PSScriptRoot 'calib-trial.ps1'
+$run = Join-Path $PSScriptRoot 'calib-run.ps1'
+$common = @('-Serial', $Serial, '-LogDir', $LogDir, '-Uf2Base', $Uf2Base, '-Md5Base', $Md5Base, '-Uf2Alt', $Uf2Alt, '-Md5Alt', $Md5Alt, '-Uf2Prod', $Uf2Prod, '-Md5Prod', $Md5Prod)
 $results = [ordered]@{}
 $ledger = @()
 $stop = ''
@@ -48,7 +50,7 @@ if ($NoNewTrialAfter) { $noNewAfter = [datetime]::ParseExact($NoNewTrialAfter, '
 $mockFiles = @{}
 if ($MockDir) {
     $missing = @()
-    foreach ($name in @('flash-base', 'baseline') + (1..$n | ForEach-Object { "t$_" }) + @('flash-prod')) {
+    foreach ($name in @('pre', 'flash-base', 'baseline') + (1..$n | ForEach-Object { "t$_" }) + @('flash-prod')) {
         $p = Join-Path $MockDir "$name.json"
         if (-not (Test-Path -LiteralPath $p)) { $missing += "$name.json missing"; continue }
         try {
@@ -79,15 +81,35 @@ function Run-Child([string]$name, [string]$file, [string[]]$argv) {
     return $res.rc
 }
 function Device-Unsafe() { return ($script:alive.Count -gt 0) }
-function Read-Result([string]$file) { if (Test-Path -LiteralPath $file) { return (Get-Content -LiteralPath $file -Raw | ConvertFrom-Json) }; return $null }
+function Read-Result([string]$file) { if (Test-Path -LiteralPath $file) { try { return (Get-Content -LiteralPath $file -Raw | ConvertFrom-Json) } catch { return $null } }; return $null }
+# A child's exit 0 is accepted only with a complete result file of THIS trial (review #15 point 5).
+function Test-ResultComplete($r, [int]$trialNo) {
+    if ($null -eq $r) { return 'result file missing or not JSON' }
+    if ([int]$r.trial -ne $trialNo) { return "result file is of trial $($r.trial), not $trialNo" }
+    if ("$($r.result)" -cne 'ok') { return "result=$($r.result)" }
+    if ($null -eq $r.after) { return 'after snapshot missing' }
+    foreach ($k in @('seq', 'count', 'dropped', 'invalid', 'ring_reinit', 'up_ms', 'tag', 'done')) { if ($null -eq $r.after.$k) { return "after.$k missing" } }
+    if (-not $r.stages.completed) { return 'stages.completed is not set' }
+    return ''
+}
 
 S ("deadlines: " + (($deadline.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }) -join " "))
 S "LOOP start serial=$Serial mode=$Mode trials=$n dwells=[$($dwellList -join ',')] min no_new_trial_after=$NoNewTrialAfter restore_reserve=${RestoreReserveMin}min"
 S "page difference of the two images (UF2 contents, 4 KiB pages): bt4 93 pages, bt4A 104 pages, 0 identical; how many pages the bootloader actually erases is a separate, unmeasured quantity"
+# 0. preflight (calib-run.ps1 -Step pre): the base, alternate AND production images must exist with
+#    their md5, and the running image must answer, BEFORE the first device operation (review #15
+#    point 2). A failure here means no device change has started: no restore is needed.
+$deviceChanged = $false
+$results['pre'] = Run-Child 'pre' $run (@('-Step', 'pre') + $common + (MockArg 'pre'))
+S "pre rc=$($results['pre'])"
+if ("$($results['pre'])" -cne '0') { $stop = "pre-failed (rc=$($results['pre'])): nothing written to the device" }
 # 1. base image (the boot after it is NOT a trial: no dwell preceded it; its ring state is the baseline)
-$results['flash-base'] = Run-Child 'flash-base' $flash (@('-Serial', $Serial, '-LogDir', $LogDir, '-Uf2', $Uf2Base, '-Md5', $Md5Base, '-Expect', 'base') + (MockArg 'flash-base'))
-S "flash-base rc=$($results['flash-base'])"
-if ("$($results['flash-base'])" -cne '0') { $stop = 'flash-base-failed' }
+if (-not $stop) {
+    $deviceChanged = $true
+    $results['flash-base'] = Run-Child 'flash-base' $flash (@('-Serial', $Serial, '-LogDir', $LogDir, '-Uf2', $Uf2Base, '-Md5', $Md5Base, '-Expect', 'base') + (MockArg 'flash-base'))
+    S "flash-base rc=$($results['flash-base'])"
+    if ("$($results['flash-base'])" -cne '0') { $stop = 'flash-base-failed' }
+}
 # 2. baseline: every existing record to the PC, the reference counters
 $expect = ''
 if (-not $stop) {
@@ -96,13 +118,15 @@ if (-not $stop) {
     S "baseline rc=$($results['baseline'])"
     $r0 = Read-Result $rf
     switch ("$($results['baseline'])") {
-        '0' { $expect = ($r0.after | ConvertTo-Json -Compress -Depth 4) }
+        '0' { $bad = Test-ResultComplete $r0 0; if ($bad) { $stop = "baseline result invalid: $bad"; S $stop } else { $expect = ($r0.after | ConvertTo-Json -Compress -Depth 4) } }
         '10' { $stop = "event-at-baseline: $($r0.stop_reason)" }
         default { $stop = "baseline-failed (rc=$($results['baseline']))" }
     }
 }
-# 3. trials
+# 3. trials (any exception here is a failure of this script: it is logged and the restore decision
+#    below still applies)
 $tagNow = $TagBase
+try {
 for ($i = 1; $i -le $n; $i++) {
     $name = "t$i"
     if ($stop -or (Device-Unsafe)) { $results[$name] = 'not-run'; continue }
@@ -120,23 +144,34 @@ for ($i = 1; $i -le $n; $i++) {
     $rc = Run-Child $name $trial ($argv + (MockArg $name))
     $results[$name] = $rc
     $r = Read-Result $rf
-    $row = [ordered]@{ trial = $i; mode = $Mode; image = $img; tag_before = $tagNow; tag_after = $tagNext; rc = "$rc"
+    $st = $(if ($r -and $r.stages) { $r.stages } else { $null })
+    $unknown = ($null -eq $st)   # no result file: the stages reached are UNKNOWN, never counted as "not started"
+    $row = [ordered]@{ trial = $i; mode = $Mode; image_planned = $img; image_written = $(if ($r) { $r.image_written } else { '' }); tag_before = $tagNow; tag_after_planned = $tagNext
+                       tag_after_observed = $(if ($r -and $r.after) { $r.after.tag } else { '' }); rc = "$rc"
                        seq_before = $(if ($r -and $r.before) { $r.before.seq } else { $null }); seq_after = $(if ($r -and $r.after) { $r.after.seq } else { $null })
                        uptime_min_before_op = $(if ($r -and $r.dwell) { $r.dwell.up_min } else { $null }); dwell_min = $dw
+                       stages_unknown = $unknown
+                       dwell_started = $(if ($st) { [bool]$st.dwell_started } else { 'unknown' }); op_sent = $(if ($st) { [bool]$st.op_sent } else { 'unknown' })
+                       image_written_stage = $(if ($st) { [bool]$st.image_written } else { 'unknown' }); boot_observed = $(if ($st) { [bool]$st.boot_observed } else { 'unknown' })
+                       running_confirmed = $(if ($st) { [bool]$st.running_confirmed } else { 'unknown' }); completed = $(if ($st) { [bool]$st.completed } else { 'unknown' })
                        ring_after = $(if ($r -and $r.after) { "count=$($r.after.count) dropped=$($r.after.dropped) invalid=$($r.after.invalid) reinit=$($r.after.ring_reinit)" } else { '' })
                        result = $(if ($r) { $r.result } else { 'no result file' }); stop_reason = $(if ($r) { $r.stop_reason } else { '' }) }
     $ledger += $row
     S ("trial $i " + (($row.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }) -join ' '))
     switch ("$rc") {
-        '0' { $expect = ($r.after | ConvertTo-Json -Compress -Depth 4); $tagNow = $tagNext }
+        '0' { $bad = Test-ResultComplete $r $i; if ($bad) { $stop = "trial $i returned 0 but its result is invalid: $bad"; S $stop } else { $expect = ($r.after | ConvertTo-Json -Compress -Depth 4); $tagNow = $tagNext } }
         '10' { $stop = "event: $($r.stop_reason) (trial $i)" }
         '11' { $stop = "no-observation: $($r.stop_reason) (trial $i)" }
         default { $stop = "trial $i failed (rc=$rc)" }
     }
 }
+} catch { $stop = "orchestrator-error: $($_.Exception.Message) at $($_.InvocationInfo.PositionMessage)"; S $stop }
 if (-not $stop) { $stop = 'all-trials-done' }
 # 4. restore, always, unless a loop process may still be alive
-if (Device-Unsafe) {
+if (-not $deviceChanged) {
+    $results['restore'] = 'not-needed'; $restoreFail = $false
+    S "RESTORE NOT NEEDED: no device change was started (the preflight stopped the run); the device still runs what it ran before"
+} elseif (Device-Unsafe) {
     $results['restore'] = 'not-attempted'; $restoreFail = $true
     S "RESTORE NOT ATTEMPTED: a loop process may still be alive ([$($script:alive -join ',')]); no further device operation. The device is NOT restored to the production image (recorded as a failure; no manual step is requested)."
 } else {
@@ -144,13 +179,25 @@ if (Device-Unsafe) {
     $restoreFail = ("$($results['restore'])" -cne '0')
 }
 $ledger | ConvertTo-Json -Depth 4 | Set-Content -Path (Join-Path $LogDir 'ledger.json') -Encoding UTF8
-$csv = @('trial,mode,image,tag_before,tag_after,rc,seq_before,seq_after,uptime_min_before_op,dwell_min,ring_after,result,stop_reason')
+$csv = @()
+if ($ledger.Count -gt 0) { $csv += (($ledger[0].Keys) -join ',') }
 foreach ($row in $ledger) { $csv += (($row.GetEnumerator() | ForEach-Object { '"' + ("$($_.Value)" -replace '"', '""') + '"' }) -join ',') }
 $csv | Set-Content -Path (Join-Path $LogDir 'ledger.csv') -Encoding UTF8
-$okTrials = @($ledger | Where-Object { $_.rc -ceq '0' }).Count
-S "ledger: mode=$Mode boots after $(if ($Mode -ceq 'write') { 'a write' } else { 'a soft reset' }) = $($ledger.Count) tried, $okTrials without event; stop=$stop"
+# denominators from what actually happened (review #15 point 6), never from the plan
+$known = @($ledger | Where-Object { -not $_.stages_unknown })
+$nUnknown = @($ledger | Where-Object { $_.stages_unknown }).Count
+$nStarted = @($known | Where-Object { $_.dwell_started }).Count
+$nSent = @($known | Where-Object { $_.op_sent }).Count
+$nWritten = @($known | Where-Object { $_.image_written_stage }).Count
+$nBoot = @($known | Where-Object { $_.boot_observed }).Count
+$nRun = @($known | Where-Object { $_.running_confirmed }).Count
+$nOk = @($known | Where-Object { $_.completed -and $_.rc -ceq '0' }).Count
+$unk = $(if ($nUnknown -gt 0) { ", stages unknown=$nUnknown (no result file; these trials may have operated the device)" } else { '' })
+if ($Mode -ceq 'write') { S "ledger: mode=write trials started=$nStarted, b sent=$nSent, images written=$nWritten (boots after a write), boots observed=$nBoot, RUNNING confirmed=$nRun, completed without event=$nOk$unk; stop=$stop" }
+else { S "ledger: mode=reset trials started=$nStarted, r sent=$nSent (boots after a soft reset), boots observed=$nBoot, RUNNING confirmed=$nRun, completed without event=$nOk$unk; stop=$stop" }
 $base = 0
 if ($stop -clike 'event*') { $base = 10 } elseif ($stop -clike 'no-observation*') { $base = 11 } elseif ($stop -cne 'all-trials-done' -and $stop -cnotlike 'deadline*') { $base = 1 }
+if ($stop -clike 'pre-failed*') { $base = 1 }
 S ("restore " + $(if ($restoreFail) { "FAIL (rc=$($results['restore']))" } else { 'PASS' }))
 S ("LOOP " + $(switch ($base) { 0 { 'DONE (no event)' } 10 { 'STOPPED ON EVENT' } 11 { 'STOPPED, NO OBSERVATION' } default { 'FAILED' } }) + " | RESTORE " + $(if ($restoreFail) { 'FAIL' } else { 'PASS' }))
 S ("results: " + (($results.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }) -join ' ') + " stop=" + ($stop -replace ' ', '_'))

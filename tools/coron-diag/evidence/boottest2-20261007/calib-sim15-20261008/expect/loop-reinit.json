@@ -1,0 +1,27 @@
+{
+ "exit": 10,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "10",
+  "t2": "not-run",
+  "t3": "not-run",
+  "restore": "0",
+  "stop": "event:_ring-reinit_(trial_1)"
+ },
+ "must": [
+  {
+   "glob": "trial1-*.log",
+   "re": "EVENT after write: the ring was reinitialised in this new boot"
+  }
+ ],
+ "must_not": [],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

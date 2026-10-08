@@ -1,0 +1,29 @@
+{
+ "exit": 1,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "0",
+  "t2": "0",
+  "t3": "not-run",
+  "restore": "0",
+  "stop": "trial_2_returned_0_but_its_result_is_invalid:_result_file_is_of_trial_1,_not_2"
+ },
+ "must": [
+  "result file is of trial 1, not 2"
+ ],
+ "must_not": [
+  {
+   "glob": "trial3-*.log",
+   "re": "."
+  }
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

@@ -1,0 +1,37 @@
+﻿13:25:34.261 MOCK mode: every child gets its scenario file from \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim15\sim\restore-hang
+13:25:34.272 CALIBRATION start serial=B17318CDBE9A61B1
+13:25:34.287 launch pre (deadline 90s)
+13:25:35.566 pre rc=0
+13:25:35.574 launch flash-base (deadline 300s)
+13:25:38.009 flash-base rc=0
+13:25:38.018 launch 0 (deadline 90s)
+13:25:41.844 step 0 PASS
+13:25:41.852 launch 1 (deadline 90s)
+13:25:44.617 step 1 PASS
+13:25:44.625 launch 2 (deadline 240s)
+13:25:49.046 step 2 PASS
+13:25:49.053 launch 3 (deadline 30s)
+13:25:49.565 step 3 SKIP
+13:25:49.573 launch 4 (deadline 150s)
+13:25:54.620 step 4 PASS
+13:25:54.627 launch 5 (deadline 240s)
+13:26:00.515 step 5 PASS
+13:26:00.522 launch 6 (deadline 240s)
+13:26:07.907 step 6 PASS
+13:26:07.914 launch 7 (deadline 400s)
+13:26:16.499 step 7 PASS
+13:26:16.506 launch 8 (deadline 90s)
+13:26:22.796 step 8 PASS
+13:26:22.807 launch flash-prod (deadline 8s)
+13:26:30.833 deadline 8s passed for pid 88052: terminating through calib-kill.ps1 (deadline 20s for enumeration + request + confirmation)
+13:26:31.701 kill: phase=enumerate pid=88052
+13:26:31.707 kill: tree=[88052]
+13:26:31.715 kill: phase=terminate
+13:26:31.721 kill: taskkill rc=0: 成功: PID 88052 のプロセス (PID 42092 の子プロセス) を終了しました。
+13:26:31.728 kill: phase=confirm
+13:26:31.734 kill: alive=[] confirmed=True (after 0 s)
+13:26:31.748 termination confirmed=True (kill helper rc=0; pids still alive: [])
+13:26:31.756 flash-prod did not return within 8s: killed with its process tree, termination confirmed (its log and \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim15\logs-1008-131916\restore-hang\child-flash-prod.out hold what it wrote)
+13:26:31.764 restore FAIL (rc=TIMEOUT)
+13:26:31.771 CALIBRATION PASS (step 3 SKIP: pin reset not tested) | RESTORE FAIL
+13:26:31.782 results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=TIMEOUT

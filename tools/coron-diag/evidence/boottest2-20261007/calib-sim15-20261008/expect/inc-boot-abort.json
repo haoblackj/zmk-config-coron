@@ -1,0 +1,43 @@
+{
+ "exit": 0,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "0": "0",
+  "1": "0",
+  "2": "0",
+  "3": "2",
+  "4": "0",
+  "5": "0",
+  "6": "0",
+  "7": "0",
+  "8": "0",
+  "restore": "0"
+ },
+ "must": [
+  {
+   "glob": "steppre-*.log",
+   "re": "saved ZBOOT inc0 us2"
+  },
+  {
+   "glob": "steppre-*.log",
+   "re": "inc0 reason=0 \\(boot interrupted without the net firing\\): fire lines not required"
+  },
+  {
+   "glob": "step0-*.log",
+   "re": "saved ZBOOT inc0 a seq=3 .* done=0 reason=0"
+  }
+ ],
+ "must_not": [
+  {
+   "glob": "steppre-*.log",
+   "re": "saved ZBOOT inc0 fire"
+  },
+  {
+   "glob": "step0-*.log",
+   "re": "saved ZBOOT inc0 fire"
+  },
+  "NOT sent",
+  "timed out"
+ ]
+}

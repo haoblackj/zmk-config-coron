@@ -1,0 +1,32 @@
+{
+ "exit": 1,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "1",
+  "t2": "not-run",
+  "t3": "not-run",
+  "restore": "0",
+  "stop": "trial_1_failed_(rc=1)"
+ },
+ "must": [
+  {
+   "glob": "trial1-*.log",
+   "re": "FAIL dwell progress within tolerance \\(progress=290000 want=780000\\)"
+  }
+ ],
+ "must_not": [
+  {
+   "glob": "trial1-*.log",
+   "re": "sent 'b'"
+  }
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}
