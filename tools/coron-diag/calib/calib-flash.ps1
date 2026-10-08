@@ -42,7 +42,8 @@ try {
         Require 'diag port present' (@(Get-DiagPorts).Count -gt 0) 'ports'
         $t = Send-Cmd 'b' 2
         NextOp 'copy the image to the UF2 drive'
-        Require 'b acknowledged' ($t -cmatch 'ZDIAG bootloader') 'ZDIAG bootloader'
+        # the ack line is evidence only (it can be lost with the port); the gate is the bootloader on USB
+        $ev = Ack-Evidence $t 'b' 'ZDIAG bootloader'
         Require 'bootloader of this serial on USB within 30 s' (Wait-State 'boot' 30) ("state=" + $script:lastState)
     } elseif ($state -ceq 'boot') {
         NextOp 'copy the image to the UF2 drive'

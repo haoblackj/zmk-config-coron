@@ -222,7 +222,8 @@ try {
         $script:lastSentStamp = $null
         try { $t = Send-Cmd 'b' 2 } finally { $res.stages.op_sent = $(if ($null -eq $script:lastSentStamp) { 'unknown' } else { $script:lastSentStamp }); Log "stage op_sent=$($res.stages.op_sent) (from the console child's stamp, independent of the exchange's outcome)" }
         NextOp 'copy the image to the UF2 drive'
-        Require 'b acknowledged' ($t -cmatch 'ZDIAG bootloader') 'ZDIAG bootloader'
+        # the ack line is evidence only (it can be lost with the port); the gate is the bootloader on USB
+        $ev = Ack-Evidence $t 'b' 'ZDIAG bootloader'
         Require 'bootloader of this serial on USB within 30 s' (Wait-State 'boot' 30) ("state=" + $script:lastState)
         Pause-Ms 500
         $drives = @(Get-Uf2DrivesOfSerial)
@@ -241,9 +242,11 @@ try {
         $script:lastSentStamp = $null
         try { $t = Send-Cmd 'r' 2 } finally { $res.stages.op_sent = $(if ($null -eq $script:lastSentStamp) { 'unknown' } else { $script:lastSentStamp }); Log "stage op_sent=$($res.stages.op_sent) (from the console child's stamp, independent of the exchange's outcome)" }
         NextOp 'nothing more (only reading)'
-        Require 'r acknowledged' ($t -cmatch 'ZDIAG reboot') 'ZDIAG reboot'
+        # the ack line is evidence only (it can be lost with the port); the gate is any direct sign of the reboot
+        $ev = Ack-Evidence $t 'r' 'ZDIAG reboot'
         $left = Wait-Leave-App 10
-        $res.note += "r sent; usb left app: $($left -cne 'app') (state=$left)"
+        Require "'r' acted upon (ack line, port lost after the send, or USB departure within 10 s)" ($ev.ack -or $ev.port_lost -or ($left -cne 'app')) "ack_seen=$($ev.ack) port_lost=$($ev.port_lost) state=$left"
+        $res.note += "r sent; ack_seen=$($ev.ack) port_lost=$($ev.port_lost); usb left app: $($left -cne 'app') (state=$left)"
         $back = Wait-State 'app' 60
     }
     if (-not $back) {

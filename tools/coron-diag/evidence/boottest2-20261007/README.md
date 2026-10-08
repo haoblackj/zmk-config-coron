@@ -1,4 +1,4 @@
-# 証拠の束（Coron 起動停止の調査、計測器 v4、2026-10-07 23:59 作成、2026-10-08 03:03 更新）
+# 証拠の束（Coron 起動停止の調査、計測器 v4、2026-10-07 23:59 作成、2026-10-08 19:05 更新）
 
 GitHub で読める写しは `haoblackj/zmk-config-coron` の `feat/dya-diagnostics` ブランチ、`tools/coron-diag/`（モジュールのソース）と `tools/coron-diag/evidence/boottest2-20261007/`（この束。ELF と UF2 は大きさの都合で入れず、md5 だけ置く。要るときは渡す）。
 
@@ -99,13 +99,13 @@ GitHub で読める写しは `haoblackj/zmk-config-coron` の `feat/dya-diagnost
 | 7 | `d` で既存事故記録の全行を保存 → `S` → `b` → 最適化像を複写 | `S rc=0`/`returned`、`b` 受理、シリアル一致の UF2 ドライブ 1 つ、ブートローダー 1 台、md5 再確認、複写エラーなし、ドライブ消失、app 復帰。dump: cur tag=bt4A-R、addr cur=0x2002c818、seq +2、ring count +1、`inc0`〜`inc2` の全行が 1 文字も変わらず残る（行の欠落も、大文字小文字の違いも FAIL）、`inc3`: tag=bt4A-R、reason=1、calib=S、done=0、stage=6、seq=前の seq+1、pc ∈ 最適化像の `diag_spin_forever`（0x38a08〜）、reinit=0、dropped/invalid 不変 |
 | 8 | `d` で保存 → `c` → `d` | `ring count=0`。本番復帰はこの段に含めない（別スクリプト、上の条件） |
 実機での実施（2026-10-08 10:41〜11:04、3 回目で校正 PASS・本番復帰 PASS。1、2 回目が止まった理由と修正は `calib-real-20261008/README.md` と `review6-fixes.md` の「実機初回」。3 回目の子は `d` を MI_03 にも送っていたので、レビュー #13 で送信先を診断コンソールに限定した）。
-無人ループの計画と実装（`calib-loop.ps1`、`calib-trial.ps1`、模擬 14 場面）は `loop-plan.md`。レビュー待ちで、実機では動かしていない。
+無人ループの計画と実装（`calib-loop.ps1`、`calib-trial.ps1`）は `loop-plan.md`。実機初回（2026-10-08 15:42〜16:41、書き込み群、スクリプト 9191082）は `loop-real-20261008/`: 試行 1（稼働 13.39 分）と 2（26.34 分）は正常完了で事故記録 0 件、試行 3（17.24 分）は `b` の応答行が送信 231 ms 後のポート消失で届かず、スクリプトの前提（応答行を関門にしていた）で FAIL（実機は `b` のとおりブートローダーに入っていた。像は書いていない）、試行 4、5 は未実施、本番復帰 PASS。応答行を関門にしない修正（校正の同じ 3 か所も）はレビュー待ちで、実機では未実施。
 校正の発火は自然発生の件数に数えない。自動復帰で救えない停止（NVIC 優先度 0 まで抑止、TIMER4 準備前、ブートローダー内）は、この計測器では救えない。
 
-### 模擬試験（実機なし。`calib-sim.py`、2026-10-08 14:54〜15:03。記録は `calib-sim18-20261008/`（レビュー #18 の後。自己試験 15 件 + 校正 43 場面 + 無人ループ 33 場面。ループの場面は `loop-plan.md`）。14:36〜14:45 の 74 場面は `calib-sim17-20261008/`、13:51〜13:59 の 70 場面は `calib-sim16-20261008/`、13:19〜13:27 の 67 場面は `calib-sim15-20261008/`、12:25〜12:32 の 57 場面は `calib-sim14-20261008/`、11:34〜11:41 の 43 場面は `calib-sim13-20261008/`、10:52〜10:58 の 40 場面は `calib-sim12-20261008/`、レビュー #11 時点の 40 場面は `calib-sim11-20261008/`、レビュー #9 時点の 29 場面は `calib-sim9-20261008/`、レビュー #10 時点の 37 場面は `calib-sim10-20261008/`）
-`calib-sim.py` が、まず `calib-selftest.ps1`（照合関数の直接検証）を走らせ、次に `gen-scenarios.py` の 76 場面（校正 43、無人ループ 33）をすべて `calib-all.ps1` の全体実行（事前確認 → 基準像 → 第 0〜8 段 → 本番復帰）として流し、各場面の `expect.json`（終了コード、`results:` 行の全段の値、ログに必ず現れる正規表現と現れてはならない正規表現。ファイル名の glob で段を限定できる）と機械的に照合する。1 つでも不一致なら非ゼロで終わる。模擬は USB 状態、UF2 ドライブ、複写結果、ファイルの md5 を差し替え（PnP も CIM も Copy-Item も呼ばない）、コンソールの子プロセス `calib-io.ps1` は実物を起動してポートだけを缶詰（`-MockFile`）に置き換えるので、子の送信の関門、刻印、期限超過時の強制終了がそのまま試験される。異常場面も全体実行なので、「失敗した段の後の段が `not-run`」「それでも復帰が走り別に判定される」が `results:` 行で確かめられる。
+### 模擬試験（実機なし。`calib-sim.py`、2026-10-08 20:09〜20:21。記録は `calib-sim20-20261008/`（実機ループ初回の 1 件への対応後。自己試験 15 件 + 校正 46 場面 + 無人ループ 37 場面。ループの場面は `loop-plan.md`）。14:54〜15:03 の 76 場面は `calib-sim18-20261008/`、14:36〜14:45 の 74 場面は `calib-sim17-20261008/`、13:51〜13:59 の 70 場面は `calib-sim16-20261008/`、13:19〜13:27 の 67 場面は `calib-sim15-20261008/`、12:25〜12:32 の 57 場面は `calib-sim14-20261008/`、11:34〜11:41 の 43 場面は `calib-sim13-20261008/`、10:52〜10:58 の 40 場面は `calib-sim12-20261008/`、レビュー #11 時点の 40 場面は `calib-sim11-20261008/`、レビュー #9 時点の 29 場面は `calib-sim9-20261008/`、レビュー #10 時点の 37 場面は `calib-sim10-20261008/`）
+`calib-sim.py` が、まず `calib-selftest.ps1`（照合関数の直接検証）を走らせ、次に `gen-scenarios.py` の 83 場面（校正 46、無人ループ 37）をすべて `calib-all.ps1` の全体実行（事前確認 → 基準像 → 第 0〜8 段 → 本番復帰）として流し、各場面の `expect.json`（終了コード、`results:` 行の全段の値、ログに必ず現れる正規表現と現れてはならない正規表現。ファイル名の glob で段を限定できる）と機械的に照合する。1 つでも不一致なら非ゼロで終わる。模擬は USB 状態、UF2 ドライブ、複写結果、ファイルの md5 を差し替え（PnP も CIM も Copy-Item も呼ばない）、コンソールの子プロセス `calib-io.ps1` は実物を起動してポートだけを缶詰（`-MockFile`）に置き換えるので、子の送信の関門、刻印、期限超過時の強制終了がそのまま試験される。異常場面も全体実行なので、「失敗した段の後の段が `not-run`」「それでも復帰が走り別に判定される」が `results:` 行で確かめられる。
 03:01 の旧版（`calib-sim.sh`、`calib-sim-20261008/`）は単段実行で期待の照合が無かったので、この版で置き換えた。08:12 の版（29 場面）の初回実行で、旧版では見えなかった欠陥を 1 つ捕まえて直した: 子の刻印 `dump incomplete (no ZDIAG end within 4 s)` に文字列 `ZDIAG end` が含まれ、親の「dump 完了」判定（`-cmatch 'ZDIAG end'`）が刻印に当たって PASS になっていた（`no dump (no ZDIAG begin …)` も同様）。判定を行頭アンカー（`(?m)^ZDIAG end\s*$`）にし、刻印の文言から印の文字列を外した。
-76 場面の結果（全部期待どおり。`report.txt`。校正の 43 場面:）
+83 場面の結果（全部期待どおり。`report.txt`。校正の 46 場面:）
 | 場面 | 内容 | 期待（終了コード、結果） | 照合した決め手 |
 |---|---|---|---|
 | normal | 本番像（`ZBOOT` なし）から始めて基準像の書き込み、第 0〜8 段、本番復帰 | 0。pre/flash-base/0/1/2/4/5/6/7/8 PASS、3 SKIP、restore PASS | pre に `no ZBOOT line`、複写 2 回、`CALIBRATION PASS`、第 2 段 `reset observed directly`、`inc0 evidence: … fire4`、`NOT sent`/`timed out`/` #TRUNC` 行末なし |
@@ -148,7 +148,10 @@ GitHub で読める写しは `haoblackj/zmk-config-coron` の `feat/dya-diagnost
 | two-ports | 同じシリアルに診断コンソール（COM5、MI_00）と Studio の RPC UART（COM7、MI_03）がある（本番像の形）で全体実行 | 0。全段 PASS | `opened COM5` あり、`opened COM7`/`console COM7`/COM7 への `sent` が 1 行も無い |
 | uf2-partial-serial | 第 7 段: UF2 ドライブの ID がシリアルの部分一致（1 文字多い F:、1 文字短い G:）だけ | 1。7=FAIL | `drives of serial=[] all uf2 drives=[F,G]`、`STOPPED before: copy the alt image`、複写なし |
 | uf2-noprefix | UF2 ドライブの ID が接頭辞なし（`\<シリアル>&0`）で全体実行 | 0。全段 PASS | `drives of serial=[E]` |
-無人ループの 33 場面（`calib-loop.ps1` の全体実行。`loop-plan.md` の表の条件。`results:` 行には事前確認 `pre` が加わる）:
+| flash-ack-lost | 基準像の書き込み: `b` の応答行 `ZDIAG bootloader` が届かず、送信後にポートが消える | 0。全段 PASS | `'b' reply: ack line 'ZDIAG bootloader' seen=False, port lost after the send=True`、`PASS bootloader of this serial on USB within 30 s (state=boot)`、`DEVICE-OP copied`、`b acknowledged`/`r acknowledged` なし（`c acknowledged` は第 0、8 段の正当な確認で残る） |
+| step6-ack-lost | 第 6 段: `r` の応答行 `ZDIAG reboot` が届かず、送信後にポートが消える | 0。全段 PASS | `'r' reply: ack line 'ZDIAG reboot' seen=False, port lost after the send=True`、`PASS 'r' acted upon … (ack_seen=False port_lost=True state=none)`、`reset observed directly` |
+| step7-ack-lost | 第 7 段: `b` の応答行が届かず、送信後にポートが消える | 0。全段 PASS | `'b' reply: … seen=False, port lost after the send=True`、`PASS bootloader of this serial on USB within 30 s (state=boot)`、`DEVICE-OP copied` |
+無人ループの 37 場面（`calib-loop.ps1` の全体実行。`loop-plan.md` の表の条件。`results:` 行には事前確認 `pre` が加わる）:
 | 場面 | 内容 | 期待（終了コード、結果） | 照合した決め手 |
 |---|---|---|---|
 | loop-normal | 書き込み群 3 試行（稼働 13、17、26 分）、事象なし。seq 1 の全 dump で reinit=1、以後 0 | 0。全試行 0、restore 0、stop=all-trials-done | 台帳の行（予定と実績の像が一致、seq 1→2→3→4、操作直前の稼働 13.17/17.2/26.2 分）、`up_ms 10000 -> 790000, progress 780000 ms`、`trials started=3, b sent=3, images written=3 (boots after a write), boots observed=3, RUNNING confirmed=3, completed without event=3`、事前確認で本番像の md5 PASS、EVENT 行なし |
@@ -187,4 +190,8 @@ GitHub で読める写しは `haoblackj/zmk-config-coron` の `feat/dya-diagnost
 | kill-enum-hang | 第 4 段の子が戻らず、終了処理のプロセス列挙が戻らない（模擬: 列挙の前で止まる） | 3。4=TIMEOUT-ALIVE、以後 not-run、restore=not-attempted | `kill: phase=enumerate` まで、`termination confirmed=False: kill helper did not return within 20s (last phase=enumerate)`、`RESTORE NOT ATTEMPTED`、`tree=`/`taskkill rc=` なし、復帰のログなし |
 | kill-req-hang | 同上、終了要求が戻らない（模擬: `taskkill` の代わりに止まる） | 3。同上 | `kill: tree=[…]`、`kill: phase=terminate` まで、`… did not return within 20s (last phase=terminate)`、`RESTORE NOT ATTEMPTED`、`taskkill rc=` なし |
 | io-kill-req-hang | 第 1 段の交換の子が戻らず、その終了要求が戻らない | 3。1=5、以後 not-run、restore=not-attempted | 第 1 段に `kill helper did not return within 20s (last phase=terminate)`、`exit 5`、`RESTORE NOT ATTEMPTED` |
+| loop-b-ack-lost | 試行 2: `b` の応答行が届かず、送信後にポートが消え、ブートローダーが現れる（実機の試行 3 の形） | 0。全試行 0、restore 0 | 試行 2 に `'b' reply: ack line 'ZDIAG bootloader' seen=False, port lost after the send=True`、`PASS bootloader of this serial on USB within 30 s (state=boot)`、`DEVICE-OP copied`、試行 1 は `seen=True`、台帳 `b sent=3, images written=3`、`acknowledged` 行なし、`LOOP DONE (no event) \| RESTORE PASS` |
+| loop-r-ack-lost | リセット群の試行 1: `r` の応答行が届かず、送信後にポートが消える | 0 | `'r' reply: ack line 'ZDIAG reboot' seen=False, port lost after the send=True`、`PASS 'r' acted upon … (ack_seen=False port_lost=True state=none)`、`r sent=2 (boots after a soft reset), boots observed=2, RUNNING confirmed=2, completed without event=2` |
+| loop-b-no-ack-stays-app | 試行 1: `b` の応答行が届かず、ポートも消えず、実機が app のまま | 1。t1=1、t2 なし、restore 0 | `seen=False, port lost after the send=False`、`FAIL bootloader of this serial on USB within 30 s (state=app)`、`STOPPED before: copy the image to the UF2 drive`、`op_sent=True image_written_stage=False`、`b sent=1, images written=0`、`EVENT` なし、`DEVICE-OP cop` なし |
+| loop-r-no-ack-stays-app | リセット群で同じ | 1。t1=1 | `FAIL 'r' acted upon … (ack_seen=False port_lost=False state=app)`、`r sent=1 (boots after a soft reset), boots observed=0`、`EVENT` なし |
 手動押下もユーザーの応答待ちも、どの場面にも無い。

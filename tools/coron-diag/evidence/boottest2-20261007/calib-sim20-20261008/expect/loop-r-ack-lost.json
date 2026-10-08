@@ -1,0 +1,38 @@
+{
+ "exit": 0,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "0",
+  "t2": "0",
+  "restore": "0",
+  "stop": "all-trials-done"
+ },
+ "must": [
+  {
+   "glob": "trial1-*.log",
+   "re": "'r' reply: ack line 'ZDIAG reboot' seen=False, port lost after the send=True"
+  },
+  {
+   "glob": "trial1-*.log",
+   "re": "PASS 'r' acted upon .*\\(ack_seen=False port_lost=True state=none\\)"
+  },
+  "ledger: mode=reset trials started=2, r sent=2 \\(boots after a soft reset\\), boots observed=2, RUNNING confirmed=2, completed without event=2",
+  "LOOP DONE \\(no event\\) \\| RESTORE PASS"
+ ],
+ "must_not": [
+  "acknowledged",
+  {
+   "glob": "trial1-*.log",
+   "re": "ZDIAG reboot$"
+  }
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "reset",
+  "-Dwells",
+  "13,26"
+ ]
+}

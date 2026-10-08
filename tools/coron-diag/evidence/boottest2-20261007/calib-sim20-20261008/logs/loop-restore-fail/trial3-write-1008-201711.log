@@ -1,0 +1,366 @@
+﻿20:17:11.466 MOCK scenario \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim20\sim\loop-restore-fail\t3.json
+20:17:11.495 TRIAL 3 mode=write dwell=26min serial=B17318CDBE9A61B1 image=C:\T\coron_R-bt4-alt.uf2 tag_now=bt4-R-10080217 tag_next=bt4A-R-10080217
+20:17:11.537 PASS device on USB as app with a diag port (state=app)
+----- console COM5 send='' read=0s exit=0 timed_out=False deadline=20s -----
+[calib-io] opened COM5 at 20:17:11.995
+[calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 20:17:12.023
+ZDIAG begin version=prof1 up_ms=12000 boot=1 reset=0x4
+ZDIAG now count host_conn=1 host_disc=0 split_conn=1 split_disc=0
+ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0
+ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00
+ZBOOT last none
+ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0
+ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000
+ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0
+ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1
+ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800
+ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100
+ZDIAG end
+[calib-io] dump complete at 20:17:12.029
+[calib-io] closing at 20:17:12.030
+
+----- end console -----
+20:17:12.116 PASS baseline:dump complete (ZDIAG end line)
+20:17:12.127 PASS baseline:no #TRUNC line (trunc lines=0)
+20:17:12.154 PASS baseline:ring header present (keys=addr,cur,last,ring)
+20:17:12.166 PASS baseline:ring.count present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:12.174 PASS baseline:ring.slots present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:12.182 PASS baseline:ring.dropped present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:12.190 PASS baseline:ring.invalid present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:12.199 PASS baseline:ring.reinit present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:12.208 PASS baseline:ring.calib_live present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:12.216 PASS baseline:addr header present (keys=addr,cur,last,ring)
+20:17:12.224 PASS baseline:addr.cur present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+20:17:12.233 PASS baseline:addr.last present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+20:17:12.241 PASS baseline:addr.ring present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+20:17:12.250 PASS baseline:addr.sysq present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+20:17:12.259 PASS baseline:addr.main present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+20:17:12.266 PASS baseline:addr.calib present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+20:17:12.276 PASS baseline:ring count <= slots (count=0 slots=6)
+20:17:12.287 PASS baseline:incident records == ring count (records=0 count=0)
+20:17:12.294 baseline: last none
+20:17:12.305 PASS baseline:cur present (keys=addr,cur,last,ring)
+20:17:12.320 PASS baseline:cur a line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:12.328 PASS baseline:cur a.seq present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:12.337 PASS baseline:cur a.tag present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:12.346 PASS baseline:cur a.done present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:12.355 PASS baseline:cur a.reason present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:12.364 PASS baseline:cur a.phase present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:12.373 PASS baseline:cur a.calib present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:12.381 PASS baseline:cur a.stage present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:12.390 PASS baseline:cur a.reset present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:12.397 PASS baseline:cur a.reinit present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:12.405 PASS baseline:cur b line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:12.414 PASS baseline:cur b.fix present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+20:17:12.421 PASS baseline:cur b.probes present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+20:17:12.431 PASS baseline:cur b.feeds present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+20:17:12.440 PASS baseline:cur b.loops present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+20:17:12.448 PASS baseline:cur b.lastfeed_us present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+20:17:12.457 PASS baseline:cur entry1 line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:12.465 PASS baseline:cur entry1.lfstat present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:12.475 PASS baseline:cur entry1.lfrun present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:12.484 PASS baseline:cur entry1.lfsrc present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:12.495 PASS baseline:cur entry1.lfcopy present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:12.504 PASS baseline:cur entry1.lfev present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:12.541 PASS baseline:cur entry2 line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:12.549 PASS baseline:cur entry2.hfstat present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:12.557 PASS baseline:cur entry2.hfrun present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:12.565 PASS baseline:cur entry2.hfev present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:12.572 PASS baseline:cur entry2.rtc1 present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:12.580 PASS baseline:cur entry2.usbreg present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:12.587 PASS baseline:cur entry2.ficr130 present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:12.594 PASS baseline:cur entry2.ficr134 present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:12.602 PASS baseline:cur us1 line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:12.611 PASS baseline:cur us1.hook present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:12.619 PASS baseline:cur us1.pk1 present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:12.628 PASS baseline:cur us1.clk present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:12.635 PASS baseline:cur us1.pk1end present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:12.643 PASS baseline:cur us1.sysclk present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:12.652 PASS baseline:cur us1.post present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:12.660 PASS baseline:cur us1.app present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:12.667 PASS baseline:cur us2 line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:12.675 PASS baseline:cur us2.usb present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:12.683 PASS baseline:cur us2.applast present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:12.692 PASS baseline:cur us2.commit present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:12.699 PASS baseline:cur us2.mainexit present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:12.706 PASS baseline:cur us2.probed present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:12.716 PASS baseline:cur us2.running present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:12.727 PASS baseline:cur fire lines all-or-none (fire lines=0)
+20:17:12.735 PASS baseline:ring header reinit == cur reinit (header=0 cur=0)
+20:17:12.751 PASS baseline:up_ms present in the ZDIAG begin line (up_ms)
+20:17:12.779 baseline: seq=3 tag=bt4-R-10080217 done=1 count=0 dropped=0 invalid=0 reinit=0 up_ms=12000 (0.2 min) host_conn=1 host_disc=0 split_conn=1 split_disc=0
+20:17:12.790 PASS baseline dump present (ZDIAG begin)
+20:17:12.799 PASS running image tag=bt4-R-10080217 (bt4-R-10080217)
+20:17:12.821 dwell start: 26 min (the uptime is taken from up_ms of the dump at the end)
+20:17:12.833 dwell: USB state 'app' first seen at poll 1
+----- console COM5 send='' read=0s exit=0 timed_out=False deadline=20s -----
+[calib-io] opened COM5 at 20:17:13.279
+[calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 20:17:13.306
+ZDIAG begin version=prof1 up_ms=1572000 boot=1 reset=0x4
+ZDIAG now count host_conn=1 host_disc=0 split_conn=1 split_disc=0
+ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0
+ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00
+ZBOOT last none
+ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0
+ZBOOT cur b fix=0/0/0 probes=780/780 feeds=754 loops=30 lastfeed_us=60000000
+ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0
+ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1
+ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800
+ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100
+ZDIAG end
+[calib-io] dump complete at 20:17:13.314
+[calib-io] closing at 20:17:13.314
+
+----- end console -----
+20:17:13.379 PASS end of dwell:dump complete (ZDIAG end line)
+20:17:13.387 PASS end of dwell:no #TRUNC line (trunc lines=0)
+20:17:13.396 PASS end of dwell:ring header present (keys=addr,cur,last,ring)
+20:17:13.403 PASS end of dwell:ring.count present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:13.410 PASS end of dwell:ring.slots present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:13.419 PASS end of dwell:ring.dropped present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:13.427 PASS end of dwell:ring.invalid present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:13.435 PASS end of dwell:ring.reinit present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:13.442 PASS end of dwell:ring.calib_live present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:13.450 PASS end of dwell:addr header present (keys=addr,cur,last,ring)
+20:17:13.457 PASS end of dwell:addr.cur present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+20:17:13.465 PASS end of dwell:addr.last present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+20:17:13.473 PASS end of dwell:addr.ring present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+20:17:13.481 PASS end of dwell:addr.sysq present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+20:17:13.492 PASS end of dwell:addr.main present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+20:17:13.500 PASS end of dwell:addr.calib present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+20:17:13.507 PASS end of dwell:ring count <= slots (count=0 slots=6)
+20:17:13.516 PASS end of dwell:incident records == ring count (records=0 count=0)
+20:17:13.523 end of dwell: last none
+20:17:13.531 PASS end of dwell:cur present (keys=addr,cur,last,ring)
+20:17:13.538 PASS end of dwell:cur a line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:13.545 PASS end of dwell:cur a.seq present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:13.552 PASS end of dwell:cur a.tag present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:13.560 PASS end of dwell:cur a.done present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:13.568 PASS end of dwell:cur a.reason present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:13.575 PASS end of dwell:cur a.phase present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:13.584 PASS end of dwell:cur a.calib present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:13.591 PASS end of dwell:cur a.stage present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:13.598 PASS end of dwell:cur a.reset present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:13.605 PASS end of dwell:cur a.reinit present (ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:13.613 PASS end of dwell:cur b line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:13.621 PASS end of dwell:cur b.fix present (ZBOOT cur b fix=0/0/0 probes=780/780 feeds=754 loops=30 lastfeed_us=60000000)
+20:17:13.628 PASS end of dwell:cur b.probes present (ZBOOT cur b fix=0/0/0 probes=780/780 feeds=754 loops=30 lastfeed_us=60000000)
+20:17:13.636 PASS end of dwell:cur b.feeds present (ZBOOT cur b fix=0/0/0 probes=780/780 feeds=754 loops=30 lastfeed_us=60000000)
+20:17:13.645 PASS end of dwell:cur b.loops present (ZBOOT cur b fix=0/0/0 probes=780/780 feeds=754 loops=30 lastfeed_us=60000000)
+20:17:13.653 PASS end of dwell:cur b.lastfeed_us present (ZBOOT cur b fix=0/0/0 probes=780/780 feeds=754 loops=30 lastfeed_us=60000000)
+20:17:13.661 PASS end of dwell:cur entry1 line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:13.668 PASS end of dwell:cur entry1.lfstat present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:13.675 PASS end of dwell:cur entry1.lfrun present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:13.684 PASS end of dwell:cur entry1.lfsrc present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:13.690 PASS end of dwell:cur entry1.lfcopy present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:13.698 PASS end of dwell:cur entry1.lfev present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:13.707 PASS end of dwell:cur entry2 line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:13.714 PASS end of dwell:cur entry2.hfstat present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:13.721 PASS end of dwell:cur entry2.hfrun present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:13.729 PASS end of dwell:cur entry2.hfev present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:13.738 PASS end of dwell:cur entry2.rtc1 present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:13.746 PASS end of dwell:cur entry2.usbreg present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:13.753 PASS end of dwell:cur entry2.ficr130 present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:13.761 PASS end of dwell:cur entry2.ficr134 present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:13.769 PASS end of dwell:cur us1 line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:13.778 PASS end of dwell:cur us1.hook present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:13.785 PASS end of dwell:cur us1.pk1 present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:13.792 PASS end of dwell:cur us1.clk present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:13.800 PASS end of dwell:cur us1.pk1end present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:13.809 PASS end of dwell:cur us1.sysclk present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:13.816 PASS end of dwell:cur us1.post present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:13.823 PASS end of dwell:cur us1.app present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:13.832 PASS end of dwell:cur us2 line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:13.839 PASS end of dwell:cur us2.usb present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:13.848 PASS end of dwell:cur us2.applast present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:13.856 PASS end of dwell:cur us2.commit present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:13.862 PASS end of dwell:cur us2.mainexit present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:13.870 PASS end of dwell:cur us2.probed present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:13.878 PASS end of dwell:cur us2.running present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:13.885 PASS end of dwell:cur fire lines all-or-none (fire lines=0)
+20:17:13.892 PASS end of dwell:ring header reinit == cur reinit (header=0 cur=0)
+20:17:13.899 PASS end of dwell:up_ms present in the ZDIAG begin line (up_ms)
+20:17:13.908 end of dwell: seq=3 tag=bt4-R-10080217 done=1 count=0 dropped=0 invalid=0 reinit=0 up_ms=1572000 (26.2 min) host_conn=1 host_disc=0 split_conn=1 split_disc=0
+20:17:13.916 PASS dump at the end of the dwell (ZDIAG begin)
+20:17:13.928 dwell measured by the firmware: up_ms 12000 -> 1572000, progress 1560000 ms for a dwell of 1560000 ms (tolerance -2000/+120000 ms); uptime before the operation 26.2 min
+20:17:13.937 PASS dwell progress within tolerance (progress=1560000 want=1560000)
+20:17:13.945 PASS uptime before the operation >= dwell (up_ms=1572000)
+20:17:13.958 PASS image to write exists (C:\T\coron_R-bt4-alt.uf2)
+20:17:13.966 PASS image to write md5 (have=e1e62efeeda0f87a1678a3d53f8151cf want=e1e62efeeda0f87a1678a3d53f8151cf)
+----- console COM5 send='b' read=2s exit=0 timed_out=False deadline=22s -----
+[calib-io] opened COM5 at 20:17:14.357
+[calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 20:17:14.382
+ZDIAG begin version=prof1 up_ms=1572000 boot=1 reset=0x4
+ZDIAG now count host_conn=1 host_disc=0 split_conn=1 split_disc=0
+ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0
+ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00
+ZBOOT last none
+ZBOOT cur a seq=3 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0
+ZBOOT cur b fix=0/0/0 probes=780/780 feeds=754 loops=30 lastfeed_us=60000000
+ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0
+ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1
+ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800
+ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100
+ZDIAG end
+[calib-io] dump complete at 20:17:14.388
+[calib-io] sent 'b' at 20:17:14.390
+ZDIAG bootloader rc=0
+[calib-io] port lost ("0" 個の引数を指定して "ReadExisting" を呼び出し中に例外が発生しました: "The device does not recognize the command.") at 20:17:14.401
+[calib-io] read window over at 20:17:14.402
+[calib-io] closing at 20:17:14.402
+
+----- end console -----
+20:17:14.461 send classification for 'b': True (sent stamp=True, NOT-sent stamp=False, timed_out=False, child exit=0)
+20:17:14.468 DEVICE-OP console sent 'b' (child stamp)
+20:17:14.476 PASS 'b' written by the console child (its pre-send dump complete and without #TRUNC) (child stamp "sent")
+20:17:14.486 stage op_sent=True (from the console child's stamp, independent of the exchange's outcome)
+20:17:14.496 'b' reply: ack line 'ZDIAG bootloader' seen=True, port lost after the send=True (the firmware prints the line ~100 ms before it reboots, so the line can be lost with the port; the gate is the USB state that follows, not this line)
+20:17:14.504 PASS bootloader of this serial on USB within 30 s (state=boot)
+20:17:14.525 PASS exactly one UF2 drive tied to this serial (drives of serial=[E] all uf2 drives=[E])
+20:17:14.534 PASS exactly one bootloader on USB (count=1)
+20:17:14.544 PASS image md5 (re-checked at copy time) (e1e62efeeda0f87a1678a3d53f8151cf)
+20:17:14.556 copy attempt (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+20:17:14.564 DEVICE-OP copied (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+20:17:14.571 PASS copy raised no error (to E)
+20:17:14.582 PASS UF2 drive vanished within 30 s (image taken) (drive E)
+----- console COM5 send='' read=0s exit=0 timed_out=False deadline=20s -----
+[calib-io] opened COM5 at 20:17:15.025
+[calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 20:17:15.053
+ZDIAG begin version=prof1 up_ms=5000 boot=1 reset=0x4
+ZDIAG now count host_conn=1 host_disc=0 split_conn=1 split_disc=0
+ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0
+ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x2000b688 main=0x2000b5c0 calib=0x20005d18
+ZBOOT last a seq=3 tag=bt4-R-10080217 done=1 reason=3 phase=1 calib=- stage=12 reset=0x4 reinit=0
+ZBOOT last b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000
+ZBOOT last entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0
+ZBOOT last entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1
+ZBOOT last us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800
+ZBOOT last us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100
+ZBOOT cur a seq=4 tag=bt4A-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0
+ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000
+ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0
+ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1
+ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800
+ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100
+ZDIAG end
+[calib-io] dump complete at 20:17:15.061
+[calib-io] closing at 20:17:15.061
+
+----- end console -----
+20:17:15.127 PASS after write (read 1):dump complete (ZDIAG end line)
+20:17:15.135 PASS after write (read 1):no #TRUNC line (trunc lines=0)
+20:17:15.162 PASS after write (read 1):ring header present (keys=addr,cur,last,ring)
+20:17:15.171 PASS after write (read 1):ring.count present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:15.178 PASS after write (read 1):ring.slots present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:15.186 PASS after write (read 1):ring.dropped present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:15.193 PASS after write (read 1):ring.invalid present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:15.200 PASS after write (read 1):ring.reinit present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:15.208 PASS after write (read 1):ring.calib_live present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+20:17:15.216 PASS after write (read 1):addr header present (keys=addr,cur,last,ring)
+20:17:15.224 PASS after write (read 1):addr.cur present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x2000b688 main=0x2000b5c0 calib=0x20005d18)
+20:17:15.231 PASS after write (read 1):addr.last present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x2000b688 main=0x2000b5c0 calib=0x20005d18)
+20:17:15.240 PASS after write (read 1):addr.ring present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x2000b688 main=0x2000b5c0 calib=0x20005d18)
+20:17:15.248 PASS after write (read 1):addr.sysq present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x2000b688 main=0x2000b5c0 calib=0x20005d18)
+20:17:15.256 PASS after write (read 1):addr.main present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x2000b688 main=0x2000b5c0 calib=0x20005d18)
+20:17:15.263 PASS after write (read 1):addr.calib present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x2000b688 main=0x2000b5c0 calib=0x20005d18)
+20:17:15.271 PASS after write (read 1):ring count <= slots (count=0 slots=6)
+20:17:15.279 PASS after write (read 1):incident records == ring count (records=0 count=0)
+20:17:15.286 PASS after write (read 1):last present (keys=addr,cur,last,ring)
+20:17:15.293 PASS after write (read 1):last a line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:15.303 PASS after write (read 1):last a.seq present (ZBOOT last a seq=3 tag=bt4-R-10080217 done=1 reason=3 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.310 PASS after write (read 1):last a.tag present (ZBOOT last a seq=3 tag=bt4-R-10080217 done=1 reason=3 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.318 PASS after write (read 1):last a.done present (ZBOOT last a seq=3 tag=bt4-R-10080217 done=1 reason=3 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.326 PASS after write (read 1):last a.reason present (ZBOOT last a seq=3 tag=bt4-R-10080217 done=1 reason=3 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.335 PASS after write (read 1):last a.phase present (ZBOOT last a seq=3 tag=bt4-R-10080217 done=1 reason=3 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.343 PASS after write (read 1):last a.calib present (ZBOOT last a seq=3 tag=bt4-R-10080217 done=1 reason=3 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.351 PASS after write (read 1):last a.stage present (ZBOOT last a seq=3 tag=bt4-R-10080217 done=1 reason=3 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.358 PASS after write (read 1):last a.reset present (ZBOOT last a seq=3 tag=bt4-R-10080217 done=1 reason=3 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.367 PASS after write (read 1):last a.reinit present (ZBOOT last a seq=3 tag=bt4-R-10080217 done=1 reason=3 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.375 PASS after write (read 1):last b line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:15.383 PASS after write (read 1):last b.fix present (ZBOOT last b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+20:17:15.391 PASS after write (read 1):last b.probes present (ZBOOT last b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+20:17:15.399 PASS after write (read 1):last b.feeds present (ZBOOT last b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+20:17:15.406 PASS after write (read 1):last b.loops present (ZBOOT last b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+20:17:15.415 PASS after write (read 1):last b.lastfeed_us present (ZBOOT last b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+20:17:15.423 PASS after write (read 1):last entry1 line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:15.432 PASS after write (read 1):last entry1.lfstat present (ZBOOT last entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:15.440 PASS after write (read 1):last entry1.lfrun present (ZBOOT last entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:15.447 PASS after write (read 1):last entry1.lfsrc present (ZBOOT last entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:15.455 PASS after write (read 1):last entry1.lfcopy present (ZBOOT last entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:15.463 PASS after write (read 1):last entry1.lfev present (ZBOOT last entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:15.474 PASS after write (read 1):last entry2 line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:15.483 PASS after write (read 1):last entry2.hfstat present (ZBOOT last entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:15.490 PASS after write (read 1):last entry2.hfrun present (ZBOOT last entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:15.498 PASS after write (read 1):last entry2.hfev present (ZBOOT last entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:15.505 PASS after write (read 1):last entry2.rtc1 present (ZBOOT last entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:15.513 PASS after write (read 1):last entry2.usbreg present (ZBOOT last entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:15.520 PASS after write (read 1):last entry2.ficr130 present (ZBOOT last entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:15.528 PASS after write (read 1):last entry2.ficr134 present (ZBOOT last entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:15.538 PASS after write (read 1):last us1 line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:15.546 PASS after write (read 1):last us1.hook present (ZBOOT last us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:15.553 PASS after write (read 1):last us1.pk1 present (ZBOOT last us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:15.561 PASS after write (read 1):last us1.clk present (ZBOOT last us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:15.569 PASS after write (read 1):last us1.pk1end present (ZBOOT last us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:15.578 PASS after write (read 1):last us1.sysclk present (ZBOOT last us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:15.585 PASS after write (read 1):last us1.post present (ZBOOT last us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:15.593 PASS after write (read 1):last us1.app present (ZBOOT last us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:15.601 PASS after write (read 1):last us2 line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:15.608 PASS after write (read 1):last us2.usb present (ZBOOT last us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:15.616 PASS after write (read 1):last us2.applast present (ZBOOT last us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:15.624 PASS after write (read 1):last us2.commit present (ZBOOT last us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:15.632 PASS after write (read 1):last us2.mainexit present (ZBOOT last us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:15.640 PASS after write (read 1):last us2.probed present (ZBOOT last us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:15.648 PASS after write (read 1):last us2.running present (ZBOOT last us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:15.654 PASS after write (read 1):last fire lines all-or-none (fire lines=0)
+20:17:15.663 PASS after write (read 1):cur present (keys=addr,cur,last,ring)
+20:17:15.671 PASS after write (read 1):cur a line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:15.677 PASS after write (read 1):cur a.seq present (ZBOOT cur a seq=4 tag=bt4A-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.685 PASS after write (read 1):cur a.tag present (ZBOOT cur a seq=4 tag=bt4A-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.693 PASS after write (read 1):cur a.done present (ZBOOT cur a seq=4 tag=bt4A-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.701 PASS after write (read 1):cur a.reason present (ZBOOT cur a seq=4 tag=bt4A-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.709 PASS after write (read 1):cur a.phase present (ZBOOT cur a seq=4 tag=bt4A-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.716 PASS after write (read 1):cur a.calib present (ZBOOT cur a seq=4 tag=bt4A-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.726 PASS after write (read 1):cur a.stage present (ZBOOT cur a seq=4 tag=bt4A-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.734 PASS after write (read 1):cur a.reset present (ZBOOT cur a seq=4 tag=bt4A-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.741 PASS after write (read 1):cur a.reinit present (ZBOOT cur a seq=4 tag=bt4A-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+20:17:15.749 PASS after write (read 1):cur b line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:15.757 PASS after write (read 1):cur b.fix present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+20:17:15.766 PASS after write (read 1):cur b.probes present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+20:17:15.773 PASS after write (read 1):cur b.feeds present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+20:17:15.780 PASS after write (read 1):cur b.loops present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+20:17:15.788 PASS after write (read 1):cur b.lastfeed_us present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+20:17:15.795 PASS after write (read 1):cur entry1 line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:15.803 PASS after write (read 1):cur entry1.lfstat present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:15.811 PASS after write (read 1):cur entry1.lfrun present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:15.818 PASS after write (read 1):cur entry1.lfsrc present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:15.826 PASS after write (read 1):cur entry1.lfcopy present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:15.834 PASS after write (read 1):cur entry1.lfev present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+20:17:15.843 PASS after write (read 1):cur entry2 line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:15.850 PASS after write (read 1):cur entry2.hfstat present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:15.857 PASS after write (read 1):cur entry2.hfrun present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:15.865 PASS after write (read 1):cur entry2.hfev present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:15.874 PASS after write (read 1):cur entry2.rtc1 present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:15.881 PASS after write (read 1):cur entry2.usbreg present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:15.888 PASS after write (read 1):cur entry2.ficr130 present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:15.896 PASS after write (read 1):cur entry2.ficr134 present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+20:17:15.903 PASS after write (read 1):cur us1 line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:15.910 PASS after write (read 1):cur us1.hook present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:15.918 PASS after write (read 1):cur us1.pk1 present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:15.925 PASS after write (read 1):cur us1.clk present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:15.933 PASS after write (read 1):cur us1.pk1end present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:15.940 PASS after write (read 1):cur us1.sysclk present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:15.948 PASS after write (read 1):cur us1.post present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:15.956 PASS after write (read 1):cur us1.app present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+20:17:15.963 PASS after write (read 1):cur us2 line present (lines=a,b,entry1,entry2,us1,us2)
+20:17:15.971 PASS after write (read 1):cur us2.usb present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:15.978 PASS after write (read 1):cur us2.applast present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:15.987 PASS after write (read 1):cur us2.commit present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:15.994 PASS after write (read 1):cur us2.mainexit present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:16.001 PASS after write (read 1):cur us2.probed present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:16.009 PASS after write (read 1):cur us2.running present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+20:17:16.018 PASS after write (read 1):cur fire lines all-or-none (fire lines=0)
+20:17:16.025 PASS after write (read 1):ring header reinit == cur reinit (header=0 cur=0)
+20:17:16.032 PASS after write (read 1):up_ms present in the ZDIAG begin line (up_ms)
+20:17:16.040 after write (read 1): seq=4 tag=bt4A-R-10080217 done=1 count=0 dropped=0 invalid=0 reinit=0 up_ms=5000 (0.08 min) host_conn=1 host_disc=0 split_conn=1 split_disc=0
+20:17:16.050 trial 3 ok: boot 3 -> 4, done=1, ring unchanged (count=0 dropped=0 invalid=0), tag=bt4A-R-10080217, uptime before the operation 26.2 min
+20:17:16.066 TRIAL 3 RESULT OK (continue)

@@ -1,0 +1,34 @@
+{
+ "exit": 1,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "0",
+  "t2": "0",
+  "t3": "not-run",
+  "restore": "0",
+  "stop": "trial_2_returned_0_but_its_result_is_invalid:_result_file_is_of_trial_1,_not_2"
+ },
+ "must": [
+  "result file is of trial 1, not 2",
+  "trial 2 result file not usable \\(result file is of trial 1, not 2\\): its stages are NOT adopted",
+  "trials started=1, b sent=2, images written=2 \\(boots after a write\\), boots observed=1, RUNNING confirmed=1, completed without event=1, stages unknown=1 \\(no usable result file; only log stamps counted for those\\)",
+  "trial 2 .*stages_unknown=True stages_source=trial log stamps only .*op_sent=True image_written_stage=True boot_observed=unknown running_confirmed=unknown completed=unknown"
+ ],
+ "must_not": [
+  {
+   "glob": "trial3-*.log",
+   "re": "."
+  },
+  "RUNNING confirmed=2",
+  "completed without event=2"
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

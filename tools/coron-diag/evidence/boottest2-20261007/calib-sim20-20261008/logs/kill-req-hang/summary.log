@@ -1,0 +1,30 @@
+﻿20:13:50.003 MOCK mode: every child gets its scenario file from \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim20\sim\kill-req-hang
+20:13:50.014 CALIBRATION start serial=B17318CDBE9A61B1
+20:13:50.028 launch pre (deadline 90s)
+20:13:51.398 pre rc=0
+20:13:51.406 launch flash-base (deadline 300s)
+20:13:53.827 flash-base rc=0
+20:13:53.834 launch 0 (deadline 90s)
+20:13:56.972 step 0 PASS
+20:13:56.979 launch 1 (deadline 90s)
+20:13:59.825 step 1 PASS
+20:13:59.833 launch 2 (deadline 240s)
+20:14:04.426 step 2 PASS
+20:14:04.434 launch 3 (deadline 30s)
+20:14:05.065 step 3 SKIP
+20:14:05.073 launch 4 (deadline 8s)
+20:14:13.106 deadline 8s passed for pid 92944: terminating through calib-kill.ps1 (deadline 20s for enumeration + request + confirmation)
+20:14:34.591 kill: phase=enumerate pid=92944
+20:14:34.600 kill: tree=[92944]
+20:14:34.606 kill: phase=terminate
+20:14:34.626 termination confirmed=False: kill helper did not return within 20s (last phase=terminate); dropping it with Process.Kill (not a confirmation)
+20:14:34.636 4 did not return within 8s: termination NOT confirmed (pids still alive: [92944]); a calibration process may still operate the device
+20:14:34.644 step 4 rc=TIMEOUT-ALIVE
+20:14:34.653 step 5 not run (calibration stopped)
+20:14:34.660 step 6 not run (calibration stopped)
+20:14:34.666 step 7 not run (calibration stopped)
+20:14:34.673 step 8 not run (calibration stopped)
+20:14:34.682 RESTORE NOT ATTEMPTED: a calibration process may still be alive ([92944]); no further device operation. The device is NOT restored to the production image (recorded as a failure; no manual step is requested).
+20:14:34.689 restore FAIL (rc=not-attempted)
+20:14:34.696 CALIBRATION FAIL | RESTORE FAIL
+20:14:34.708 results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=TIMEOUT-ALIVE 5=not-run 6=not-run 7=not-run 8=not-run restore=not-attempted

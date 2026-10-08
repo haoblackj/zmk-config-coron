@@ -135,8 +135,10 @@ function Step-6 {
     Require 'S returned' ($t -cmatch 'ZDIAG calibrate S returned') 'returned line'
     $t2 = Send-Cmd 'r' 2
     NextOp 'nothing more in step 6 (only reading)'
-    Check 'r acknowledged' ($t2 -cmatch 'ZDIAG reboot') 'ZDIAG reboot' | Out-Null
+    # the ack line is evidence only (it can be lost with the port); a direct sign of the reboot is checked here, the boot number in Check-Reset
+    $ev = Ack-Evidence $t2 'r' 'ZDIAG reboot'
     $left = Wait-Leave-App 10
+    Check "'r' acted upon (ack line, port lost after the send, or USB departure within 10 s)" ($ev.ack -or $ev.port_lost -or ($left -cne 'app')) "ack_seen=$($ev.ack) port_lost=$($ev.port_lost) state=$left" | Out-Null
     # the armed boot stalls before USB init (APPLICATION 50); the net fires at 20 s; then a normal boot
     Require 'device back as app within 60 s' (Wait-State 'app' 60) ("state=" + $script:lastState)
     $r = Read-Dump 'after S+r'
@@ -168,7 +170,8 @@ function Step-7 {
     Require 'S returned' ($t -cmatch 'ZDIAG calibrate S returned') 'returned line'
     $t2 = Send-Cmd 'b' 2
     NextOp 'copy the alt image to the UF2 drive'
-    Require 'b acknowledged' ($t2 -cmatch 'ZDIAG bootloader') 'ZDIAG bootloader'
+    # the ack line is evidence only (it can be lost with the port); the gate is the bootloader on USB
+    $ev = Ack-Evidence $t2 'b' 'ZDIAG bootloader'
     Require 'bootloader of this serial on USB within 30 s' (Wait-State 'boot' 30) ("state=" + $script:lastState)
     Pause-Ms 500
     $drives = @(Get-Uf2DrivesOfSerial)

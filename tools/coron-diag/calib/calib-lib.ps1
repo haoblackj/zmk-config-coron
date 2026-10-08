@@ -340,6 +340,22 @@ function Send-Cmd([string]$cmd, [int]$ReadSeconds) {
     Require "'$cmd' written by the console child (its pre-send dump complete and without #TRUNC)" ($null -ne $t -and ($t -cmatch ("\[calib-io\] sent '" + [regex]::Escape($cmd) + "'"))) 'child stamp "sent"'
     return $t
 }
+# 'b' and 'r' are answered by one console line ("ZDIAG bootloader rc=N" / "ZDIAG reboot") that the
+# firmware prints ~100 ms before it reboots (diag_min.c). The line can be lost together with the
+# CDC port before the host has read it (real loop 2026-10-08, trial 3: the port vanished 231 ms
+# after the send and the line never arrived, although the device WAS in its bootloader). So the
+# line is recorded as evidence and never used as the gate: the gate is what the USB bus shows
+# afterwards (bootloader present for 'b'; departure, or a port-lost stamp after the send, for 'r').
+function Ack-Evidence([string]$text, [string]$cmd, [string]$ackLine) {
+    $ack = ($null -ne $text -and ($text -cmatch ('(?m)^' + [regex]::Escape($ackLine) + '\b')))
+    $lost = $false
+    if ($null -ne $text) {
+        $i = $text.IndexOf("[calib-io] sent '$cmd'")
+        if ($i -ge 0) { $lost = ($text.Substring($i) -cmatch '\[calib-io\] port lost') }
+    }
+    Log "'$cmd' reply: ack line '$ackLine' seen=$ack, port lost after the send=$lost (the firmware prints the line ~100 ms before it reboots, so the line can be lost with the port; the gate is the USB state that follows, not this line)"
+    return [ordered]@{ ack = $ack; port_lost = $lost }
+}
 
 # ---- dump structure --------------------------------------------------------------------------
 # The lines and keys print_rec/diag_boot_print (diag_boot.c v4) emit for every record. A record

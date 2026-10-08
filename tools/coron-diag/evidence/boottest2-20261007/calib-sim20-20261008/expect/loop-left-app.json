@@ -1,0 +1,46 @@
+{
+ "exit": 10,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "10",
+  "t2": "not-run",
+  "t3": "not-run",
+  "restore": "0",
+  "stop": "event:_left-app-during-dwell_(unexpected-boot-count)_(trial_1)"
+ },
+ "must": [
+  {
+   "glob": "trial1-*.log",
+   "re": "EVENT dwell: the device left 'app' \\(state=none\\) at poll 3; the dwell ends here"
+  },
+  {
+   "glob": "trial1-*.log",
+   "re": "EVENT after leaving app: boot number 1 -> 2"
+  },
+  "ledger: mode=write trials started=1, b sent=0, images written=0 \\(boots after a write\\), boots observed=0, RUNNING confirmed=0, completed without event=0, not sent \\(child refused\\)=0, send not attempted=1",
+  "trial 1 .*op_sent=not-attempted"
+ ],
+ "must_not": [
+  {
+   "glob": "trial1-*.log",
+   "re": "sent 'b'"
+  },
+  {
+   "glob": "trial1-*.log",
+   "re": "first seen at poll [4-9]"
+  },
+  {
+   "glob": "trial1-*.log",
+   "re": "end of dwell"
+  }
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

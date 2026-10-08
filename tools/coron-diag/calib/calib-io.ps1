@@ -113,12 +113,16 @@ try {
         if ($complete -and -not $trunc) {
             $sp.Write($Send)
             Stamp "sent '$Send'"
+            # Read at once and then every 20 ms: the firmware answers 'b'/'r' with one line and
+            # reboots ~100 ms later, taking the CDC port (and any unread bytes) with it. A 200 ms
+            # first nap lost that line on the real device (loop trial 3, 2026-10-08). The line is
+            # evidence for the parent, not its gate (Ack-Evidence in calib-lib.ps1).
             $deadline = (Get-Date).AddSeconds([Math]::Max($ReadSeconds, 1)); $iter = 0
             while ($true) {
+                try { ReadChunk } catch { Stamp "port lost ($($_.Exception.Message))"; break }
                 if ($script:mock) { if ($iter -ge 3) { break } } elseif ((Get-Date) -ge $deadline) { break }
                 $iter++
-                Nap 200
-                try { ReadChunk } catch { Stamp "port lost ($($_.Exception.Message))"; break }
+                Nap 20
             }
             Stamp 'read window over'
         } else {

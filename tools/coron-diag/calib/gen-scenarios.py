@@ -689,6 +689,58 @@ add_loop('loop-completed-unknown', LF, loop_expect(1, loop_stopped(3, 1, '0', "t
          must=["trial 1 result file not usable \\(stages.completed is not boolean true \\(unknown\\)\\): its stages are NOT adopted", 'trial 1 .*stages_source=trial log stamps only',
                'b sent=1, images written=1 \\(boots after a write\\), boots observed=0, RUNNING confirmed=0, completed without event=0, stages unknown=1', 'LOOP FAILED \\| RESTORE PASS'],
          must_not=[in_file('trial2-*.log', '.'), 'completed without event=1', 'RUNNING confirmed=1']))
+# ---- real loop 2026-10-08, trial 3: the ack line of 'b'/'r' can be lost with the port (the firmware prints it
+# ~100 ms before it reboots). The line is evidence only; the gate is the USB state that follows.
+# 1. 'b' sent, no ack line, port lost, bootloader appears: the trial and the loop complete
+LF = loop_files(D3)
+e = LF['t2']['exchanges'][2]; e['post'] = ''
+add_loop('loop-b-ack-lost', LF, loop_expect(0, loop_results(3, stop='all-trials-done'),
+         must=[in_file('trial2-*.log', "'b' reply: ack line 'ZDIAG bootloader' seen=False, port lost after the send=True"), in_file('trial2-*.log', 'PASS bootloader of this serial on USB within 30 s \\(state=boot\\)'),
+               in_file('trial2-*.log', 'DEVICE-OP copied'), in_file('trial1-*.log', "'b' reply: ack line 'ZDIAG bootloader' seen=True, port lost after the send=True"), LEDGER_W3, 'LOOP DONE \\(no event\\) \\| RESTORE PASS'],
+         must_not=['acknowledged', in_file('trial2-*.log', 'ZDIAG bootloader rc')]))
+# 2. 'r' sent, no ack line, port lost, USB departure seen: the reset trial completes
+LF = loop_files((13, 26), mode='reset')
+e = LF['t1']['exchanges'][2]; e['post'] = ''
+add_loop('loop-r-ack-lost', LF, loop_expect(0, loop_results(2, stop='all-trials-done'),
+         must=[in_file('trial1-*.log', "'r' reply: ack line 'ZDIAG reboot' seen=False, port lost after the send=True"), in_file('trial1-*.log', "PASS 'r' acted upon .*\\(ack_seen=False port_lost=True state=none\\)"),
+               'ledger: mode=reset trials started=2, r sent=2 \\(boots after a soft reset\\), boots observed=2, RUNNING confirmed=2, completed without event=2', 'LOOP DONE \\(no event\\) \\| RESTORE PASS'],
+         must_not=['acknowledged', in_file('trial1-*.log', 'ZDIAG reboot$')], mode='reset', dwells=(13, 26)))
+# 3. 'b' sent, no ack line, port NOT lost, the device stays app: FAIL at the gate (not an event), nothing copied
+LF = loop_files(D3)
+LF['t1'] = loop_trial(B, A, 1, 13, states=['app'] * 14 + ['app'] * 300, start_up_ms=10000)
+e = LF['t1']['exchanges'][2]; e['post'] = ''; e['lost'] = False
+add_loop('loop-b-no-ack-stays-app', LF, loop_expect(1, loop_stopped(3, 1, '1', 'trial_1_failed_(rc=1)'),
+         must=[in_file('trial1-*.log', "'b' reply: ack line 'ZDIAG bootloader' seen=False, port lost after the send=False"), in_file('trial1-*.log', 'FAIL bootloader of this serial on USB within 30 s \\(state=app\\)'),
+               in_file('trial1-*.log', 'STOPPED before: copy the image to the UF2 drive'), 'trial 1 .*op_sent=True image_written_stage=False', 'b sent=1, images written=0', 'LOOP FAILED \\| RESTORE PASS'],
+         must_not=['EVENT', 'acknowledged', in_file('trial1-*.log', 'DEVICE-OP cop'), in_file('trial2-*.log', '.')]))
+# 4. 'r' sent, no ack line, port not lost, no USB departure: FAIL at the gate (not an event)
+LF = loop_files((13, 26), mode='reset')
+LF['t1'] = loop_trial(B, B, 1, 13, mode='reset', states=['app'] * 14 + ['app'] * 300, start_up_ms=10000)
+e = LF['t1']['exchanges'][2]; e['post'] = ''; e['lost'] = False
+add_loop('loop-r-no-ack-stays-app', LF, loop_expect(1, loop_stopped(2, 1, '1', 'trial_1_failed_(rc=1)'),
+         must=[in_file('trial1-*.log', "'r' reply: ack line 'ZDIAG reboot' seen=False, port lost after the send=False"), in_file('trial1-*.log', "FAIL 'r' acted upon .*\\(ack_seen=False port_lost=False state=app\\)"),
+               'trial 1 .*op_sent=True', 'r sent=1 \\(boots after a soft reset\\), boots observed=0', 'LOOP FAILED \\| RESTORE PASS'],
+         must_not=['EVENT', 'acknowledged', in_file('trial2-*.log', '.')], mode='reset', dwells=(13, 26)))
+# 5. the same three sites in the calibration: the base write, step 6 ('r') and step 7 ('b') without the ack line
+
+
+def without_ack(step, idx):
+    s = copy.deepcopy(N[step]); s['exchanges'][idx]['post'] = ''
+    return variant(step, s)
+
+
+add('flash-ack-lost', without_ack('flash-base', 0), expect(0, results(),
+    must=[in_file('flash-base-*.log', "'b' reply: ack line 'ZDIAG bootloader' seen=False, port lost after the send=True"), in_file('flash-base-*.log', 'PASS bootloader of this serial on USB within 30 s \\(state=boot\\)'),
+          in_file('flash-base-*.log', 'DEVICE-OP copied'), 'CALIBRATION PASS'],
+    must_not=['b acknowledged', 'r acknowledged']))  # 'c acknowledged' (ring clear, no reboot) stays a legitimate check in steps 0 and 8
+add('step6-ack-lost', without_ack('6', 2), expect(0, results(),
+    must=[in_file('step6-*.log', "'r' reply: ack line 'ZDIAG reboot' seen=False, port lost after the send=True"), in_file('step6-*.log', "PASS 'r' acted upon .*\\(ack_seen=False port_lost=True state=none\\)"),
+          in_file('step6-*.log', 'reset observed directly'), 'CALIBRATION PASS'],
+    must_not=['b acknowledged', 'r acknowledged']))
+add('step7-ack-lost', without_ack('7', 2), expect(0, results(),
+    must=[in_file('step7-*.log', "'b' reply: ack line 'ZDIAG bootloader' seen=False, port lost after the send=True"), in_file('step7-*.log', 'PASS bootloader of this serial on USB within 30 s \\(state=boot\\)'),
+          in_file('step7-*.log', 'DEVICE-OP copied'), 'CALIBRATION PASS'],
+    must_not=['b acknowledged', 'r acknowledged']))
 
 
 def main():

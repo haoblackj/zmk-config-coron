@@ -1,0 +1,27 @@
+{
+ "exit": 1,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "1",
+  "t1": "not-run",
+  "t2": "not-run",
+  "t3": "not-run",
+  "restore": "0",
+  "stop": "baseline-failed_(rc=1)"
+ },
+ "must": [
+  {
+   "glob": "trial0-*.log",
+   "re": "FAIL baseline:ring header reinit == cur reinit \\(header=1 cur=0\\)"
+  }
+ ],
+ "must_not": [],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}
