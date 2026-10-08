@@ -381,18 +381,36 @@ add('prod-trunc', variant('flash-prod', scen(['app', 'boot', 'app'], [ex('b', d8
 # 3. termination of a timed-out child must be confirmed before any further device operation
 add('kill-fail', variant('1', dict(scen(['app'], [ex('', d1, hang_s=60, io_timeout_s=3), ex('', d1, hang_s=60, io_timeout_s=3)]), kill_mode='fail')),
     expect(3, stopped_after('1', **{'1': '5', 'restore': 'not-attempted'}),
-           must=[in_file('step1-*.log', 'taskkill rc=1'), in_file('step1-*.log', 'termination confirmed=False'), in_file('step1-*.log', 'termination NOT confirmed, pids still alive'),
+           must=[in_file('step1-*.log', 'kill: taskkill rc=1'), in_file('step1-*.log', 'termination confirmed=False'), in_file('step1-*.log', 'termination NOT confirmed, pids still alive'),
                  in_file('step1-*.log', 'exit 5'), 'reports a console child it could not confirm dead', 'RESTORE NOT ATTEMPTED', 'NOT restored to the production image'],
            must_not=['FLASH prod start', in_file('flash-prod-*.log', '.')]))
 add('kill-linger', variant('4', dict(N['4'], step_hang_s=60, step_timeout_s=8, kill_mode='linger')),
     expect(3, stopped_after('4', **{'4': 'TIMEOUT-ALIVE', 'restore': 'not-attempted'}),
-           must=['taskkill rc=0: \\(mock\\) taskkill NOT invoked', 'termination confirmed=False', '4 did not return within 8s: termination NOT confirmed', 'RESTORE NOT ATTEMPTED'],
+           must=['kill: taskkill rc=0: \\(mock\\) taskkill NOT invoked', 'termination confirmed=False', '4 did not return within 8s: termination NOT confirmed', 'RESTORE NOT ATTEMPTED'],
            must_not=['FLASH prod start', in_file('flash-prod-*.log', '.')]))
 # 3b. the step's own console child is hanging when the step's deadline passes: the whole tree is killed and confirmed
 add('tree-kill', variant('4', dict(scen(['app'], [ex('', N['4']['exchanges'][0]['pre'], hang_s=60, io_timeout_s=50)]), step_timeout_s=8)),
-    expect(1, stopped_after('4', **{'4': 'TIMEOUT'}), must=['process tree=\\[\\d+(,\\d+)+\\]; terminating', 'termination confirmed=True', '4 did not return within 8s: killed with its process tree, termination confirmed', 'restore PASS']))
+    expect(1, stopped_after('4', **{'4': 'TIMEOUT'}), must=['kill: tree=\\[\\d+(,\\d+)+\\]', 'kill: taskkill rc=0', 'termination confirmed=True', '4 did not return within 8s: killed with its process tree, termination confirmed', 'restore PASS']))
 add('restore-kill-linger', variant('flash-prod', dict(N['flash-prod'], step_hang_s=60, step_timeout_s=8, kill_mode='linger')),
     expect(2, results(restore='TIMEOUT-ALIVE'), must=['restore process not confirmed dead', 'termination confirmed=False', 'CALIBRATION PASS .* \\| RESTORE FAIL']))
+
+
+# ------------------------------------------------------------------ review #11: the termination itself has a deadline
+# the enumeration never returns (helper blocks before the CIM query) -> the orchestrator decides within 20 s
+add('kill-enum-hang', variant('4', dict(N['4'], step_hang_s=60, step_timeout_s=8, kill_mode='enum-hang')),
+    expect(3, stopped_after('4', **{'4': 'TIMEOUT-ALIVE', 'restore': 'not-attempted'}),
+           must=['kill: phase=enumerate', 'termination confirmed=False: kill helper did not return within 20s \\(last phase=enumerate\\)', '4 did not return within 8s: termination NOT confirmed', 'RESTORE NOT ATTEMPTED'],
+           must_not=['kill: tree=', 'kill: taskkill rc=', 'FLASH prod start', in_file('flash-prod-*.log', '.')]))
+# the termination request never returns (helper blocks instead of taskkill)
+add('kill-req-hang', variant('4', dict(N['4'], step_hang_s=60, step_timeout_s=8, kill_mode='kill-hang')),
+    expect(3, stopped_after('4', **{'4': 'TIMEOUT-ALIVE', 'restore': 'not-attempted'}),
+           must=['kill: tree=\\[\\d+', 'kill: phase=terminate', 'termination confirmed=False: kill helper did not return within 20s \\(last phase=terminate\\)', 'RESTORE NOT ATTEMPTED'],
+           must_not=['kill: taskkill rc=', 'FLASH prod start', in_file('flash-prod-*.log', '.')]))
+# the same at the exchange level: the console child hangs and the request to terminate it never returns
+add('io-kill-req-hang', variant('1', dict(scen(['app'], [ex('', d1, hang_s=60, io_timeout_s=3), ex('', d1, hang_s=60, io_timeout_s=3)]), kill_mode='kill-hang')),
+    expect(3, stopped_after('1', **{'1': '5', 'restore': 'not-attempted'}),
+           must=[in_file('step1-*.log', 'kill helper did not return within 20s \\(last phase=terminate\\)'), in_file('step1-*.log', 'exit 5'), 'RESTORE NOT ATTEMPTED'],
+           must_not=['FLASH prod start', in_file('flash-prod-*.log', '.')]))
 
 
 def main():

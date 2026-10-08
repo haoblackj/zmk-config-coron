@@ -82,24 +82,18 @@ function Require-File([string]$label, [string]$path, [string]$md5) {
 
 # ---- child processes ------------------------------------------------------------------------
 # Runs powershell.exe -File $file $argv with stdout/stderr redirected to files (written as the
-# child flushes, so a killed child leaves what it had) and a deadline. On the deadline the whole
-# process tree (enumerated through Win32_Process parent ids BEFORE the kill) is terminated with
-# taskkill /T /F; the taskkill output and exit code are logged, and every pid of the tree is then
-# polled for up to 5 s (its own deadline). Returns @{ rc; timedOut; killed; alive; tree }:
-# killed=$true ONLY when taskkill returned 0 AND no pid of the tree is left (review #10, point 3).
-# $killMode (simulation only): 'fail' = do not invoke taskkill, report rc 1; 'linger' = do not
-# invoke taskkill, report rc 0 (a kill that "succeeded" without effect). The tree enumeration and
-# the confirmation are real in every mode.
-function Get-ProcessTree([int]$rootPid) {
-    $ids = @($rootPid); $queue = @($rootPid)
-    while ($queue.Count -gt 0) {
-        $cur = $queue[0]; $queue = @($queue | Select-Object -Skip 1)
-        $kids = @(Get-CimInstance Win32_Process -Filter "ParentProcessId=$cur" -ErrorAction SilentlyContinue | ForEach-Object { [int]$_.ProcessId })
-        foreach ($k in $kids) { if ($ids -notcontains $k) { $ids += $k; $queue += $k } }
-    }
-    return $ids
-}
-function Invoke-Child([string]$file, [string[]]$argv, [int]$timeoutSec, [string]$outFile, [string]$errFile, [string]$killMode = '') {
+# child flushes, so a killed child leaves what it had) and a deadline. On the deadline the
+# termination is delegated to calib-kill.ps1, a separate process that enumerates the tree
+# (Win32_Process), runs taskkill /T /F, logs its output and exit code, and polls every pid for up
+# to 5 s. THAT process is itself waited for with a deadline ($killTimeoutSec, 20 s): the CIM
+# enumeration and taskkill are synchronous calls that cannot be interrupted from inside, so the
+# deadline on the termination as a whole lives here (review #11). If the helper does not return,
+# its partial progress is logged, it is dropped with Process.Kill() (asynchronous, best effort,
+# never counted as a confirmation) and the termination is NOT confirmed.
+# Returns @{ rc; timedOut; killed; alive; tree }: killed=$true ONLY when the helper returned 0
+# (taskkill returned 0 AND no pid of the tree was left) within the deadline (review #10, point 3).
+# $killMode (simulation only) is passed to the helper: 'fail', 'linger', 'enum-hang', 'kill-hang'.
+function Invoke-Child([string]$file, [string[]]$argv, [int]$timeoutSec, [string]$outFile, [string]$errFile, [string]$killMode = '', [int]$killTimeoutSec = 20) {
     $all = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $file) + $argv
     $quoted = ($all | ForEach-Object { '"' + ([string]$_ -replace '"', '\"') + '"' }) -join ' '
     $p = Start-Process -FilePath 'powershell.exe' -ArgumentList $quoted -RedirectStandardOutput $outFile -RedirectStandardError $errFile -NoNewWindow -PassThru
@@ -109,20 +103,31 @@ function Invoke-Child([string]$file, [string[]]$argv, [int]$timeoutSec, [string]
         $p.WaitForExit()
         return @{ rc = $p.ExitCode; timedOut = $false; killed = $false; alive = @(); tree = @($p.Id) }
     }
-    $tree = @(Get-ProcessTree $p.Id)
-    Log "deadline ${timeoutSec}s passed for pid $($p.Id): process tree=[$($tree -join ',')]; terminating"
-    if ($killMode -ceq 'fail') { $kout = '(mock) taskkill NOT invoked: simulated failure'; $krc = 1 }
-    elseif ($killMode -ceq 'linger') { $kout = '(mock) taskkill NOT invoked: simulated success without effect'; $krc = 0 }
-    else { $kout = ((& taskkill.exe /PID $p.Id /T /F 2>&1) | ForEach-Object { "$_" }) -join ' | '; $krc = $LASTEXITCODE }
-    Log "taskkill rc=${krc}: $kout"
-    $t0 = Get-Date; $alive = @()
-    while ($true) {
-        $alive = @($tree | Where-Object { $null -ne (Get-Process -Id $_ -ErrorAction SilentlyContinue) })
-        if ($alive.Count -eq 0 -or ((Get-Date) - $t0).TotalSeconds -ge 5) { break }
-        Start-Sleep -Milliseconds 200
+    Log "deadline ${timeoutSec}s passed for pid $($p.Id): terminating through calib-kill.ps1 (deadline ${killTimeoutSec}s for enumeration + request + confirmation)"
+    $helper = Join-Path $PSScriptRoot 'calib-kill.ps1'
+    $kout = "$outFile.kill"; $kerr = "$outFile.kill.err"
+    $kargs = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $helper, '-TargetPid', "$($p.Id)")
+    if ($killMode) { $kargs += @('-Mode', $killMode) }
+    $kq = ($kargs | ForEach-Object { '"' + ([string]$_ -replace '"', '\"') + '"' }) -join ' '
+    $k = Start-Process -FilePath 'powershell.exe' -ArgumentList $kq -RedirectStandardOutput $kout -RedirectStandardError $kerr -NoNewWindow -PassThru
+    $null = $k.Handle
+    $kdone = $k.WaitForExit($killTimeoutSec * 1000)
+    $progress = ''
+    if (Test-Path -LiteralPath $kout) { $progress = [string](Get-Content -LiteralPath $kout -Raw -ErrorAction SilentlyContinue) }
+    foreach ($l in ($progress -split "`r?`n")) { if ($l) { Log "kill: $l" } }
+    $tree = @(); if ($progress -cmatch '(?m)^tree=\[([0-9,]*)\]') { $tree = @($Matches[1] -split ',' | Where-Object { $_ }) }
+    $alive = @(); if ($progress -cmatch '(?m)^alive=\[([0-9,]*)\]') { $alive = @($Matches[1] -split ',' | Where-Object { $_ }) }
+    if (-not $kdone) {
+        $phase = 'unknown'; if ($progress -cmatch '(?m)^phase=(\S+)') { $phase = @([regex]::Matches($progress, '(?m)^phase=(\S+)') | ForEach-Object { $_.Groups[1].Value })[-1] }
+        Log "termination confirmed=False: kill helper did not return within ${killTimeoutSec}s (last phase=$phase); dropping it with Process.Kill (not a confirmation)"
+        try { $k.Kill() } catch {}
+        if ($alive.Count -eq 0) { $alive = @("$($p.Id)") }
+        return @{ rc = $null; timedOut = $true; killed = $false; alive = $alive; tree = $tree }
     }
-    $killed = ($krc -eq 0 -and $alive.Count -eq 0)
-    Log "termination confirmed=$killed (taskkill rc=$krc, pids still alive after $([int](((Get-Date) - $t0).TotalSeconds)) s: [$($alive -join ',')])"
+    $k.WaitForExit()
+    $killed = ($k.ExitCode -eq 0 -and ($progress -cmatch '(?m)confirmed=True'))
+    Log "termination confirmed=$killed (kill helper rc=$($k.ExitCode); pids still alive: [$($alive -join ',')])"
+    if (-not $killed -and $alive.Count -eq 0) { $alive = @("$($p.Id)") }
     return @{ rc = $null; timedOut = $true; killed = $killed; alive = $alive; tree = $tree }
 }
 
