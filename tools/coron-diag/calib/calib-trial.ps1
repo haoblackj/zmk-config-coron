@@ -46,13 +46,14 @@ if (-not (Test-Path -LiteralPath $LogDir)) { New-Item -ItemType Directory -Path 
 $script:Serial = $Serial
 $script:LogFile = Join-Path $LogDir ("trial$Trial-$Mode-" + (Get-Date).ToString('MMdd-HHmmss') + '.log')
 $script:Scn = $null
-$mockNoResult = $false; $mockStale = $false
+$mockNoResult = $false; $mockStale = $false; $mockDropAfter = $false
 if ($Mock) {
     try { Load-Mock $Mock } catch { Log "MOCK ERROR $($_.Exception.Message); nothing done"; exit 4 }
     if ($script:Scn.step_hang_s -gt 0) { Log "MOCK: this trial hangs for $($script:Scn.step_hang_s) s"; Start-Sleep -Seconds $script:Scn.step_hang_s }
     $j = Get-Content -Path $Mock -Raw | ConvertFrom-Json
     if ($j.mock_no_result_file) { $mockNoResult = $true; Log 'MOCK: the result file will NOT be written (simulated inconsistent child)' }
     if ($j.mock_stale_result) { $mockStale = $true; Log 'MOCK: the result file will carry the previous trial number (simulated stale file)' }
+    if ($j.mock_drop_after) { $mockDropAfter = $true; Log 'MOCK: the result file will lack the after snapshot (simulated incomplete success)' }
 }
 Log "TRIAL $Trial mode=$Mode dwell=${DwellMin}min serial=$Serial image=$Uf2 tag_now=$TagNow tag_next=$TagNext"
 $DWELL_EARLY_MS = 2000; $DWELL_LATE_MS = 120000   # tolerance of the dwell check (documented in loop-plan.md)
@@ -64,6 +65,7 @@ function Save-Result {
     if ($mockNoResult) { return }
     try {
         if ($mockStale) { $res.trial = $Trial - 1 }
+        if ($mockDropAfter -and $res.result -ceq 'ok') { $res.after = $null }
         $res | ConvertTo-Json -Depth 6 | Set-Content -Path $ResultFile -Encoding UTF8 -ErrorAction Stop
         if (-not (Test-Path -LiteralPath $ResultFile)) { throw 'result file absent after writing' }
     } catch { Log "FAIL result file saved ($($_.Exception.Message))"; $script:fails++; $script:saveFailed = $true }

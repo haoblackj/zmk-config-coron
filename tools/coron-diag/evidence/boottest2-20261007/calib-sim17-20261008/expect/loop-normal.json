@@ -1,0 +1,59 @@
+{
+ "exit": 0,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "0",
+  "t2": "0",
+  "t3": "0",
+  "restore": "0",
+  "stop": "all-trials-done"
+ },
+ "must": [
+  "trial 1 .*image_written=C:\\\\T\\\\coron_R-bt4-alt.uf2 tag_before=bt4-R-10080217 tag_after_planned=bt4A-R-10080217 tag_after_observed=bt4A-R-10080217 .*seq_before=1 seq_after=2 uptime_min_before_op=13.17",
+  "trial 3 .*seq_after=4 uptime_min_before_op=26.2",
+  "ledger: mode=write trials started=3, b sent=3, images written=3 \\(boots after a write\\), boots observed=3, RUNNING confirmed=3, completed without event=3",
+  "LOOP DONE \\(no event\\) \\| RESTORE PASS",
+  {
+   "glob": "trial0-*.log",
+   "re": "baseline: seq=1 .* reinit=1"
+  },
+  {
+   "glob": "trial1-*.log",
+   "re": "end of dwell: seq=1 .* reinit=1"
+  },
+  {
+   "glob": "trial1-*.log",
+   "re": "after write \\(read 1\\): seq=2 .* done=1 .* reinit=0"
+  },
+  {
+   "glob": "trial1-*.log",
+   "re": "dwell measured by the firmware: up_ms 10000 -> 790000, progress 780000 ms"
+  },
+  {
+   "glob": "trial2-*.log",
+   "re": "sent 'b'"
+  },
+  {
+   "glob": "trial2-*.log",
+   "re": "DEVICE-OP copied"
+  },
+  {
+   "glob": "steppre-*.log",
+   "re": "PASS production image md5"
+  }
+ ],
+ "must_not": [
+  "NOT sent",
+  "timed out",
+  "EVENT"
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

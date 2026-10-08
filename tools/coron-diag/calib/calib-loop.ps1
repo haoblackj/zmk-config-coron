@@ -84,10 +84,24 @@ function Device-Unsafe() { return ($script:alive.Count -gt 0) }
 function Read-Result([string]$file) { if (Test-Path -LiteralPath $file) { try { return (Get-Content -LiteralPath $file -Raw | ConvertFrom-Json) } catch { return $null } }; return $null }
 # The result file belongs to this trial only if it parses and carries the trial number and the
 # stages block (review #16, point 1). Anything else is not used for the ledger at all.
+$STAGE_KEYS = @('dwell_started', 'dwell_done', 'op_sent', 'image_written', 'boot_observed', 'running_confirmed', 'completed')
 function Test-ResultOwned($r, [int]$trialNo) {
     if ($null -eq $r) { return 'result file missing or not JSON' }
     if ($null -eq $r.trial -or [int]$r.trial -ne $trialNo) { return "result file is of trial $($r.trial), not $trialNo" }
     if ($null -eq $r.stages) { return 'stages block missing' }
+    foreach ($k in $STAGE_KEYS) {
+        $v = $r.stages.$k
+        if ($null -eq $v) { return "stages.$k missing" }
+        if (-not ($v -is [bool]) -and "$v" -cne 'unknown') { return "stages.$k is not a boolean or 'unknown' ($v)" }
+    }
+    return ''
+}
+# Everything a result must satisfy before ANY of it reaches the ledger (review #17, point 1): the
+# ownership and stage structure for every result, plus the success contract when the child says 0.
+function Test-ResultUsable($r, [int]$trialNo, [string]$rc) {
+    $bad = Test-ResultOwned $r $trialNo
+    if ($bad) { return $bad }
+    if ("$rc" -ceq '0') { return (Test-ResultComplete $r $trialNo) }
     return ''
 }
 # Operations that an independent stamp in the trial's own log proves: the console child's
@@ -99,7 +113,7 @@ function Get-LogStages([int]$trialNo) {
     if (-not $f) { return $o }
     $t = [string](Get-Content -LiteralPath $f.FullName -Raw -ErrorAction SilentlyContinue)
     if ($t -cmatch "\[calib-io\] sent '(b|r)'") { $o.op_sent = $true }
-    if ($t -cmatch 'DEVICE-OP cop(ied|y \(mock\))') { $o.image_written = $true }
+    if ($t -cmatch 'DEVICE-OP copied') { $o.image_written = $true }   # the completion stamp only (real and mock)
     return $o
 }
 # A child's exit 0 is accepted only with a complete result file of THIS trial (review #15 point 5).
@@ -164,7 +178,7 @@ for ($i = 1; $i -le $n; $i++) {
     $rc = Run-Child $name $trial ($argv + (MockArg $name))
     $results[$name] = $rc
     $r = Read-Result $rf
-    $owned = Test-ResultOwned $r $i
+    $owned = Test-ResultUsable $r $i "$rc"
     if ($owned) { S "trial $i result file not usable ($owned): its stages are NOT adopted; only this trial's own log stamps count"; $r = $null }
     $st = $(if ($r) { $r.stages } else { $null })
     $unknown = ($null -eq $st)   # no usable result file: the stages reached are UNKNOWN, never counted as "not started"
@@ -183,7 +197,7 @@ for ($i = 1; $i -le $n; $i++) {
     $ledger += $row
     S ("trial $i " + (($row.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }) -join ' '))
     switch ("$rc") {
-        '0' { $bad = $(if ($owned) { $owned } else { Test-ResultComplete $r $i }); if ($bad) { $stop = "trial $i returned 0 but its result is invalid: $bad"; S $stop } else { $expect = ($r.after | ConvertTo-Json -Compress -Depth 4); $tagNow = $tagNext } }
+        '0' { if ($owned) { $stop = "trial $i returned 0 but its result is invalid: $owned"; S $stop } else { $expect = ($r.after | ConvertTo-Json -Compress -Depth 4); $tagNow = $tagNext } }
         '10' { $stop = "event: $($r.stop_reason) (trial $i)" }
         '11' { $stop = "no-observation: $($r.stop_reason) (trial $i)" }
         default { $stop = "trial $i failed (rc=$rc)" }
@@ -214,12 +228,14 @@ $nStarted = @($known | Where-Object { $_.dwell_started }).Count
 # an operation counts when its stage is $true, from the result file OR from the trial's own log stamp
 $nSent = @($ledger | Where-Object { $_.op_sent -is [bool] -and $_.op_sent }).Count
 $nSentUnknown = @($ledger | Where-Object { "$($_.op_sent)" -ceq 'unknown' }).Count
+$nNotSent = @($ledger | Where-Object { $_.op_sent -is [bool] -and -not $_.op_sent }).Count
 $nWritten = @($ledger | Where-Object { $_.image_written_stage -is [bool] -and $_.image_written_stage }).Count
 $nBoot = @($known | Where-Object { $_.boot_observed }).Count
 $nRun = @($known | Where-Object { $_.running_confirmed }).Count
 $nOk = @($known | Where-Object { $_.completed -and $_.rc -ceq '0' }).Count
 $unk = $(if ($nUnknown -gt 0) { ", stages unknown=$nUnknown (no usable result file; only log stamps counted for those)" } else { '' })
-if ($nSentUnknown -gt 0) { $unk += ", op sent unknown=$nSentUnknown (console child timed out without a stamp)" }
+$unk += ", not sent (explicit)=$nNotSent"
+if ($nSentUnknown -gt 0) { $unk += ", op sent unknown=$nSentUnknown (no 'sent' and no 'NOT sent' stamp: timeout or error inside the write)" }
 if ($Mode -ceq 'write') { S "ledger: mode=write trials started=$nStarted, b sent=$nSent, images written=$nWritten (boots after a write), boots observed=$nBoot, RUNNING confirmed=$nRun, completed without event=$nOk$unk; stop=$stop" }
 else { S "ledger: mode=reset trials started=$nStarted, r sent=$nSent (boots after a soft reset), boots observed=$nBoot, RUNNING confirmed=$nRun, completed without event=$nOk$unk; stop=$stop" }
 $base = 0

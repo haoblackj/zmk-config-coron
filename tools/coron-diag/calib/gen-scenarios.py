@@ -241,7 +241,7 @@ def add(name, steps, exp, drop=(), raw=None):
 N = normal(True)
 add('normal', N, expect(0, results(),
                         must=[in_file('steppre-*.log', 'no ZBOOT line'), in_file('step0-*.log', "sent 'd' \\(dump request"), in_file('flash-prod-*.log', 'ZDIAG begin version=prof1'),
-                              r"DEVICE-OP copy \(mock\)", 'CALIBRATION PASS', in_file('step2-*.log', 'reset observed directly'), in_file('step2-*.log', 'inc0 evidence: ZBOOT inc0 fire4')],
+                              r"DEVICE-OP copied \(mock\)", 'CALIBRATION PASS', in_file('step2-*.log', 'reset observed directly'), in_file('step2-*.log', 'inc0 evidence: ZBOOT inc0 fire4')],
                         must_not=['NOT sent', 'timed out', ' #TRUNC\\s*$', in_file('steppre-*.log', "sent 'd'"), in_file('flash-prod-*-io2.out', "sent 'd'")]))
 NT = normal(False)
 add('normal-from-test', NT, expect(0, results(), must=[in_file('steppre-*.log', 'saved ZBOOT inc0 fire4'), in_file('step0-*.log', 'saved ZBOOT inc0 a ')],
@@ -523,7 +523,7 @@ add_loop('loop-normal', loop_files(D3), loop_expect(0, loop_results(3, stop='all
          must=['trial 1 .*image_written=C:\\\\T\\\\coron_R-bt4-alt.uf2 tag_before=bt4-R-10080217 tag_after_planned=bt4A-R-10080217 tag_after_observed=bt4A-R-10080217 .*seq_before=1 seq_after=2 uptime_min_before_op=13.17',
                'trial 3 .*seq_after=4 uptime_min_before_op=26.2', LEDGER_W3, 'LOOP DONE \\(no event\\) \\| RESTORE PASS',
                in_file('trial0-*.log', 'baseline: seq=1 .* reinit=1'), in_file('trial1-*.log', 'end of dwell: seq=1 .* reinit=1'), in_file('trial1-*.log', 'after write \\(read 1\\): seq=2 .* done=1 .* reinit=0'),
-               in_file('trial1-*.log', 'dwell measured by the firmware: up_ms 10000 -> 790000, progress 780000 ms'), in_file('trial2-*.log', "sent 'b'"), in_file('trial2-*.log', 'DEVICE-OP copy'),
+               in_file('trial1-*.log', 'dwell measured by the firmware: up_ms 10000 -> 790000, progress 780000 ms'), in_file('trial2-*.log', "sent 'b'"), in_file('trial2-*.log', 'DEVICE-OP copied'),
                in_file('steppre-*.log', 'PASS production image md5')],
          must_not=['NOT sent', 'timed out', 'EVENT']))
 add_loop('loop-reset-normal', loop_files((13, 26), mode='reset'), loop_expect(0, loop_results(2, stop='all-trials-done'),
@@ -647,6 +647,35 @@ add_loop('loop-b-sent-timeout-alive', sent_then_timeout('write', kill_mode='ling
          must=[in_file('trial1-*.log', "\\[calib-io\\] sent 'b'"), in_file('trial1-*.log', 'termination NOT confirmed, pids still alive .*; sent stamp PRESENT'), 'trial 1 .*op_sent=True',
                'b sent=1, images written=0', 'RESTORE NOT ATTEMPTED'],
          must_not=['FLASH prod start']))
+# ---- review #17
+# 1. exit 0 with an owned, well-formed result that lacks the success 'after': rejected BEFORE adoption, no success counted
+LF = loop_files(D3)
+LF['t1'] = dict(LF['t1'], mock_drop_after=True)
+add_loop('loop-result-noafter', LF, loop_expect(1, loop_stopped(3, 1, '0', 'trial_1_returned_0_but_its_result_is_invalid:_after_snapshot_missing'),
+         must=['trial 1 result file not usable \\(after snapshot missing\\): its stages are NOT adopted', 'trial 1 .*stages_unknown=True stages_source=trial log stamps only .*op_sent=True image_written_stage=True boot_observed=unknown running_confirmed=unknown completed=unknown',
+               'b sent=1, images written=1 \\(boots after a write\\), boots observed=0, RUNNING confirmed=0, completed without event=0, stages unknown=1', 'LOOP FAILED \\| RESTORE PASS'],
+         must_not=[in_file('trial2-*.log', '.'), 'completed without event=1', 'RUNNING confirmed=1']))
+# 2. the console child fails inside the write: neither 'sent' nor 'NOT sent' -> op_sent unknown, never counted as not sent
+LF = loop_files(D3)
+e = LF['t1']['exchanges'][2]; assert e['send'] == 'b'; e['write_error'] = True
+add_loop('loop-b-send-error', LF, loop_expect(1, loop_stopped(3, 1, '1', 'trial_1_failed_(rc=1)'),
+         must=[in_file('trial1-*.log', "\\[calib-io\\] error on COM5 \\(.*inside the write"), in_file('trial1-*.log', "send classification for 'b': unknown \\(sent stamp=False, NOT-sent stamp=False, timed_out=False, child exit=1\\)"),
+               in_file('trial1-*.log', 'stage op_sent=unknown'), 'trial 1 .*op_sent=unknown', 'b sent=0, images written=0 .*, not sent \\(explicit\\)=0, op sent unknown=1', 'LOOP FAILED \\| RESTORE PASS'],
+         must_not=[in_file('trial2-*.log', '.'), in_file('trial1-*.log', "sent 'b'"), in_file('trial1-*.log', "NOT sent 'b'")]))
+# 2b. the explicit refusal still counts as not sent
+LF = loop_files(D3)
+e = LF['t1']['exchanges'][2]; e['pre'] = e['pre'].replace('ZDIAG end\r\n', 'ZDIAG endBROKEN\r\n')
+add_loop('loop-b-not-sent', LF, loop_expect(1, loop_stopped(3, 1, '1', 'trial_1_failed_(rc=1)'),
+         must=[in_file('trial1-*.log', "NOT sent 'b'"), in_file('trial1-*.log', "send classification for 'b': False"), 'trial 1 .*op_sent=False', 'b sent=0, images written=0 .*, not sent \\(explicit\\)=1'],
+         must_not=['op sent unknown']))
+# 3. copy failed AND no result file: the mock's completion stamp must not appear, so images written=0
+LF = loop_files(D3)
+LF['t1'] = dict(loop_trial(B, A, 1, 13, copy='fail', start_up_ms=10000), mock_no_result_file=True)
+add_loop('loop-copy-fail-noresult', LF, loop_expect(1, loop_stopped(3, 1, '1', 'trial_1_failed_(rc=1)'),
+         must=[in_file('trial1-*.log', 'copy attempt \\(mock\\)'), in_file('trial1-*.log', 'copy error \\(mock\\)'), 'trial 1 result file not usable \\(result file missing or not JSON\\)',
+               'b sent=1, images written=0 \\(boots after a write\\), boots observed=0, RUNNING confirmed=0, completed without event=0, stages unknown=1'],
+         must_not=[in_file('trial1-*.log', 'DEVICE-OP copied'), 'images written=1']))
+
 
 def main():
     ap = argparse.ArgumentParser()

@@ -116,3 +116,9 @@
 ## レビュー #16（2026-10-08、ff62123 の台帳の 2 点）への対応
 1. 拒否した結果ファイルの段階を集計に使っていた: 司令側は結果ファイルの帰属（JSON が読める、試行番号が一致、段階の塊がある）を先に確かめ、通らなければ段階を一切採用せず「段階不明」にする。その試行の実績は、試行自身のログの刻印（子の `[calib-io] sent 'b'`/`'r'`、複写の `DEVICE-OP copied`）で確認できるものだけを出所つき（`stages_source=trial log stamps only`）で採用する。`loop-result-stale` の期待に「試行 2 を正常完了に加算しない（`RUNNING confirmed=1, completed without event=1`）」「無効な結果の段階を実績に入れない」を加えた。
 2. 送信後のタイムアウトで未送信になる: `Exchange` が子の `sent` の刻印を `$script:lastSentStamp`（true / false / 子がタイムアウトして刻印なしなら unknown）に残し、試行は `Send-Cmd` の成否と独立に `finally` でそれを `op_sent` へ引き継ぐ。台帳は true だけを送信数に数え、unknown は別に数える。追加場面 `loop-b-sent-timeout`（送信 1、複写 0、試行 FAIL、終了確認済みで復帰 PASS）、`loop-r-sent-timeout`、`loop-b-sent-timeout-alive`（終了未確認で復帰を試みない）。模擬ポートに「送信後の最初の読み取りで止まる」（`hang_after_send_s`）を足した。
+
+## レビュー #17（2026-10-08、24d34bc の残り 3 点）への対応
+1. 完全性検査の前の採用: `Test-ResultUsable` が、帰属（試行番号、段階の塊の 7 項目が真偽値か「不明」）と、子が終了コード 0 のときの成功契約（`Test-ResultComplete`: `result=ok`、`after` の全項目、`completed`）を、台帳に触れる前にまとめて確かめる。通らなければ段階も成功数も採用せず、試行自身のログの刻印だけを出所つきで採用する。追加場面 `loop-result-noafter`（`after` 欠落 → `completed without event=0`、`stages unknown=1`）。
+2. 未送信の根拠: `Exchange` の分類を「`sent` の刻印 → true、子の明示的な `NOT sent` → false、それ以外（タイムアウト、書き込み中のエラー、落ちた）→ unknown」にし、分類の根拠をログに残す。台帳は `not sent (explicit)` と `op sent unknown` を別に数える。模擬ポートに「書き込みの中で例外」（`write_error`）を足した。追加場面 `loop-b-send-error`（unknown、未送信に加算しない、試行 FAIL、試行 2 なし）、`loop-b-not-sent`（明示的な拒否は未送信 1）。
+3. 模擬の複写刻印: 模擬の `Copy-Uf2` は「複写を試みた」（`copy attempt (mock)`）と、成功したときだけの完了刻印 `DEVICE-OP copied (mock)` を実機と同じ順序で出す。`Get-LogStages` は完了刻印だけを証拠にする。追加場面 `loop-copy-fail-noresult`（複写失敗 + 結果ファイル欠落 → `images written=0`）。
+途中で模擬が捕まえた自分の誤り: 分類のログ行の `timed out=False` が正常場面の禁止語 `timed out` に当たった（語を `timed_out` に変更）。

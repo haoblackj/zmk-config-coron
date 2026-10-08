@@ -21,7 +21,8 @@
 # -MockFile <json>: replaces the SerialPort by a canned port (fields: pre = text the device
 # emits before the command, post = text after it, lost = the port vanishes after post,
 # hang_s = block that long inside Open (a child that never returns), hang_after_send_s = block that
-# long on the first read after the command was written (the 'sent' stamp is out), open_error = fail to open,
+# long on the first read after the command was written (the 'sent' stamp is out), write_error = throw
+# inside the command write (neither 'sent' nor 'NOT sent' is stamped), open_error = fail to open,
 # stderr = text to print on stderr, dump_on_request = pre is delivered only after a 'd' write,
 # like the test images). Used by the simulation only; the gate and the stamps are the real code
 # paths.
@@ -41,6 +42,7 @@ function New-MockPort {
     $o | Add-Member -MemberType ScriptMethod -Name Close -Value { $this.IsOpen = $false }
     $o | Add-Member -MemberType ScriptMethod -Name Write -Value { param($s)
         if ($s -ceq 'd' -and $this.phase -le 1) { $this.phase = 5; return }   # dump request -> deliver pre on the next read
+        if ($script:mock.write_error) { throw (New-Object System.IO.IOException 'The I/O operation has been aborted (simulated, inside the write)') }
         $this.phase = 2 }
     $o | Add-Member -MemberType ScriptMethod -Name ReadExisting -Value {
         switch ($this.phase) {

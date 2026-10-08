@@ -1,0 +1,161 @@
+﻿14:37:12.456 MOCK scenario \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim17\sim\inc-boot-abort\pre.json
+14:37:12.486 STEP pre start serial=B17318CDBE9A61B1
+14:37:12.513 PASS base image exists (C:\T\coron_R-bt4.uf2)
+14:37:12.524 PASS base image md5 (have=df108d7ad2009afccfbfbba66b6ad093 want=df108d7ad2009afccfbfbba66b6ad093)
+14:37:12.530 PASS alt image exists (C:\T\coron_R-bt4-alt.uf2)
+14:37:12.539 PASS alt image md5 (have=e1e62efeeda0f87a1678a3d53f8151cf want=e1e62efeeda0f87a1678a3d53f8151cf)
+14:37:12.546 PASS production image exists (C:\T\coron_R-prod-2725423.uf2)
+14:37:12.554 PASS production image md5 (have=889f3a4816c82bdd4adc253b16f28689 want=889f3a4816c82bdd4adc253b16f28689)
+14:37:12.585 PASS device on USB as app with a diag port (state=app)
+----- console COM5 send='' read=0s exit=0 timed_out=False deadline=20s -----
+[calib-io] opened COM5 at 14:37:13.024
+[calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 14:37:13.049
+ZDIAG begin version=prof1 up_ms=65000 boot=1 reset=0x4
+ZDIAG now count host_conn=1 host_disc=0 split_conn=1 split_disc=0
+ZBOOT ring count=1 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0
+ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00
+ZBOOT inc0 a seq=3 tag=bt4-R-10080217 done=0 reason=0 phase=0 calib=- stage=5 reset=0x4 reinit=0
+ZBOOT inc0 b fix=0/0/0 probes=0/0 feeds=0 loops=0 lastfeed_us=0
+ZBOOT inc0 entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0
+ZBOOT inc0 entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1
+ZBOOT inc0 us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800
+ZBOOT inc0 us2 usb=0 applast=1500 commit=2500 mainexit=3900 probed=4000 running=0
+ZBOOT last none
+ZBOOT cur a seq=9 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0
+ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000
+ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0
+ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1
+ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800
+ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100
+ZDIAG end
+[calib-io] dump complete at 14:37:13.057
+[calib-io] closing at 14:37:13.058
+
+----- end console -----
+14:37:13.134 PASS preflight:dump present (ZDIAG begin)
+14:37:13.150 PASS preflight:dump complete (ZDIAG end line)
+14:37:13.160 PASS preflight:no #TRUNC line (trunc lines=0)
+14:37:13.183 PASS preflight:ring header present (keys=addr,cur,inc0,last,ring)
+14:37:13.194 PASS preflight:ring.count present (ZBOOT ring count=1 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+14:37:13.202 PASS preflight:ring.slots present (ZBOOT ring count=1 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+14:37:13.210 PASS preflight:ring.dropped present (ZBOOT ring count=1 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+14:37:13.218 PASS preflight:ring.invalid present (ZBOOT ring count=1 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+14:37:13.225 PASS preflight:ring.reinit present (ZBOOT ring count=1 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+14:37:13.233 PASS preflight:ring.calib_live present (ZBOOT ring count=1 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0)
+14:37:13.242 PASS preflight:addr header present (keys=addr,cur,inc0,last,ring)
+14:37:13.249 PASS preflight:addr.cur present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+14:37:13.257 PASS preflight:addr.last present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+14:37:13.264 PASS preflight:addr.ring present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+14:37:13.272 PASS preflight:addr.sysq present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+14:37:13.278 PASS preflight:addr.main present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+14:37:13.286 PASS preflight:addr.calib present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+14:37:13.294 PASS preflight:ring count <= slots (count=1 slots=6)
+14:37:13.304 PASS preflight:inc0 present (keys=addr,cur,inc0,last,ring)
+14:37:13.316 PASS preflight:inc0 a line present (lines=a,b,entry1,entry2,us1,us2)
+14:37:13.323 PASS preflight:inc0 a.seq present (ZBOOT inc0 a seq=3 tag=bt4-R-10080217 done=0 reason=0 phase=0 calib=- stage=5 reset=0x4 reinit=0)
+14:37:13.331 PASS preflight:inc0 a.tag present (ZBOOT inc0 a seq=3 tag=bt4-R-10080217 done=0 reason=0 phase=0 calib=- stage=5 reset=0x4 reinit=0)
+14:37:13.338 PASS preflight:inc0 a.done present (ZBOOT inc0 a seq=3 tag=bt4-R-10080217 done=0 reason=0 phase=0 calib=- stage=5 reset=0x4 reinit=0)
+14:37:13.344 PASS preflight:inc0 a.reason present (ZBOOT inc0 a seq=3 tag=bt4-R-10080217 done=0 reason=0 phase=0 calib=- stage=5 reset=0x4 reinit=0)
+14:37:13.351 PASS preflight:inc0 a.phase present (ZBOOT inc0 a seq=3 tag=bt4-R-10080217 done=0 reason=0 phase=0 calib=- stage=5 reset=0x4 reinit=0)
+14:37:13.358 PASS preflight:inc0 a.calib present (ZBOOT inc0 a seq=3 tag=bt4-R-10080217 done=0 reason=0 phase=0 calib=- stage=5 reset=0x4 reinit=0)
+14:37:13.365 PASS preflight:inc0 a.stage present (ZBOOT inc0 a seq=3 tag=bt4-R-10080217 done=0 reason=0 phase=0 calib=- stage=5 reset=0x4 reinit=0)
+14:37:13.372 PASS preflight:inc0 a.reset present (ZBOOT inc0 a seq=3 tag=bt4-R-10080217 done=0 reason=0 phase=0 calib=- stage=5 reset=0x4 reinit=0)
+14:37:13.379 PASS preflight:inc0 a.reinit present (ZBOOT inc0 a seq=3 tag=bt4-R-10080217 done=0 reason=0 phase=0 calib=- stage=5 reset=0x4 reinit=0)
+14:37:13.386 PASS preflight:inc0 b line present (lines=a,b,entry1,entry2,us1,us2)
+14:37:13.393 PASS preflight:inc0 b.fix present (ZBOOT inc0 b fix=0/0/0 probes=0/0 feeds=0 loops=0 lastfeed_us=0)
+14:37:13.400 PASS preflight:inc0 b.probes present (ZBOOT inc0 b fix=0/0/0 probes=0/0 feeds=0 loops=0 lastfeed_us=0)
+14:37:13.407 PASS preflight:inc0 b.feeds present (ZBOOT inc0 b fix=0/0/0 probes=0/0 feeds=0 loops=0 lastfeed_us=0)
+14:37:13.413 PASS preflight:inc0 b.loops present (ZBOOT inc0 b fix=0/0/0 probes=0/0 feeds=0 loops=0 lastfeed_us=0)
+14:37:13.421 PASS preflight:inc0 b.lastfeed_us present (ZBOOT inc0 b fix=0/0/0 probes=0/0 feeds=0 loops=0 lastfeed_us=0)
+14:37:13.429 PASS preflight:inc0 entry1 line present (lines=a,b,entry1,entry2,us1,us2)
+14:37:13.436 PASS preflight:inc0 entry1.lfstat present (ZBOOT inc0 entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+14:37:13.443 PASS preflight:inc0 entry1.lfrun present (ZBOOT inc0 entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+14:37:13.450 PASS preflight:inc0 entry1.lfsrc present (ZBOOT inc0 entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+14:37:13.459 PASS preflight:inc0 entry1.lfcopy present (ZBOOT inc0 entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+14:37:13.466 PASS preflight:inc0 entry1.lfev present (ZBOOT inc0 entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+14:37:13.474 PASS preflight:inc0 entry2 line present (lines=a,b,entry1,entry2,us1,us2)
+14:37:13.481 PASS preflight:inc0 entry2.hfstat present (ZBOOT inc0 entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+14:37:13.489 PASS preflight:inc0 entry2.hfrun present (ZBOOT inc0 entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+14:37:13.497 PASS preflight:inc0 entry2.hfev present (ZBOOT inc0 entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+14:37:13.506 PASS preflight:inc0 entry2.rtc1 present (ZBOOT inc0 entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+14:37:13.532 PASS preflight:inc0 entry2.usbreg present (ZBOOT inc0 entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+14:37:13.541 PASS preflight:inc0 entry2.ficr130 present (ZBOOT inc0 entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+14:37:13.547 PASS preflight:inc0 entry2.ficr134 present (ZBOOT inc0 entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+14:37:13.555 PASS preflight:inc0 us1 line present (lines=a,b,entry1,entry2,us1,us2)
+14:37:13.562 PASS preflight:inc0 us1.hook present (ZBOOT inc0 us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+14:37:13.572 PASS preflight:inc0 us1.pk1 present (ZBOOT inc0 us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+14:37:13.579 PASS preflight:inc0 us1.clk present (ZBOOT inc0 us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+14:37:13.587 PASS preflight:inc0 us1.pk1end present (ZBOOT inc0 us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+14:37:13.594 PASS preflight:inc0 us1.sysclk present (ZBOOT inc0 us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+14:37:13.601 PASS preflight:inc0 us1.post present (ZBOOT inc0 us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+14:37:13.608 PASS preflight:inc0 us1.app present (ZBOOT inc0 us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+14:37:13.616 PASS preflight:inc0 us2 line present (lines=a,b,entry1,entry2,us1,us2)
+14:37:13.624 PASS preflight:inc0 us2.usb present (ZBOOT inc0 us2 usb=0 applast=1500 commit=2500 mainexit=3900 probed=4000 running=0)
+14:37:13.632 PASS preflight:inc0 us2.applast present (ZBOOT inc0 us2 usb=0 applast=1500 commit=2500 mainexit=3900 probed=4000 running=0)
+14:37:13.639 PASS preflight:inc0 us2.commit present (ZBOOT inc0 us2 usb=0 applast=1500 commit=2500 mainexit=3900 probed=4000 running=0)
+14:37:13.647 PASS preflight:inc0 us2.mainexit present (ZBOOT inc0 us2 usb=0 applast=1500 commit=2500 mainexit=3900 probed=4000 running=0)
+14:37:13.653 PASS preflight:inc0 us2.probed present (ZBOOT inc0 us2 usb=0 applast=1500 commit=2500 mainexit=3900 probed=4000 running=0)
+14:37:13.660 PASS preflight:inc0 us2.running present (ZBOOT inc0 us2 usb=0 applast=1500 commit=2500 mainexit=3900 probed=4000 running=0)
+14:37:13.670 preflight:inc0 reason=0 (boot interrupted without the net firing): fire lines not required, all-or-none
+14:37:13.677 PASS preflight:inc0 fire lines all-or-none (fire lines=0)
+14:37:13.686 PASS preflight:incident records == ring count (records=1 count=1)
+14:37:13.693 preflight: last none
+14:37:13.701 PASS preflight:cur present (keys=addr,cur,inc0,last,ring)
+14:37:13.708 PASS preflight:cur a line present (lines=a,b,entry1,entry2,us1,us2)
+14:37:13.714 PASS preflight:cur a.seq present (ZBOOT cur a seq=9 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+14:37:13.722 PASS preflight:cur a.tag present (ZBOOT cur a seq=9 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+14:37:13.730 PASS preflight:cur a.done present (ZBOOT cur a seq=9 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+14:37:13.737 PASS preflight:cur a.reason present (ZBOOT cur a seq=9 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+14:37:13.745 PASS preflight:cur a.phase present (ZBOOT cur a seq=9 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+14:37:13.752 PASS preflight:cur a.calib present (ZBOOT cur a seq=9 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+14:37:13.759 PASS preflight:cur a.stage present (ZBOOT cur a seq=9 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+14:37:13.767 PASS preflight:cur a.reset present (ZBOOT cur a seq=9 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+14:37:13.774 PASS preflight:cur a.reinit present (ZBOOT cur a seq=9 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0)
+14:37:13.782 PASS preflight:cur b line present (lines=a,b,entry1,entry2,us1,us2)
+14:37:13.789 PASS preflight:cur b.fix present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+14:37:13.797 PASS preflight:cur b.probes present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+14:37:13.804 PASS preflight:cur b.feeds present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+14:37:13.811 PASS preflight:cur b.loops present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+14:37:13.819 PASS preflight:cur b.lastfeed_us present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+14:37:13.827 PASS preflight:cur entry1 line present (lines=a,b,entry1,entry2,us1,us2)
+14:37:13.835 PASS preflight:cur entry1.lfstat present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+14:37:13.842 PASS preflight:cur entry1.lfrun present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+14:37:13.850 PASS preflight:cur entry1.lfsrc present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+14:37:13.857 PASS preflight:cur entry1.lfcopy present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+14:37:13.865 PASS preflight:cur entry1.lfev present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+14:37:13.873 PASS preflight:cur entry2 line present (lines=a,b,entry1,entry2,us1,us2)
+14:37:13.880 PASS preflight:cur entry2.hfstat present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+14:37:13.888 PASS preflight:cur entry2.hfrun present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+14:37:13.895 PASS preflight:cur entry2.hfev present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+14:37:13.903 PASS preflight:cur entry2.rtc1 present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+14:37:13.911 PASS preflight:cur entry2.usbreg present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+14:37:13.918 PASS preflight:cur entry2.ficr130 present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+14:37:13.926 PASS preflight:cur entry2.ficr134 present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+14:37:13.933 PASS preflight:cur us1 line present (lines=a,b,entry1,entry2,us1,us2)
+14:37:13.941 PASS preflight:cur us1.hook present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+14:37:13.948 PASS preflight:cur us1.pk1 present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+14:37:13.956 PASS preflight:cur us1.clk present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+14:37:13.963 PASS preflight:cur us1.pk1end present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+14:37:13.971 PASS preflight:cur us1.sysclk present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+14:37:13.979 PASS preflight:cur us1.post present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+14:37:13.987 PASS preflight:cur us1.app present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+14:37:13.995 PASS preflight:cur us2 line present (lines=a,b,entry1,entry2,us1,us2)
+14:37:14.003 PASS preflight:cur us2.usb present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+14:37:14.010 PASS preflight:cur us2.applast present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+14:37:14.018 PASS preflight:cur us2.commit present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+14:37:14.026 PASS preflight:cur us2.mainexit present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+14:37:14.034 PASS preflight:cur us2.probed present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+14:37:14.041 PASS preflight:cur us2.running present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+14:37:14.049 PASS preflight:cur fire lines all-or-none (fire lines=0)
+14:37:14.056 PASS preflight:ring header reinit == cur reinit (header=0 cur=0)
+14:37:14.065 preflight: running image carries boot-instrument records (saved below)
+14:37:14.072 preflight cur: ZBOOT cur a seq=9 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0
+14:37:14.080 preflight ring: ZBOOT ring count=1 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0
+14:37:14.088 preflight addr: ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00
+14:37:14.099 saved ZBOOT inc0 a seq=3 tag=bt4-R-10080217 done=0 reason=0 phase=0 calib=- stage=5 reset=0x4 reinit=0
+14:37:14.106 saved ZBOOT inc0 b fix=0/0/0 probes=0/0 feeds=0 loops=0 lastfeed_us=0
+14:37:14.113 saved ZBOOT inc0 entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0
+14:37:14.121 saved ZBOOT inc0 entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1
+14:37:14.129 saved ZBOOT inc0 us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800
+14:37:14.136 saved ZBOOT inc0 us2 usb=0 applast=1500 commit=2500 mainexit=3900 probed=4000 running=0
+14:37:14.145 STEP pre RESULT PASS

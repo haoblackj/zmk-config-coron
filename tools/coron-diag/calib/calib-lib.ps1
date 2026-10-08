@@ -23,9 +23,10 @@ $script:fails = 0
 $script:nextOp = 'start'
 $script:xn = 0
 $script:childAlive = $false   # set when a timed-out console child could not be confirmed dead (exit 5)
-# After an Exchange with a command: $true = the child's 'sent' stamp was seen, $false = the child
-# returned without writing (its 'NOT sent' stamp), 'unknown' = the child timed out and no stamp was
-# read (the write cannot be ruled out). Trials carry this into their result (review #16, point 2).
+# After an Exchange with a command: $true = the child's 'sent' stamp was seen, $false = the child's
+# explicit 'NOT sent' stamp was seen (its gate refused), 'unknown' = neither (timeout, an error inside
+# the write, a crash: the write cannot be ruled out). Trials carry this into their result
+# (review #16 point 2, #17 point 2).
 $script:lastSentStamp = $null
 
 function Log($m) {
@@ -237,8 +238,9 @@ function Get-AllUf2Drives() {
 function Copy-Uf2([string]$src, [string]$letter) {
     if ($script:Scn) {
         $script:Scn.copies += @{ src = $src; letter = $letter }
-        Log "DEVICE-OP copy (mock) $src -> ${letter}:"
+        Log "copy attempt (mock) $src -> ${letter}:"
         if ($script:Scn.uf2.copy -ceq 'fail') { Log "copy error (mock): The device is not ready"; return $false }
+        Log "DEVICE-OP copied (mock) $src -> ${letter}:"   # the completion stamp, same meaning and order as the real branch
         return $true
     }
     try {
@@ -303,7 +305,13 @@ function Exchange([string]$Send = '', [int]$ReadSeconds = 0) {
         if ($stderr) { Add-Content -Path $script:LogFile -Value ("[stderr] " + $stderr) -Encoding UTF8 }
         Add-Content -Path $script:LogFile -Value '----- end console -----' -Encoding UTF8
         $sentStamp = ($Send -and ($stdout -cmatch ("\[calib-io\] sent '" + [regex]::Escape($Send) + "'")))
-        if ($Send) { $script:lastSentStamp = $(if ($sentStamp) { $true } elseif ($res.timedOut) { 'unknown' } else { $false }) }
+        if ($Send) {
+            # $false ONLY on the child's explicit "NOT sent" stamp (its gate refused); any other outcome
+            # without a "sent" stamp (timeout, error inside the write, crash) leaves the write undecided
+            $notSent = ($stdout -cmatch ("\[calib-io\] NOT sent '" + [regex]::Escape($Send) + "'"))
+            $script:lastSentStamp = $(if ($sentStamp) { $true } elseif ($notSent) { $false } else { 'unknown' })
+            Log "send classification for '$Send': $($script:lastSentStamp) (sent stamp=$sentStamp, NOT-sent stamp=$notSent, timed_out=$($res.timedOut), child exit=$($res.rc))"
+        }
         if ($res.timedOut) {
             $stampTxt = $(if ($sentStamp) { 'PRESENT' } else { 'absent' })
             if ($res.killed) {

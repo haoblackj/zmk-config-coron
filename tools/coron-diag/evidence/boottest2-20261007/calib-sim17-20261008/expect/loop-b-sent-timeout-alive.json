@@ -1,0 +1,36 @@
+{
+ "exit": 3,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "5",
+  "t2": "not-run",
+  "t3": "not-run",
+  "restore": "not-attempted",
+  "stop": "trial_1_failed_(rc=5)"
+ },
+ "must": [
+  {
+   "glob": "trial1-*.log",
+   "re": "\\[calib-io\\] sent 'b'"
+  },
+  {
+   "glob": "trial1-*.log",
+   "re": "termination NOT confirmed, pids still alive .*; sent stamp PRESENT"
+  },
+  "trial 1 .*op_sent=True",
+  "b sent=1, images written=0",
+  "RESTORE NOT ATTEMPTED"
+ ],
+ "must_not": [
+  "FLASH prod start"
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

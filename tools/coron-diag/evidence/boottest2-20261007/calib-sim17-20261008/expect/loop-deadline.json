@@ -1,0 +1,32 @@
+{
+ "exit": 0,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "not-run",
+  "t2": "not-run",
+  "t3": "not-run",
+  "restore": "0",
+  "stop": "deadline:_trial_1_(dwell_13_min_+_reserve)_would_end_after_2026-01-01_00:00"
+ },
+ "must": [
+  "deadline: trial 1",
+  "LOOP DONE \\(no event\\) \\| RESTORE PASS"
+ ],
+ "must_not": [
+  {
+   "glob": "trial1-*.log",
+   "re": "."
+  }
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26",
+  "-NoNewTrialAfter",
+  "2026-01-01 00:00"
+ ]
+}

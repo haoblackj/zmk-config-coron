@@ -1,0 +1,27 @@
+﻿14:40:40.883 MOCK mode: every child gets its scenario file from \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim17\sim\loop-kill-unconfirmed
+14:40:40.900 deadlines: t2=1420 t1=8 flash-base=300 pre=90 baseline=120 t3=1960 flash-prod=300
+14:40:40.907 LOOP start serial=B17318CDBE9A61B1 mode=write trials=3 dwells=[13,17,26] min no_new_trial_after= restore_reserve=10min
+14:40:40.913 page difference of the two images (UF2 contents, 4 KiB pages): bt4 93 pages, bt4A 104 pages, 0 identical; how many pages the bootloader actually erases is a separate, unmeasured quantity
+14:40:40.927 launch pre (deadline 90s)
+14:40:42.111 pre rc=0
+14:40:42.119 launch flash-base (deadline 300s)
+14:40:44.317 flash-base rc=0
+14:40:44.324 launch baseline (deadline 120s)
+14:40:46.054 baseline rc=0
+14:40:46.103 launch t1 (deadline 8s)
+14:40:54.135 deadline 8s passed for pid 77840: terminating through calib-kill.ps1 (deadline 20s for enumeration + request + confirmation)
+14:40:59.852 kill: phase=enumerate pid=77840
+14:40:59.860 kill: tree=[77840]
+14:40:59.866 kill: phase=terminate
+14:40:59.873 kill: taskkill rc=0: (mock) taskkill NOT invoked: simulated success without effect
+14:40:59.880 kill: phase=confirm
+14:40:59.886 kill: alive=[77840] confirmed=False (after 5 s)
+14:40:59.899 termination confirmed=False (kill helper rc=1; pids still alive: [77840])
+14:40:59.908 t1 did not return within 8s: termination NOT confirmed (pids still alive: [77840]); a loop process may still operate the device
+14:40:59.923 trial 1 result file not usable (result file missing or not JSON): its stages are NOT adopted; only this trial's own log stamps count
+14:40:59.956 trial 1 trial=1 mode=write image_planned=C:\T\coron_R-bt4-alt.uf2 image_written= tag_before=bt4-R-10080217 tag_after_planned=bt4A-R-10080217 tag_after_observed= rc=TIMEOUT-ALIVE seq_before= seq_after= uptime_min_before_op= dwell_min=13 stages_unknown=True stages_source=trial log stamps only dwell_started=unknown op_sent=unknown image_written_stage=unknown boot_observed=unknown running_confirmed=unknown completed=unknown ring_after= result=no result file stop_reason=
+14:40:59.964 RESTORE NOT ATTEMPTED: a loop process may still be alive ([77840]); no further device operation. The device is NOT restored to the production image (recorded as a failure; no manual step is requested).
+14:40:59.997 ledger: mode=write trials started=0, b sent=0, images written=0 (boots after a write), boots observed=0, RUNNING confirmed=0, completed without event=0, stages unknown=1 (no usable result file; only log stamps counted for those), not sent (explicit)=0, op sent unknown=1 (no 'sent' and no 'NOT sent' stamp: timeout or error inside the write); stop=trial 1 failed (rc=TIMEOUT-ALIVE)
+14:41:00.003 restore FAIL (rc=not-attempted)
+14:41:00.011 LOOP FAILED | RESTORE FAIL
+14:41:00.020 results: pre=0 flash-base=0 baseline=0 t1=TIMEOUT-ALIVE t2=not-run t3=not-run restore=not-attempted stop=trial_1_failed_(rc=TIMEOUT-ALIVE)
