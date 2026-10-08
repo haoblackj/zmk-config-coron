@@ -18,7 +18,12 @@ param(
     [Parameter(Mandatory = $true)][string]$Md5,
     [Parameter(Mandatory = $true)][ValidateSet('base', 'prod')][string]$Expect,
     [string]$TagBase = 'bt4-R-10080217',
-    [string]$Mock = ''
+    [string]$Mock = '',
+    # 2026-10-09: the leader put the OTHER half into its bootloader as well (both halves get a test
+    # image). Every lookup here is tied to -Serial (state, console port, UF2 drive), so the global
+    # "exactly one bootloader" guard is relaxed to "at least one" when this is set; the drive-of-serial
+    # guard still allows exactly one drive.
+    [switch]$AllowOtherBootloaders
 )
 $ErrorActionPreference = 'Continue'
 . (Join-Path $PSScriptRoot 'calib-lib.ps1')
@@ -54,7 +59,11 @@ try {
     Pause-Ms 500
     $drives = @(Get-Uf2DrivesOfSerial)
     Require 'exactly one UF2 drive tied to this serial' ($drives.Count -eq 1) ("drives of serial=[$($drives -join ',')] all uf2 drives=[$((Get-AllUf2Drives) -join ',')]")
-    Require 'exactly one bootloader on USB' ((Count-Bootloaders) -eq 1) ("count=" + (Count-Bootloaders))
+    if ($AllowOtherBootloaders) {
+        Require 'at least one bootloader on USB (other halves allowed by -AllowOtherBootloaders)' ((Count-Bootloaders) -ge 1) ("count=" + (Count-Bootloaders))
+    } else {
+        Require 'exactly one bootloader on USB' ((Count-Bootloaders) -eq 1) ("count=" + (Count-Bootloaders))
+    }
     Require 'image md5 (re-checked at copy time)' ((File-Md5 $Uf2) -ceq $Md5.ToLower()) (File-Md5 $Uf2)
     $ok = Copy-Uf2 $Uf2 $drives[0]
     NextOp 'nothing more (only reading)'
