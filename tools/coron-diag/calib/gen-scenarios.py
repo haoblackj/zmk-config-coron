@@ -14,6 +14,11 @@ a/b/entry1/entry2/us1/us2/fire1..4).
 import argparse, json, os, copy
 
 SERIAL = 'B17318CDBE9A61B1'
+# instance ids as read on the real PC (2026-10-08): the diag console interface, the Studio RPC
+# UART interface of the production image, and the UF2 disk of the bootloader
+CONSOLE = dict(com='COM5', id='USB\\VID_1D50&PID_615E&MI_00\\9&168EB68&4&0000')
+STUDIO = dict(com='COM7', id='USB\\VID_1D50&PID_615E&MI_03\\9&168EB68&4&0003')
+UF2_ID = 'USBSTOR\\DISK&VEN_ADAFRUIT&PROD_NRF_UF2&REV_1.0\\A&258725EA&0&{}&0'
 IMG = {
     'base': dict(tag='bt4-R-10080217', sysq='0x20009910', main='0x20009848', calib='0x20005d00', spin=0x662ea),
     'alt':  dict(tag='bt4A-R-10080217', sysq='0x2000b688', main='0x2000b5c0', calib='0x20005d18', spin=0x38a08),
@@ -120,8 +125,8 @@ def files(**override):
     return f
 
 
-def scen(states, exchanges, drives=None, copy='ok', vanish=True, fl=None, **extra):
-    d = dict(states=states, exchanges=exchanges, ports=['COM5'],
+def scen(states, exchanges, drives=None, copy='ok', vanish=True, fl=None, ports=None, **extra):
+    d = dict(states=states, exchanges=exchanges, ports=ports if ports is not None else [CONSOLE],
              uf2=dict(drives=drives if drives is not None else [], copy=copy, vanish=vanish),
              files=fl if fl is not None else files())
     d.update(extra)
@@ -129,7 +134,7 @@ def scen(states, exchanges, drives=None, copy='ok', vanish=True, fl=None, **extr
 
 
 B, A = IMG['base'], IMG['alt']
-OUR = [dict(letter='E', serial=SERIAL)]
+OUR = [dict(letter='E', pnp=UF2_ID.format(SERIAL))]
 cur = lambda img, seq, **kw: rec('cur', img, seq, **kw)
 last = lambda img, seq, **kw: rec('last', img, seq, **kw)
 STEPS = ['pre', 'flash-base', '0', '1', '2', '4', '5', '6', '7', '8', 'flash-prod']
@@ -303,7 +308,7 @@ add('no-reset', variant('2', scen(['app', 'app', 'app'], [ex('', d), ex('h', d, 
 
 # ------------------------------------------------------------------ UF2 drive / copy
 step7_pre = [ex('', d7), ex('S', d7, post=reply('S', returned=True)), ex('b', I['dS'], post=BOOTLOADER, lost=True)]
-FOREIGN = [dict(letter='F', serial='DEADBEEF00000001')]
+FOREIGN = [dict(letter='F', pnp=UF2_ID.format('DEADBEEF00000001'))]
 add('foreign-uf2', variant('7', scen(['app', 'boot'], step7_pre, drives=FOREIGN)),
     expect(1, stopped_after('7'), must=[in_file('step7-*.log', 'STOPPED before: copy the alt image')], must_not=[in_file('step7-*.log', 'DEVICE-OP copy')]))
 add('two-uf2', variant('7', scen(['app', 'boot'], step7_pre, drives=OUR + FOREIGN)),
@@ -412,6 +417,24 @@ add('io-kill-req-hang', variant('1', dict(scen(['app'], [ex('', d1, hang_s=60, i
     expect(3, stopped_after('1', **{'1': '5', 'restore': 'not-attempted'}),
            must=[in_file('step1-*.log', 'kill helper did not return within 20s \\(last phase=terminate\\)'), in_file('step1-*.log', 'exit 5'), 'RESTORE NOT ATTEMPTED'],
            must_not=['FLASH prod start', in_file('flash-prod-*.log', '.')]))
+
+
+# ------------------------------------------------------------------ review #13
+# 1. the device exposes the diag console (MI_00) AND the Studio RPC UART (MI_03) on the same serial, as the
+#    production image does: nothing may ever be written to, or even opened on, the second port
+TP = {k: dict(v, ports=[CONSOLE, STUDIO]) for k, v in N.items() if not k.startswith('_')}
+add('two-ports', TP, expect(0, results(), must=['opened COM5', in_file('flash-prod-*.log', "sent 'b'")],
+                           must_not=['opened COM7', 'console COM7', "COM7.*sent"]))
+# 2. the USBSTOR matcher on partial-serial instance ids: our drive is absent, two near misses are present -> no copy
+NEAR = [dict(letter='F', pnp=UF2_ID.format('X' + SERIAL)), dict(letter='G', pnp=UF2_ID.format(SERIAL[:-1]))]
+add('uf2-partial-serial', variant('7', scen(['app', 'boot'], step7_pre, drives=NEAR)),
+    expect(1, stopped_after('7'), must=[in_file('step7-*.log', 'drives of serial=\\[\\] all uf2 drives=\\[F,G\\]'), in_file('step7-*.log', 'STOPPED before: copy the alt image')],
+           must_not=[in_file('step7-*.log', 'DEVICE-OP copy')]))
+# 2b. the instance id without the Windows prefix (\<serial>&0) is accepted too
+NP = {k: v for k, v in N.items() if not k.startswith('_')}
+for k in ('flash-base', '7', 'flash-prod'):
+    NP[k] = dict(NP[k], uf2=dict(NP[k]['uf2'], drives=[dict(letter='E', pnp='USBSTOR\\DISK&VEN_ADAFRUIT&PROD_NRF_UF2&REV_1.0\\' + SERIAL + '&0')]))
+add('uf2-noprefix', NP, expect(0, results(), must=['drives of serial=\\[E\\]']))
 
 
 def main():

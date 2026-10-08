@@ -131,6 +131,28 @@ function Invoke-Child([string]$file, [string[]]$argv, [int]$timeoutSec, [string]
     return @{ rc = $null; timedOut = $true; killed = $killed; alive = $alive; tree = $tree }
 }
 
+# ---- identification (one implementation for the real PC and the mock; see calib-selftest.ps1) --
+# The UF2 disk of this serial: Windows prefixes the serial in the USBSTOR instance id with a
+# generated "A&258725EA&0&" (read on the real PC, 2026-10-08 10:42:
+#   USBSTOR\DISK&VEN_ADAFRUIT&PROD_NRF_UF2&REV_1.0\A&258725EA&0&B17318CDBE9A61B1&0 ),
+# so the serial is the element right before the trailing "&<n>", after either "\" or "&".
+# A longer or shorter string in that position is NOT the serial.
+function Test-UsbstorSerial([string]$pnp) {
+    return ($pnp -match ("^USBSTOR\\DISK&.*(\\|&)" + [regex]::Escape($script:Serial) + "&[0-9]+$"))
+}
+# The diag console is the CDC ACM interface with USB interface number $script:ConsoleMI (default
+# 00). Derivation: both images set zephyr,console = &board_cdc_acm_uart, the first
+# zephyr,cdc-acm-uart node (cdc_acm instance 0, zephyr.dts of the bt4 and the production build);
+# Zephyr's legacy USB stack numbers interfaces in descriptor order (usb_fix_descriptor,
+# usb_descriptor.c), and on the real PC MI_00 is the only interface that ever answered the ZDIAG
+# protocol (test image: MI_00 only; production image: MI_00 dumps on DTR, MI_03 = Studio RPC UART,
+# the snippet's second node, never did). The bus-reported description is "coron" on every
+# interface, so it cannot tell them apart. Nothing is written to any other interface.
+$script:ConsoleMI = '00'
+function Test-ConsoleIface([string]$instanceId) {
+    return ($instanceId -match ("^USB\\VID_1D50&PID_615E&MI_" + $script:ConsoleMI + "\\"))
+}
+
 # ---- USB state ------------------------------------------------------------------------------
 function Get-State() {
     if ($script:Scn) { return (Mock-Next 'state') }
@@ -139,10 +161,14 @@ function Get-State() {
     if ($devs | Where-Object { $_.InstanceId -match "^USB\\VID_1D50&PID_615E\\$script:Serial$" }) { return 'app' }
     return 'none'
 }
+# COM names of the diag console of this serial: a Ports device whose instance id is the console
+# interface (Test-ConsoleIface) AND whose parent is this serial. Other CDC interfaces of the same
+# device (the Studio RPC UART) are never returned, so nothing is ever written to them
+# (review #13, point 1). Mock: entries {com, id} filtered by the same function.
 function Get-DiagPorts() {
-    if ($script:Scn) { return $script:Scn.ports }
+    if ($script:Scn) { return @($script:Scn.ports | Where-Object { Test-ConsoleIface ([string]$_.id) } | ForEach-Object { [string]$_.com }) }
     Get-PnpDevice -PresentOnly -Class Ports -ErrorAction SilentlyContinue |
-        Where-Object { $_.InstanceId -match '^USB\\VID_1D50&PID_615E&MI_' } |
+        Where-Object { Test-ConsoleIface $_.InstanceId } |
         Where-Object { (Get-PnpDeviceProperty -InstanceId $_.InstanceId -KeyName 'DEVPKEY_Device_Parent' -ErrorAction SilentlyContinue).Data -match "\\$script:Serial$" } |
         ForEach-Object { if ($_.FriendlyName -match '\((COM\d+)\)') { $Matches[1] } }
 }
@@ -177,18 +203,16 @@ function Wait-Leave-App([int]$seconds) {
 # Walks USB device -> USBSTOR disk (its PNPDeviceID carries the USB serial) -> partition ->
 # logical disk, and returns the drive letters whose chain ends at $script:Serial and which carry
 # INFO_UF2.TXT. The caller copies only when exactly one letter comes back (review #8, point 3).
-# The instance id of this bootloader's disk, as read on the real PC (2026-10-08 10:42):
-#   USBSTOR\DISK&VEN_ADAFRUIT&PROD_NRF_UF2&REV_1.0\A&258725EA&0&B17318CDBE9A61B1&0
-# i.e. Windows prefixes the serial with a generated "A&258725EA&0&", so the serial is matched as
-# the element right before the trailing "&<n>", after either "\" or "&" (the earlier
-# "\<serial>&<n>" form found nothing and stopped the first real run before any copy).
+# The serial match is Test-UsbstorSerial (above; the earlier "\<serial>&<n>" form found nothing
+# on the real PC and stopped the first real run before any copy).
 function Get-Uf2DrivesOfSerial() {
     if ($script:Scn) {
-        return @($script:Scn.uf2.drives | Where-Object { $_.serial -ceq $script:Serial } | ForEach-Object { $_.letter })
+        # the mock carries the full USBSTOR instance id of each drive; the real matcher runs on it
+        return @($script:Scn.uf2.drives | Where-Object { Test-UsbstorSerial ([string]$_.pnp) } | ForEach-Object { $_.letter })
     }
     $out = @()
     $disks = Get-CimInstance Win32_DiskDrive -ErrorAction SilentlyContinue |
-        Where-Object { $_.PNPDeviceID -match "^USBSTOR\\DISK&.*(\\|&)$script:Serial&[0-9]+$" }
+        Where-Object { Test-UsbstorSerial $_.PNPDeviceID }
     foreach ($d in $disks) {
         $parts = Get-CimAssociatedInstance -InputObject $d -ResultClassName Win32_DiskPartition -ErrorAction SilentlyContinue
         foreach ($p in $parts) {

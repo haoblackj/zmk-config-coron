@@ -103,6 +103,13 @@ def main():
     if a.only:
         names = [n for n in names if n in a.only.split(',')]
     allps = wpath(os.path.join(HERE, 'calib-all.ps1'))
+    # the identification matchers, on instance ids read from the real PC (no device needed)
+    st = subprocess.run(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', wpath(os.path.join(HERE, 'calib-selftest.ps1'))],
+                        capture_output=True, text=True)
+    selftest = st.stdout.replace('\r', '')
+    with open(os.path.join(a.out, 'selftest.txt'), 'w') as f:
+        f.write(selftest)
+    print(selftest.strip().splitlines()[-1], f'(exit {st.returncode})', flush=True)
     with concurrent.futures.ThreadPoolExecutor(max_workers=a.jobs) as pool:
         futs = {pool.submit(run_one, n, simdir, logroot, allps): n for n in names}
         res = {}
@@ -113,7 +120,9 @@ def main():
             for p in r['problems']:
                 print(f'    {p}', flush=True)
     bad = [n for n in names if res[n]['problems']]
-    lines = [f'calib-sim {time.strftime("%Y-%m-%d %H:%M:%S")}: {len(names)} scenarios, {len(bad)} mismatch', '']
+    if st.returncode != 0:
+        bad = ['selftest'] + bad
+    lines = [f'calib-sim {time.strftime("%Y-%m-%d %H:%M:%S")}: {len(names)} scenarios, {len(bad)} mismatch', '', '--- selftest (identification matchers on real instance ids)'] + selftest.strip().splitlines() + ['']
     lines.append('| scenario | exit want/got | results | verdict |')
     lines.append('|---|---|---|---|')
     for n in names:

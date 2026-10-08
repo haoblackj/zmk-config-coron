@@ -86,7 +86,12 @@
 追加場面: `kill-enum-hang`（列挙が戻らない）、`kill-req-hang`（終了要求が戻らない）、`io-kill-req-hang`（交換の子の終了要求が戻らない）。いずれも司令側が 20 秒で結果を確定し、`RESTORE NOT ATTEMPTED` を残し、後続の命令送信と複写を行わないことを機械照合した。模擬は補助プロセスの該当段階で止まるだけで、列挙と確認の処理は実物。40 場面の記録は `calib-sim11-20261008/`（09:32〜09:39）。
 
 ## 実機初回（2026-10-08 10:41〜、レビュー #12 の後）で見つかった 2 件
-記録は `calib-real-20261008/`。どちらも模擬が前提を写していたために模擬では捕まらず、実機の読み取りで確定した。
+記録は `calib-real-20261008/`。1 は実機の読み取りで初めて分かった形。2 は `.config` とソースから事前に分かる設定差（試験像と本番像の通信仕様の差）をスクリプトと模擬に反映し忘れていたもので、「実機でしか分からない」は誤り（レビュー #13 で訂正）。
 1. USBSTOR のインスタンス ID の形: 実機は `USBSTOR\DISK&VEN_ADAFRUIT&PROD_NRF_UF2&REV_1.0\A&258725EA&0&B17318CDBE9A61B1&0`（シリアルの前に `A&258725EA&0&`）。照合を「末尾の `&N` の直前の要素がシリアル（直前が `\` でも `&` でもよい）」に直した（`calib-lib.ps1` の `Get-Uf2DrivesOfSerial`。1 行）。読むだけの確認で `drives of serial=[E]`、ブートローダー 1 台。この修正で本番復帰は通った。
 2. 試験像は DTR で dump しない: bt4/bt4A は `CONFIG_UART_LINE_CTRL` 無効（`coron_R-bt4.config`）で、`diag_min.c` は line control が取れないと「`d` のときだけ dump」になる。本番像は line control ありで開くだけで dump する。子 `calib-io.ps1` は開いて 1.5 秒で dump が無ければ `d`（読み出し要求）を 1 回送るようにした。命令の関門（直前の dump が完全で `#TRUNC` なし）はそのまま。模擬の試験像の交換は「`d` で初めて dump する」缶詰（`dump_on_request`）にし、本番像の交換は従来どおり開くだけで dump する。
 3 回目（10:58:50、両修正入り）で校正 PASS（第 3 段 SKIP）、本番復帰 PASS。実測は `calib-real-20261008/README.md`。
+
+## レビュー #13（2026-10-08、468f07e の 3 点。校正 PASS と本番復帰 PASS は受理）への対応
+1. `d` の送信先: 子は同じシリアルの全 Ports に `d` を書いていた（本番像では MI_03 = Studio の RPC UART にも。復帰ログに `opened COM7` → `sent 'd'`）。`Test-ConsoleIface` を入れ、`Get-DiagPorts` は親がこのシリアルで USB インターフェース番号が `MI_00` の Ports だけを返す（根拠は README「校正」: 両像の `zephyr,console = &board_cdc_acm_uart`（cdc_acm インスタンス 0）、`usb_fix_descriptor` の番号付け、実機で MI_00 だけが `ZDIAG` を返した事実）。COM 番号は使わない。他のインターフェースは開かない。模擬の `ports` は実機のインスタンス ID を持ち、同じ関数で絞る。追加場面 `two-ports`（COM5 MI_00 と COM7 MI_03 が同時にある本番像の形で全体実行。COM7 を開かない、書かないことを照合）。
+2. USBSTOR 照合の直接検証: 照合を `Test-UsbstorSerial` に分け、実機と模擬で同じ実装にした（模擬のドライブは実機から読んだ完全なインスタンス ID を持つ）。`calib-selftest.ps1` が実機の ID を入力に 15 件（接頭辞あり／なし、末尾 `&1`、別シリアル、前後 1 文字多い、1 文字短い、位置違い、USBSTOR でない、小文字、インターフェース番号の 5 件）を直接検証し、`calib-sim.py` の最初に走って不一致なら全体を非ゼロにする。追加場面 `uf2-partial-serial`（部分一致の 2 台だけ → 複写しない）、`uf2-noprefix`（接頭辞なしの ID → 通る）。
+3. 文言の訂正: 「どちらも実機でしか分からなかった」は誤り。USBSTOR の ID 形式は実機の読み取りで判明したが、試験像の `CONFIG_UART_LINE_CTRL` 無効と `d` だけで dump する分岐は公開済みの `.config` とソースから事前に確認できた。正しくは「試験像と本番像の通信仕様の差をスクリプトと模擬に反映し忘れていた」。README と実機記録の文言を直した。
