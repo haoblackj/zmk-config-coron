@@ -1,0 +1,94 @@
+﻿21:34:39.375 FLASH prod start serial=B17318CDBE9A61B1 file=C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-prod-2725423.uf2
+21:34:39.461 PASS prod image exists (C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-prod-2725423.uf2)
+21:34:39.465 PASS prod image md5 (have=889f3a4816c82bdd4adc253b16f28689 want=889f3a4816c82bdd4adc253b16f28689)
+21:34:40.530 initial state=app
+21:34:41.130 PASS diag port present (ports)
+----- console COM5 send='b' read=2s exit=0 timed_out=False deadline=22s -----
+[calib-io] opened COM5 at 21:34:42.036
+[calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 21:34:43.566
+ZDIAG begin version=prof1 up_ms=10149 boot=1 reset=0x2
+ZDIAG now count host_conn=1 host_disc=0 split_conn=1 split_disc=0
+ZDIAG ev boot=1 ms=1223 type=split-conn a=6 b=30
+ZDIAG ev boot=1 ms=2393 type=split-param a=23 b=7
+ZDIAG ev boot=1 ms=4874 type=host-conn a=12 b=10
+ZDIAG ev boot=1 ms=5670 type=split-param a=6 b=30
+ZPROF snap #1 why=host-conn up_ms=5174
+ZPROF profile 0* addr=50:BB:B5:73:A4:C9 (public) open=0 connected=1
+ZPROF profile 1 addr=7C:70:DB:D6:8E:D5 (public) open=0 connected=0
+ZPROF profile 2 addr=00:00:00:00:00:00 (public) open=1 connected=0
+ZPROF profile 3 addr=00:00:00:00:00:00 (public) open=1 connected=0
+ZPROF bond 7C:70:DB:D6:8E:D5 (public)
+ZPROF bond 50:BB:B5:73:A4:C9 (public)
+ZPROF bond E5:8F:CD:66:97:1D (random)
+ZPROF conn idx=0 role=periph state=CONNECTED id=0 dst=50:BB:B5:73:A4:C9 (public) get_dst=50:BB:B5:73:A4:C9 (public) sec=2
+ZPROF conn idx=1 role=central state=CONNECTED id=0 dst=E5:8F:CD:66:97:1D (random) get_dst=E5:8F:CD:66:97:1D (random) sec=2
+ZPROF lookup(active) -> idx=0 state=CONNECTED
+ZPROF active_is_connected=1
+ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=0 calib_live=0
+ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00
+ZBOOT last a seq=15 tag=bt4A-R-10080217 done=1 reason=3 phase=1 calib=- stage=12 reset=0x4 reinit=0
+ZBOOT last b fix=0/0/0 probes=41/41 feeds=40 loops=41 lastfeed_us=3488809
+ZBOOT last entry1 lfstat=0x0 lfrun=0 lfsrc=0x0 lfcopy=0x0 lfev=1
+ZBOOT last entry2 hfstat=0x10000 hfrun=0 hfev=1 rtc1=98304 usbreg=0x1 ficr130=0x8 ficr134=0x3
+ZBOOT last us1 hook=783 pk1=884 clk=998 pk1end=1126 sysclk=1293 post=1425 app=3806
+ZBOOT last us2 usb=21009 applast=21109 commit=587226 mainexit=593397 probed=593710 running=1053397
+ZBOOT cur a seq=16 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=0
+ZBOOT cur b fix=0/0/0 probes=5/5 feeds=4 loops=5 lastfeed_us=1356776
+ZBOOT cur entry1 lfstat=0x0 lfrun=0 lfsrc=0x0 lfcopy=0x0 lfev=1
+ZBOOT cur entry2 hfstat=0x10000 hfrun=0 hfev=1 rtc1=98304 usbreg=0x1 ficr130=0x8 ficr134=0x3
+ZBOOT cur us1 hook=834 pk1=943 clk=1076 pk1end=1223 sysclk=1401 post=1548 app=4308
+ZBOOT cur us2 usb=22902 applast=23010 commit=675132 mainexit=681988 probed=682333 running=1191474
+ZDIAG end
+[calib-io] dump complete at 21:34:44.003
+[calib-io] sent 'b' at 21:34:44.005
+ZDIAG bootloader rc=0
+[calib-io] read window over at 21:34:46.036
+[calib-io] closing at 21:34:46.037
+
+----- end console -----
+21:34:46.090 send classification for 'b': True (sent stamp=True, NOT-sent stamp=False, timed_out=False, child exit=0)
+21:34:46.093 DEVICE-OP console sent 'b' (child stamp)
+21:34:46.094 PASS 'b' written by the console child (its pre-send dump complete and without #TRUNC) (child stamp "sent")
+21:34:46.099 'b' reply: ack line 'ZDIAG bootloader' seen=True, port lost after the send=False (the firmware prints the line ~100 ms before it reboots, so the line can be lost with the port; the gate is the USB state that follows, not this line)
+21:34:47.148 PASS bootloader of this serial on USB within 30 s (state=boot)
+21:34:48.524 PASS exactly one UF2 drive tied to this serial (drives of serial=[E] all uf2 drives=[E])
+21:34:49.186 PASS exactly one bootloader on USB (count=1)
+21:34:49.193 PASS image md5 (re-checked at copy time) (889f3a4816c82bdd4adc253b16f28689)
+21:35:06.369 DEVICE-OP copied C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-prod-2725423.uf2 -> E:
+21:35:06.372 PASS copy raised no error (to E)
+21:35:06.376 PASS UF2 drive vanished within 30 s (image taken) (drive E)
+21:35:08.098 PASS device back as app within 90 s (state=app)
+----- console COM5 send='' read=0s exit=0 timed_out=False deadline=20s -----
+[calib-io] opened COM5 at 21:35:09.778
+*** Booting Zephyr OS build 10ba6d0cb38b ***
+ZDIAG begin version=prof1 up_ms=3895 boot=1 reset=0x2
+ZDIAG now count host_conn=1 host_disc=0 split_conn=1 split_disc=0
+ZDIAG ev boot=1 ms=1203 type=split-conn a=6 b=30
+ZDIAG ev boot=1 ms=1957 type=host-conn a=12 b=10
+ZDIAG ev boot=1 ms=2350 type=split-param a=23 b=7
+ZDIAG ev boot=1 ms=3097 type=split-param a=6 b=30
+ZPROF snap #1 why=host-conn up_ms=2257
+ZPROF profile 0* addr=50:BB:B5:73:A4:C9 (public) open=0 connected=1
+ZPROF profile 1 addr=7C:70:DB:D6:8E:D5 (public) open=0 connected=0
+ZPROF profile 2 addr=00:00:00:00:00:00 (public) open=1 connected=0
+ZPROF profile 3 addr=00:00:00:00:00:00 (public) open=1 connected=0
+ZPROF bond 7C:70:DB:D6:8E:D5 (public)
+ZPROF bond 50:BB:B5:73:A4:C9 (public)
+ZPROF bond E5:8F:CD:66:97:1D (random)
+ZPROF conn idx=0 role=periph state=CONNECTED id=0 dst=50:BB:B5:73:A4:C9 (public) get_dst=50:BB:B5:73:A4:C9 (public) sec=2
+ZPROF conn idx=1 role=central state=CONNECTED id=0 dst=E5:8F:CD:66:97:1D (random) get_dst=E5:8F:CD:66:97:1D (random) sec=1
+ZPROF lookup(active) -> idx=0 state=CONNECTED
+ZPROF active_is_connected=1
+ZDIAG end
+[calib-io] dump complete at 21:35:11.309
+[calib-io] closing at 21:35:11.309
+
+----- end console -----
+21:35:11.344 PASS dump present (ZDIAG begin)
+21:35:11.358 dump: ZDIAG begin version=prof1 up_ms=3895 boot=1 reset=0x2 ; ZBOOT lines=0
+21:35:11.363 PASS after flash:dump complete (ZDIAG end line)
+21:35:11.366 PASS after flash:no #TRUNC line (trunc lines=0)
+21:35:11.380 after flash: no ZBOOT line (the running image has no boot instrument)
+21:35:11.383 PASS production image answers (version=prof1) (ZDIAG begin version=prof1 up_ms=3895 boot=1 reset=0x2)
+21:35:11.385 PASS no ZBOOT line (not a test image) (zboot=0)
+21:35:11.387 FLASH prod RESULT PASS

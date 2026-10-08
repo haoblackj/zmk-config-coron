@@ -1,0 +1,30 @@
+{
+ "exit": 0,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "0",
+  "t2": "0",
+  "t3": "0",
+  "restore": "0",
+  "stop": "all-trials-done"
+ },
+ "must": [
+  {
+   "glob": "trial0-*.log",
+   "re": "saved \\[calibration artifact\\] ZBOOT inc1 a "
+  },
+  "ledger: mode=write trials started=3, b sent=3, images written=3 \\(boots after a write\\), boots observed=3, RUNNING confirmed=3, completed without event=3"
+ ],
+ "must_not": [
+  "EVENT"
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

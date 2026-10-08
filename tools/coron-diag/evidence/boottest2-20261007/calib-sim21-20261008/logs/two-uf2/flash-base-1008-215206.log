@@ -1,0 +1,125 @@
+﻿21:52:06.212 MOCK scenario \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim21\sim\two-uf2\flash-base.json
+21:52:06.226 FLASH base start serial=B17318CDBE9A61B1 file=C:\T\coron_R-bt4.uf2
+21:52:06.264 PASS base image exists (C:\T\coron_R-bt4.uf2)
+21:52:06.273 PASS base image md5 (have=df108d7ad2009afccfbfbba66b6ad093 want=df108d7ad2009afccfbfbba66b6ad093)
+21:52:06.290 initial state=app
+21:52:06.307 PASS diag port present (ports)
+----- console COM5 send='b' read=2s exit=0 timed_out=False deadline=22s -----
+[calib-io] opened COM5 at 21:52:06.726
+ZDIAG begin version=prof1 up_ms=6690 boot=1 reset=0x2
+ZDIAG now count host_conn=0 host_disc=0 split_conn=1 split_disc=0
+ZDIAG end
+[calib-io] dump complete at 21:52:06.753
+[calib-io] sent 'b' at 21:52:06.757
+ZDIAG bootloader rc=0
+[calib-io] port lost ("0" 個の引数を指定して "ReadExisting" を呼び出し中に例外が発生しました: "The device does not recognize the command.") at 21:52:06.771
+[calib-io] read window over at 21:52:06.772
+[calib-io] closing at 21:52:06.772
+
+----- end console -----
+21:52:06.846 send classification for 'b': True (sent stamp=True, NOT-sent stamp=False, timed_out=False, child exit=0)
+21:52:06.853 DEVICE-OP console sent 'b' (child stamp)
+21:52:06.862 PASS 'b' written by the console child (its pre-send dump complete and without #TRUNC) (child stamp "sent")
+21:52:06.875 'b' reply: ack line 'ZDIAG bootloader' seen=True, port lost after the send=True (the firmware prints the line ~100 ms before it reboots, so the line can be lost with the port; the gate is the USB state that follows, not this line)
+21:52:06.887 PASS bootloader of this serial on USB within 30 s (state=boot)
+21:52:06.912 PASS exactly one UF2 drive tied to this serial (drives of serial=[E] all uf2 drives=[E])
+21:52:06.922 PASS exactly one bootloader on USB (count=1)
+21:52:06.931 PASS image md5 (re-checked at copy time) (df108d7ad2009afccfbfbba66b6ad093)
+21:52:06.945 copy attempt (mock) C:\T\coron_R-bt4.uf2 -> E:
+21:52:06.954 DEVICE-OP copied (mock) C:\T\coron_R-bt4.uf2 -> E:
+21:52:06.962 PASS copy raised no error (to E)
+21:52:06.972 PASS UF2 drive vanished within 30 s (image taken) (drive E)
+21:52:06.980 PASS device back as app within 90 s (state=app)
+----- console COM5 send='' read=0s exit=0 timed_out=False deadline=20s -----
+[calib-io] opened COM5 at 21:52:07.375
+[calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 21:52:07.401
+ZDIAG begin version=prof1 up_ms=65000 boot=1 reset=0x4
+ZDIAG now count host_conn=1 host_disc=0 split_conn=1 split_disc=0
+ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=1 calib_live=0
+ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00
+ZBOOT last none
+ZBOOT cur a seq=10 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=1
+ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000
+ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0
+ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1
+ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800
+ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100
+ZDIAG end
+[calib-io] dump complete at 21:52:07.408
+[calib-io] closing at 21:52:07.409
+
+----- end console -----
+21:52:07.471 PASS dump present (ZDIAG begin)
+21:52:07.485 dump: ZDIAG begin version=prof1 up_ms=65000 boot=1 reset=0x4 ; ZBOOT lines=9
+21:52:07.497 PASS after flash:dump complete (ZDIAG end line)
+21:52:07.506 PASS after flash:no #TRUNC line (trunc lines=0)
+21:52:07.529 PASS after flash:ring header present (keys=addr,cur,last,ring)
+21:52:07.540 PASS after flash:ring.count present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=1 calib_live=0)
+21:52:07.547 PASS after flash:ring.slots present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=1 calib_live=0)
+21:52:07.554 PASS after flash:ring.dropped present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=1 calib_live=0)
+21:52:07.562 PASS after flash:ring.invalid present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=1 calib_live=0)
+21:52:07.569 PASS after flash:ring.reinit present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=1 calib_live=0)
+21:52:07.576 PASS after flash:ring.calib_live present (ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=1 calib_live=0)
+21:52:07.584 PASS after flash:addr header present (keys=addr,cur,last,ring)
+21:52:07.590 PASS after flash:addr.cur present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+21:52:07.596 PASS after flash:addr.last present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+21:52:07.605 PASS after flash:addr.ring present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+21:52:07.612 PASS after flash:addr.sysq present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+21:52:07.619 PASS after flash:addr.main present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+21:52:07.627 PASS after flash:addr.calib present (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+21:52:07.635 PASS after flash:ring count <= slots (count=0 slots=6)
+21:52:07.645 PASS after flash:incident records == ring count (records=0 count=0)
+21:52:07.652 after flash: last none
+21:52:07.661 PASS after flash:cur present (keys=addr,cur,last,ring)
+21:52:07.672 PASS after flash:cur a line present (lines=a,b,entry1,entry2,us1,us2)
+21:52:07.680 PASS after flash:cur a.seq present (ZBOOT cur a seq=10 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=1)
+21:52:07.687 PASS after flash:cur a.tag present (ZBOOT cur a seq=10 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=1)
+21:52:07.695 PASS after flash:cur a.done present (ZBOOT cur a seq=10 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=1)
+21:52:07.703 PASS after flash:cur a.reason present (ZBOOT cur a seq=10 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=1)
+21:52:07.710 PASS after flash:cur a.phase present (ZBOOT cur a seq=10 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=1)
+21:52:07.718 PASS after flash:cur a.calib present (ZBOOT cur a seq=10 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=1)
+21:52:07.724 PASS after flash:cur a.stage present (ZBOOT cur a seq=10 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=1)
+21:52:07.731 PASS after flash:cur a.reset present (ZBOOT cur a seq=10 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=1)
+21:52:07.740 PASS after flash:cur a.reinit present (ZBOOT cur a seq=10 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=1)
+21:52:07.748 PASS after flash:cur b line present (lines=a,b,entry1,entry2,us1,us2)
+21:52:07.755 PASS after flash:cur b.fix present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+21:52:07.762 PASS after flash:cur b.probes present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+21:52:07.769 PASS after flash:cur b.feeds present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+21:52:07.777 PASS after flash:cur b.loops present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+21:52:07.783 PASS after flash:cur b.lastfeed_us present (ZBOOT cur b fix=0/0/0 probes=30/30 feeds=28 loops=30 lastfeed_us=60000000)
+21:52:07.791 PASS after flash:cur entry1 line present (lines=a,b,entry1,entry2,us1,us2)
+21:52:07.798 PASS after flash:cur entry1.lfstat present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+21:52:07.825 PASS after flash:cur entry1.lfrun present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+21:52:07.833 PASS after flash:cur entry1.lfsrc present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+21:52:07.840 PASS after flash:cur entry1.lfcopy present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+21:52:07.847 PASS after flash:cur entry1.lfev present (ZBOOT cur entry1 lfstat=0x10000 lfrun=1 lfsrc=0x1 lfcopy=0x1 lfev=0)
+21:52:07.855 PASS after flash:cur entry2 line present (lines=a,b,entry1,entry2,us1,us2)
+21:52:07.863 PASS after flash:cur entry2.hfstat present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+21:52:07.871 PASS after flash:cur entry2.hfrun present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+21:52:07.878 PASS after flash:cur entry2.hfev present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+21:52:07.885 PASS after flash:cur entry2.rtc1 present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+21:52:07.892 PASS after flash:cur entry2.usbreg present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+21:52:07.900 PASS after flash:cur entry2.ficr130 present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+21:52:07.907 PASS after flash:cur entry2.ficr134 present (ZBOOT cur entry2 hfstat=0x10001 hfrun=1 hfev=0 rtc1=12345 usbreg=0x3 ficr130=0x8 ficr134=0x1)
+21:52:07.914 PASS after flash:cur us1 line present (lines=a,b,entry1,entry2,us1,us2)
+21:52:07.921 PASS after flash:cur us1.hook present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+21:52:07.928 PASS after flash:cur us1.pk1 present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+21:52:07.936 PASS after flash:cur us1.clk present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+21:52:07.943 PASS after flash:cur us1.pk1end present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+21:52:07.950 PASS after flash:cur us1.sysclk present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+21:52:07.957 PASS after flash:cur us1.post present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+21:52:07.965 PASS after flash:cur us1.app present (ZBOOT cur us1 hook=12 pk1=40 clk=300 pk1end=350 sysclk=400 post=600 app=800)
+21:52:07.972 PASS after flash:cur us2 line present (lines=a,b,entry1,entry2,us1,us2)
+21:52:07.980 PASS after flash:cur us2.usb present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+21:52:07.987 PASS after flash:cur us2.applast present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+21:52:07.996 PASS after flash:cur us2.commit present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+21:52:08.003 PASS after flash:cur us2.mainexit present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+21:52:08.011 PASS after flash:cur us2.probed present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+21:52:08.017 PASS after flash:cur us2.running present (ZBOOT cur us2 usb=1200 applast=1500 commit=2500 mainexit=3900 probed=4000 running=4100)
+21:52:08.028 PASS after flash:cur fire lines all-or-none (fire lines=0)
+21:52:08.035 PASS after flash:ring header reinit == cur reinit (header=1 cur=1)
+21:52:08.046 PASS cur tag=base (bt4-R-10080217)
+21:52:08.054 PASS addr cur=0x2002c818 (ZBOOT addr cur=0x2002c818 last=0x2002c6f4 ring=0x2002c008 sysq=0x20009910 main=0x20009848 calib=0x20005d00)
+21:52:08.061 PASS first boot after the write reached RUNNING (done=1) (ZBOOT cur a seq=10 tag=bt4-R-10080217 done=1 reason=0 phase=1 calib=- stage=12 reset=0x4 reinit=1)
+21:52:08.069 after flash ring: ZBOOT ring count=0 slots=6 dropped=0 invalid=0 reinit=1 calib_live=0
+21:52:08.075 FLASH base RESULT PASS

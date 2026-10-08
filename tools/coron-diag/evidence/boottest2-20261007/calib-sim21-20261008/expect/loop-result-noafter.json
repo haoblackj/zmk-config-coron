@@ -1,0 +1,34 @@
+{
+ "exit": 1,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "0",
+  "t2": "not-run",
+  "t3": "not-run",
+  "restore": "0",
+  "stop": "trial_1_returned_0_but_its_result_is_invalid:_after_snapshot_missing"
+ },
+ "must": [
+  "trial 1 result file not usable \\(after snapshot missing\\): its stages are NOT adopted",
+  "trial 1 .*stages_unknown=True stages_source=trial log stamps only .*op_sent=True image_written_stage=True boot_observed=unknown running_confirmed=unknown completed=unknown",
+  "b sent=1, images written=1 \\(boots after a write\\), boots observed=0, RUNNING confirmed=0, completed without event=0, stages unknown=1",
+  "LOOP FAILED \\| RESTORE PASS"
+ ],
+ "must_not": [
+  {
+   "glob": "trial2-*.log",
+   "re": "."
+  },
+  "completed without event=1",
+  "RUNNING confirmed=1"
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

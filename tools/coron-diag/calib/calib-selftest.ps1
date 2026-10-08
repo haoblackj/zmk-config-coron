@@ -27,5 +27,39 @@ Case 'COM7 instance id, MI_03 (Studio RPC UART)' (Test-ConsoleIface 'USB\VID_1D5
 Case 'HID interface MI_02' (Test-ConsoleIface 'USB\VID_1D50&PID_615E&MI_02\9&168EB68&4&0002') $false
 Case 'MI_00 of another VID/PID' (Test-ConsoleIface 'USB\VID_239A&PID_0045&MI_00\9&1&2&0000') $false
 Case 'MI_000 (not MI_00)' (Test-ConsoleIface 'USB\VID_1D50&PID_615E&MI_000\9&168EB68&4&0000') $false
+Write-Output '--- Test-Uf2Marker (INFO_UF2.TXT on a drive letter; the drive may vanish between two calls)'
+# The state after a UF2 write, reproduced without a device: a drive the session has seen (subst,
+# user level, removed again below) that no longer exists. Join-Path raised DriveNotFound there and
+# the real runs B-min (2026-10-08 21:36) failed in Wait-Uf2Gone on both the base write and the restore.
+$used = @(Get-PSDrive -PSProvider FileSystem | ForEach-Object { $_.Name.ToUpper() })
+$free = @([char[]]'ZYXWVUTSRQPONMLKJIHG' | Where-Object { $used -notcontains [string]$_ })
+if ($free.Count -lt 2) {
+    Case 'two free drive letters for the subst reproduction' $false $true
+} else {
+    $never = [string]$free[1]
+    Case "letter never seen by the session ($never) -> no marker, no exception" (Test-Uf2Marker $never) $false
+    $letter = [string]$free[0]
+    $root = Join-Path ([System.IO.Path]::GetTempPath()) ('calib-selftest-uf2-' + [System.IO.Path]::GetRandomFileName())
+    New-Item -ItemType Directory -Path $root -Force | Out-Null
+    Set-Content -Path (Join-Path $root 'INFO_UF2.TXT') -Value 'UF2 Bootloader (selftest)'
+    try {
+        $null = & subst.exe ($letter + ':') $root 2>&1
+        Case "subst mapped $letter to a folder with the marker (rc=$LASTEXITCODE)" ($LASTEXITCODE -eq 0) $true
+        $null = @(Get-PSDrive -PSProvider FileSystem)   # the session now knows the drive, as after Get-AllUf2Drives
+        Case "mapped drive $letter with the marker -> marker present" (Test-Uf2Marker $letter) $true
+        $null = & subst.exe ($letter + ':') /D 2>&1
+        Case "subst removed $letter (rc=$LASTEXITCODE)" ($LASTEXITCODE -eq 0) $true
+        $joinNull = $false
+        try { $joinNull = ($null -eq (Join-Path ($letter + ':\') 'INFO_UF2.TXT' -ErrorAction SilentlyContinue)) } catch { $joinNull = $true }
+        Case "vanished drive ${letter}: Join-Path yields nothing (the former failure mode)" $joinNull $true
+        $threw = $false; $got = $true
+        try { $got = Test-Uf2Marker $letter } catch { $threw = $true }
+        Case "vanished drive ${letter}: Test-Uf2Marker does not throw" $threw $false
+        Case "vanished drive ${letter}: -> no marker (the drive is gone)" $got $false
+    } finally {
+        & subst.exe ($letter + ':') /D 2>&1 | Out-Null
+        Remove-Item -Path $root -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
 Write-Output ("SELFTEST " + $(if ($fails -eq 0) { 'PASS' } else { "FAIL ($fails)" }))
 if ($fails -eq 0) { exit 0 } else { exit 1 }

@@ -1,0 +1,20 @@
+21:36:08.727 FLASH prod start serial=B17318CDBE9A61B1 file=C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-prod-2725423.uf2
+21:36:08.896 PASS prod image exists (C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-prod-2725423.uf2)
+21:36:08.901 PASS prod image md5 (have=889f3a4816c82bdd4adc253b16f28689 want=889f3a4816c82bdd4adc253b16f28689)
+21:36:10.051 initial state=app
+21:36:10.673 PASS diag port present (ports)
+21:36:14.677 send classification for 'b': True (sent stamp=True, NOT-sent stamp=False, timed_out=False, child exit=0)
+21:36:14.680 DEVICE-OP console sent 'b' (child stamp)
+21:36:14.682 PASS 'b' written by the console child (its pre-send dump complete and without #TRUNC) (child stamp "sent")
+21:36:14.689 'b' reply: ack line 'ZDIAG bootloader' seen=True, port lost after the send=True (the firmware prints the line ~100 ms before it reboots, so the line can be lost with the port; the gate is the USB state that follows, not this line)
+21:36:15.798 PASS bootloader of this serial on USB within 30 s (state=boot)
+21:36:16.844 PASS exactly one UF2 drive tied to this serial (drives of serial=[E] all uf2 drives=[E])
+21:36:17.488 PASS exactly one bootloader on USB (count=1)
+21:36:17.496 PASS image md5 (re-checked at copy time) (889f3a4816c82bdd4adc253b16f28689)
+21:36:34.628 DEVICE-OP copied C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-prod-2725423.uf2 -> E:
+21:36:35.027 PASS copy raised no error (to E)
+21:36:35.081 ERROR 引数が null であるため、パラメーター 'Path' にバインドできません。 at 発生場所 C:\Users\yagu001\AppData\Local\Temp\coron-flash\calib\calib-lib.ps1:261 文字:29
++ ...  (-not (Test-Path (Join-Path ($letter + ':\') 'INFO_UF2.TXT'))) { ret ...
++                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+21:36:35.083 STOPPED before: nothing more (only reading)
+21:36:35.086 FLASH prod RESULT FAIL (1 failed checks)

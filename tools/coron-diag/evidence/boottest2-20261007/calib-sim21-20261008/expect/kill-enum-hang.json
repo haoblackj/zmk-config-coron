@@ -1,0 +1,32 @@
+{
+ "exit": 3,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "0": "0",
+  "1": "0",
+  "2": "0",
+  "3": "2",
+  "4": "TIMEOUT-ALIVE",
+  "5": "not-run",
+  "6": "not-run",
+  "7": "not-run",
+  "8": "not-run",
+  "restore": "not-attempted"
+ },
+ "must": [
+  "kill: phase=enumerate",
+  "termination confirmed=False: kill helper did not return within 20s \\(last phase=enumerate\\)",
+  "4 did not return within 8s: termination NOT confirmed",
+  "RESTORE NOT ATTEMPTED"
+ ],
+ "must_not": [
+  "kill: tree=",
+  "kill: taskkill rc=",
+  "FLASH prod start",
+  {
+   "glob": "flash-prod-*.log",
+   "re": "."
+  }
+ ]
+}

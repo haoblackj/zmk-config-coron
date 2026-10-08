@@ -1,0 +1,15 @@
+﻿21:44:34.452 MOCK scenario \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim21\sim\io-kill-req-hang\1.json
+21:44:34.465 STEP 1 start serial=B17318CDBE9A61B1
+21:44:37.571 deadline 3s passed for pid 42360: terminating through calib-kill.ps1 (deadline 20s for enumeration + request + confirmation)
+21:44:57.613 kill: phase=enumerate pid=42360
+21:44:57.620 kill: tree=[42360]
+21:44:57.628 kill: phase=terminate
+21:44:57.647 termination confirmed=False: kill helper did not return within 20s (last phase=terminate); dropping it with Process.Kill (not a confirmation)
+----- console COM5 send='' read=0s exit= timed_out=True deadline=3s -----
+
+----- end console -----
+21:44:57.690 FAIL console child returned within 3s (timed out; termination NOT confirmed, pids still alive [42360]; sent stamp absent)
+21:44:57.698 ABORT a console child may still be alive and could still write to the port; no further device operation; not performing: nothing (read only)
+21:44:57.710 STOPPED before: nothing (read only)
+21:44:57.717 a console child may still be alive (termination not confirmed): exit 5, the caller must not start any device operation
+21:44:57.724 STEP 1 RESULT FAIL (1 failed checks; a console child may still be alive)

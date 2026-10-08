@@ -1,0 +1,33 @@
+﻿21:44:50.809 MOCK mode: every child gets its scenario file from \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim21\sim\kill-linger
+21:44:50.829 CALIBRATION start serial=B17318CDBE9A61B1
+21:44:50.845 launch pre (deadline 90s)
+21:44:52.278 pre rc=0
+21:44:52.285 launch flash-base (deadline 300s)
+21:44:54.614 flash-base rc=0
+21:44:54.621 launch 0 (deadline 90s)
+21:44:57.650 step 0 PASS
+21:44:57.659 launch 1 (deadline 90s)
+21:45:00.232 step 1 PASS
+21:45:00.240 launch 2 (deadline 240s)
+21:45:04.327 step 2 PASS
+21:45:04.334 launch 3 (deadline 30s)
+21:45:04.842 step 3 SKIP
+21:45:04.849 launch 4 (deadline 8s)
+21:45:12.886 deadline 8s passed for pid 86220: terminating through calib-kill.ps1 (deadline 20s for enumeration + request + confirmation)
+21:45:18.625 kill: phase=enumerate pid=86220
+21:45:18.632 kill: tree=[86220]
+21:45:18.638 kill: phase=terminate
+21:45:18.644 kill: taskkill rc=0: (mock) taskkill NOT invoked: simulated success without effect
+21:45:18.650 kill: phase=confirm
+21:45:18.657 kill: alive=[86220] confirmed=False (after 5 s)
+21:45:18.671 termination confirmed=False (kill helper rc=1; pids still alive: [86220])
+21:45:18.680 4 did not return within 8s: termination NOT confirmed (pids still alive: [86220]); a calibration process may still operate the device
+21:45:18.687 step 4 rc=TIMEOUT-ALIVE
+21:45:18.695 step 5 not run (calibration stopped)
+21:45:18.701 step 6 not run (calibration stopped)
+21:45:18.707 step 7 not run (calibration stopped)
+21:45:18.714 step 8 not run (calibration stopped)
+21:45:18.722 RESTORE NOT ATTEMPTED: a calibration process may still be alive ([86220]); no further device operation. The device is NOT restored to the production image (recorded as a failure; no manual step is requested).
+21:45:18.729 restore FAIL (rc=not-attempted)
+21:45:18.736 CALIBRATION FAIL | RESTORE FAIL
+21:45:18.747 results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=TIMEOUT-ALIVE 5=not-run 6=not-run 7=not-run 8=not-run restore=not-attempted

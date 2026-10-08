@@ -210,6 +210,15 @@ function Wait-Leave-App([int]$seconds) {
 # INFO_UF2.TXT. The caller copies only when exactly one letter comes back (review #8, point 3).
 # The serial match is Test-UsbstorSerial (above; the earlier "\<serial>&<n>" form found nothing
 # on the real PC and stopped the first real run before any copy).
+# Whether <letter>:\INFO_UF2.TXT exists, as a plain string path. Never Join-Path here: Join-Path
+# validates the drive against the session's drive table and raises DriveNotFound (non-terminating,
+# result $null) for a letter the session has seen and that has just vanished, which is exactly the
+# state right after a UF2 write; Test-Path then failed on the $null (real runs B-min, 2026-10-08
+# 21:36, base write AND restore). Any error here means "no marker" (calib-selftest.ps1 reproduces
+# the vanished-drive state with subst).
+function Test-Uf2Marker([string]$letter) {
+    try { return [bool](Test-Path -LiteralPath ($letter + ':\INFO_UF2.TXT') -ErrorAction Stop) } catch { return $false }
+}
 function Get-Uf2DrivesOfSerial() {
     if ($script:Scn) {
         # the mock carries the full USBSTOR instance id of each drive; the real matcher runs on it
@@ -224,7 +233,7 @@ function Get-Uf2DrivesOfSerial() {
             $lds = Get-CimAssociatedInstance -InputObject $p -ResultClassName Win32_LogicalDisk -ErrorAction SilentlyContinue
             foreach ($ld in $lds) {
                 $letter = $ld.DeviceID.TrimEnd(':')
-                if (Test-Path (Join-Path ($letter + ':\') 'INFO_UF2.TXT')) { $out += $letter }
+                if (Test-Uf2Marker $letter) { $out += $letter }
             }
         }
     }
@@ -232,7 +241,7 @@ function Get-Uf2DrivesOfSerial() {
 }
 function Get-AllUf2Drives() {
     if ($script:Scn) { return @($script:Scn.uf2.drives | ForEach-Object { $_.letter }) }
-    return @(Get-PSDrive -PSProvider FileSystem | Where-Object { Test-Path (Join-Path ($_.Name + ':\') 'INFO_UF2.TXT') } | ForEach-Object { $_.Name })
+    return @(Get-PSDrive -PSProvider FileSystem | Where-Object { Test-Uf2Marker $_.Name } | ForEach-Object { $_.Name })
 }
 # Copies $src to the UF2 drive. Returns $true only if the copy raised no error. Never silent.
 function Copy-Uf2([string]$src, [string]$letter) {
@@ -244,7 +253,7 @@ function Copy-Uf2([string]$src, [string]$letter) {
         return $true
     }
     try {
-        Copy-Item -LiteralPath $src -Destination (Join-Path ($letter + ':\') 'firmware.uf2') -Force -ErrorAction Stop
+        Copy-Item -LiteralPath $src -Destination ($letter + ':\firmware.uf2') -Force -ErrorAction Stop   # plain string: see Test-Uf2Marker
         Log "DEVICE-OP copied $src -> ${letter}:"
         return $true
     } catch {
@@ -258,7 +267,7 @@ function Wait-Uf2Gone([string]$letter, [int]$seconds) {
     if ($script:Scn) { return [bool]$script:Scn.uf2.vanish }
     $t0 = Get-Date
     while (((Get-Date) - $t0).TotalSeconds -lt $seconds) {
-        if (-not (Test-Path (Join-Path ($letter + ':\') 'INFO_UF2.TXT'))) { return $true }
+        if (-not (Test-Uf2Marker $letter)) { return $true }
         Start-Sleep -Milliseconds 300
     }
     return $false

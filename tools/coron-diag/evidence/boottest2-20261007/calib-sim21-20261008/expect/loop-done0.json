@@ -1,0 +1,37 @@
+{
+ "exit": 10,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "10",
+  "t2": "not-run",
+  "t3": "not-run",
+  "restore": "0",
+  "stop": "event:_running-not-reached_(trial_1)"
+ },
+ "must": [
+  {
+   "glob": "trial1-*.log",
+   "re": "done=0 \\(RUNNING not reached yet\\) at read 3 of 3"
+  },
+  {
+   "glob": "trial1-*.log",
+   "re": "EVENT after write: the boot never reported done=1"
+  },
+  "RUNNING confirmed=0, completed without event=0"
+ ],
+ "must_not": [
+  {
+   "glob": "trial1-*.log",
+   "re": "TRIAL 1 RESULT OK"
+  }
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

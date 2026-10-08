@@ -1,0 +1,39 @@
+{
+ "exit": 1,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "1",
+  "t2": "not-run",
+  "t3": "not-run",
+  "restore": "0",
+  "stop": "trial_1_failed_(rc=1)"
+ },
+ "must": [
+  {
+   "glob": "trial1-*.log",
+   "re": "copy attempt \\(mock\\)"
+  },
+  {
+   "glob": "trial1-*.log",
+   "re": "copy error \\(mock\\)"
+  },
+  "trial 1 result file not usable \\(result file missing or not JSON\\)",
+  "b sent=1, images written=0 \\(boots after a write\\), boots observed=0, RUNNING confirmed=0, completed without event=0, stages unknown=1"
+ ],
+ "must_not": [
+  {
+   "glob": "trial1-*.log",
+   "re": "DEVICE-OP copied"
+  },
+  "images written=1"
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

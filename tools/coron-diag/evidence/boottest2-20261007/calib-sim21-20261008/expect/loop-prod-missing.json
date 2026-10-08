@@ -1,0 +1,38 @@
+{
+ "exit": 1,
+ "results": {
+  "pre": "1",
+  "t1": "not-run",
+  "t2": "not-run",
+  "t3": "not-run",
+  "restore": "not-needed",
+  "stop": "pre-failed_(rc=1):_nothing_written_to_the_device"
+ },
+ "must": [
+  {
+   "glob": "steppre-*.log",
+   "re": "FAIL production image exists"
+  },
+  "RESTORE NOT NEEDED: no device change was started"
+ ],
+ "must_not": [
+  "FLASH base start",
+  "DEVICE-OP",
+  "\\[calib-io\\] sent",
+  {
+   "glob": "flash-base-*.log",
+   "re": "."
+  },
+  {
+   "glob": "flash-prod-*.log",
+   "re": "."
+  }
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

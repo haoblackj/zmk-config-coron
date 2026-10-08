@@ -1,0 +1,47 @@
+{
+ "exit": 0,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "0",
+  "t2": "0",
+  "t3": "0",
+  "restore": "0",
+  "stop": "all-trials-done"
+ },
+ "must": [
+  {
+   "glob": "trial2-*.log",
+   "re": "'b' reply: ack line 'ZDIAG bootloader' seen=False, port lost after the send=True"
+  },
+  {
+   "glob": "trial2-*.log",
+   "re": "PASS bootloader of this serial on USB within 30 s \\(state=boot\\)"
+  },
+  {
+   "glob": "trial2-*.log",
+   "re": "DEVICE-OP copied"
+  },
+  {
+   "glob": "trial1-*.log",
+   "re": "'b' reply: ack line 'ZDIAG bootloader' seen=True, port lost after the send=True"
+  },
+  "ledger: mode=write trials started=3, b sent=3, images written=3 \\(boots after a write\\), boots observed=3, RUNNING confirmed=3, completed without event=3",
+  "LOOP DONE \\(no event\\) \\| RESTORE PASS"
+ ],
+ "must_not": [
+  "acknowledged",
+  {
+   "glob": "trial2-*.log",
+   "re": "ZDIAG bootloader rc"
+  }
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}

@@ -1,0 +1,46 @@
+{
+ "exit": 10,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "baseline": "0",
+  "t1": "0",
+  "t2": "10",
+  "t3": "not-run",
+  "restore": "0",
+  "stop": "event:_new-incident_(trial_2)"
+ },
+ "must": [
+  {
+   "glob": "trial2-*.log",
+   "re": "EVENT after write: incident records count 0 -> 1"
+  },
+  {
+   "glob": "trial2-*.log",
+   "re": "saved \\[natural\\] ZBOOT inc0 us2"
+  },
+  {
+   "glob": "trial2-*.log",
+   "re": "new natural incident: inc0 seq=2 reason=0"
+  },
+  "LOOP STOPPED ON EVENT \\| RESTORE PASS",
+  {
+   "glob": "flash-prod-*.log",
+   "re": "FLASH prod RESULT PASS"
+  },
+  "images written=2 \\(boots after a write\\), boots observed=2, RUNNING confirmed=1, completed without event=1"
+ ],
+ "must_not": [
+  {
+   "glob": "trial3-*.log",
+   "re": "."
+  }
+ ],
+ "script": "calib-loop.ps1",
+ "args": [
+  "-Mode",
+  "write",
+  "-Dwells",
+  "13,17,26"
+ ]
+}
