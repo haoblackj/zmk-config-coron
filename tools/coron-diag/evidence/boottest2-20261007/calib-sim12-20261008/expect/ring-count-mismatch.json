@@ -1,0 +1,33 @@
+{
+ "exit": 1,
+ "results": {
+  "pre": "0",
+  "flash-base": "0",
+  "0": "1",
+  "1": "not-run",
+  "2": "not-run",
+  "3": "not-run",
+  "4": "not-run",
+  "5": "not-run",
+  "6": "not-run",
+  "7": "not-run",
+  "8": "not-run",
+  "restore": "0"
+ },
+ "must": [
+  {
+   "glob": "step0-*.log",
+   "re": "FAIL before clear:inc0 present"
+  },
+  {
+   "glob": "step0-*.log",
+   "re": "STOPPED before: send 'c'"
+  }
+ ],
+ "must_not": [
+  {
+   "glob": "step0-*.log",
+   "re": "sent 'c'"
+  }
+ ]
+}

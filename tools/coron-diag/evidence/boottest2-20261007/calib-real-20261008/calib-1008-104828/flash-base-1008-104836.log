@@ -1,0 +1,83 @@
+﻿10:48:36.150 FLASH base start serial=B17318CDBE9A61B1 file=C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-bt4.uf2
+10:48:36.213 PASS base image exists (C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-bt4.uf2)
+10:48:36.217 PASS base image md5 (have=df108d7ad2009afccfbfbba66b6ad093 want=df108d7ad2009afccfbfbba66b6ad093)
+10:48:37.006 initial state=app
+10:48:37.883 PASS diag port present (ports)
+----- console COM7 send='b' read=2s exit=2 timed_out=False deadline=22s -----
+[calib-io] opened COM7 at 10:48:39.027
+[calib-io] no dump (no begin mark within 1.5 s) at 10:48:40.552
+[calib-io] NOT sent 'b': the dump before it is incomplete at 10:48:40.553
+[calib-io] closing at 10:48:40.554
+
+----- end console -----
+10:48:40.597 console 'b' NOT sent by the child (exit=2)
+----- console COM5 send='b' read=2s exit=0 timed_out=False deadline=22s -----
+[calib-io] opened COM5 at 10:48:40.890
+ZDIAG begin version=prof1 up_ms=32268 boot=1 reset=0x2
+ZDIAG now count host_conn=2 host_disc=1 split_conn=1 split_disc=0
+ZDIAG ev boot=1 ms=1216 type=split-conn a=6 b=30
+ZDIAG ev boot=1 ms=1985 type=host-conn a=12 b=10
+ZDIAG ev boot=1 ms=2064 type=host-disc a=62 b=0
+ZDIAG ev boot=1 ms=2355 type=split-param a=23 b=7
+ZDIAG ev boot=1 ms=2596 type=host-conn a=12 b=10
+ZDIAG ev boot=1 ms=3936 type=split-param a=6 b=30
+ZPROF snap #1 why=host-conn up_ms=2285
+ZPROF profile 0* addr=50:BB:B5:73:A4:C9 (public) open=0 connected=0
+ZPROF profile 1 addr=7C:70:DB:D6:8E:D5 (public) open=0 connected=0
+ZPROF profile 2 addr=00:00:00:00:00:00 (public) open=1 connected=0
+ZPROF profile 3 addr=00:00:00:00:00:00 (public) open=1 connected=0
+ZPROF bond 7C:70:DB:D6:8E:D5 (public)
+ZPROF bond 50:BB:B5:73:A4:C9 (public)
+ZPROF bond E5:8F:CD:66:97:1D (random)
+ZPROF conn idx=0 role=central state=CONNECTING id=0 dst=FF:FF:FF:FF:FF:FF (public) get_dst=FF:FF:FF:FF:FF:FF (public) sec=1
+ZPROF conn idx=1 role=central state=CONNECTED id=0 dst=E5:8F:CD:66:97:1D (random) get_dst=E5:8F:CD:66:97:1D (random) sec=1
+ZPROF lookup(active) -> none
+ZPROF active_is_connected=0
+ZPROF snap #2 why=host-conn up_ms=2896
+ZPROF profile 0* addr=50:BB:B5:73:A4:C9 (public) open=0 connected=1
+ZPROF profile 1 addr=7C:70:DB:D6:8E:D5 (public) open=0 connected=0
+ZPROF profile 2 addr=00:00:00:00:00:00 (public) open=1 connected=0
+ZPROF profile 3 addr=00:00:00:00:00:00 (public) open=1 connected=0
+ZPROF bond 7C:70:DB:D6:8E:D5 (public)
+ZPROF bond 50:BB:B5:73:A4:C9 (public)
+ZPROF bond E5:8F:CD:66:97:1D (random)
+ZPROF conn idx=0 role=periph state=CONNECTED id=0 dst=50:BB:B5:73:A4:C9 (public) get_dst=50:BB:B5:73:A4:C9 (public) sec=2
+ZPROF conn idx=1 role=central state=CONNECTED id=0 dst=E5:8F:CD:66:97:1D (random) get_dst=E5:8F:CD:66:97:1D (random) sec=2
+ZPROF lookup(active) -> idx=0 state=CONNECTED
+ZPROF active_is_connected=1
+ZDIAG end
+[calib-io] dump complete at 10:48:42.421
+[calib-io] sent 'b' at 10:48:42.423
+ZDIAG bootloader rc=0
+[calib-io] read window over at 10:48:44.477
+[calib-io] closing at 10:48:44.478
+
+----- end console -----
+10:48:44.507 DEVICE-OP console sent 'b' (child stamp)
+10:48:44.512 PASS 'b' written by the console child (its pre-send dump complete and without #TRUNC) (child stamp "sent")
+10:48:44.513 PASS b acknowledged (ZDIAG bootloader)
+10:48:45.528 PASS bootloader of this serial on USB within 30 s (state=boot)
+10:48:46.902 PASS exactly one UF2 drive tied to this serial (drives of serial=[E] all uf2 drives=[E])
+10:48:47.563 PASS exactly one bootloader on USB (count=1)
+10:48:47.569 PASS image md5 (re-checked at copy time) (df108d7ad2009afccfbfbba66b6ad093)
+10:49:04.724 DEVICE-OP copied C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-bt4.uf2 -> E:
+10:49:04.726 PASS copy raised no error (to E)
+10:49:04.730 PASS UF2 drive vanished within 30 s (image taken) (drive E)
+10:49:06.331 PASS device back as app within 90 s (state=app)
+----- console COM5 send='' read=0s exit=0 timed_out=False deadline=20s -----
+[calib-io] opened COM5 at 10:49:07.921
+*** Booting Zephyr OS build 10ba6d0cb38b ***
+[calib-io] no dump (no begin mark within 1.5 s) at 10:49:09.441
+[calib-io] closing at 10:49:09.442
+
+----- end console -----
+----- console COM5 send='' read=0s exit=0 timed_out=False deadline=20s -----
+[calib-io] opened COM5 at 10:49:11.831
+[calib-io] no dump (no begin mark within 1.5 s) at 10:49:13.350
+[calib-io] closing at 10:49:13.352
+
+----- end console -----
+10:49:13.386 FAIL dump present (ZDIAG begin)
+10:49:13.389 ABORT precondition failed: dump present; not performing: nothing more (only reading)
+10:49:13.394 STOPPED before: nothing more (only reading)
+10:49:13.396 FLASH base RESULT FAIL (1 failed checks)

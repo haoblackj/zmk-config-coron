@@ -1,0 +1,1772 @@
+calib-sim 2026-10-08 10:58:31: 40 scenarios, 0 mismatch
+
+| scenario | exit want/got | results | verdict |
+|---|---|---|---|
+| copy-fail | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0 | OK |
+| copy-not-taken | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0 | OK |
+| early-reset | 0/0 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=0 | OK |
+| foreign-uf2 | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0 | OK |
+| gate-b | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0 | OK |
+| gate-c | 1/1 | pre=0 flash-base=0 0=1 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| gate-endbroken | 1/1 | pre=0 flash-base=0 0=1 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| gate-h | 1/1 | pre=0 flash-base=0 0=0 1=0 2=1 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| gate-r | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=1 7=not-run 8=not-run restore=0 | OK |
+| inc-boot-abort | 0/0 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=0 | OK |
+| inc-case | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0 | OK |
+| inc-changed | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0 | OK |
+| inc-missing-line | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0 | OK |
+| inc-no-regs | 1/1 | pre=0 flash-base=0 0=0 1=0 2=1 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| inc-partial-fire | 1/1 | pre=0 flash-base=0 0=1 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| io-hang | 1/1 | pre=0 flash-base=0 0=0 1=1 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| io-kill-req-hang | 3/3 | pre=0 flash-base=0 0=0 1=5 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=not-attempted | OK |
+| kill-enum-hang | 3/3 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=TIMEOUT-ALIVE 5=not-run 6=not-run 7=not-run 8=not-run restore=not-attempted | OK |
+| kill-fail | 3/3 | pre=0 flash-base=0 0=0 1=5 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=not-attempted | OK |
+| kill-linger | 3/3 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=TIMEOUT-ALIVE 5=not-run 6=not-run 7=not-run 8=not-run restore=not-attempted | OK |
+| kill-req-hang | 3/3 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=TIMEOUT-ALIVE 5=not-run 6=not-run 7=not-run 8=not-run restore=not-attempted | OK |
+| missing-end | 1/1 | pre=0 flash-base=0 0=0 1=1 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| missing-field | 1/1 | pre=0 flash-base=0 0=0 1=1 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| mock-badjson | 4/4 | (none) | OK |
+| mock-missing | 4/4 | (none) | OK |
+| no-dump | 1/1 | pre=0 flash-base=0 0=0 1=1 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| no-reset | 1/1 | pre=0 flash-base=0 0=0 1=0 2=1 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| normal | 0/0 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=0 | OK |
+| normal-from-test | 0/0 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=0 | OK |
+| prod-md5 | 3/3 | pre=1 0=not-run 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=1 | OK |
+| prod-missing | 3/3 | pre=1 0=not-run 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=1 | OK |
+| prod-still-test | 2/2 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=1 | OK |
+| prod-trunc | 2/2 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=1 | OK |
+| restore-hang | 2/2 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=TIMEOUT | OK |
+| restore-kill-linger | 2/2 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=TIMEOUT-ALIVE | OK |
+| ring-count-mismatch | 1/1 | pre=0 flash-base=0 0=1 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| step-hang | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=TIMEOUT 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| tree-kill | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=TIMEOUT 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| trunc | 1/1 | pre=0 flash-base=0 0=1 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0 | OK |
+| two-uf2 | 1/1 | pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0 | OK |
+
+=== copy-fail
+    flash-base-1008-105213.log: [calib-io] sent 'b' at 10:52:13.735
+    flash-base-1008-105213.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105213.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105213.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:14.375
+    flash-base-1008-105213.log: FLASH base RESULT PASS
+    flash-prod-1008-105252.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:52.853
+    flash-prod-1008-105252.log: [calib-io] sent 'b' at 10:52:52.862
+    flash-prod-1008-105252.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105252.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105252.log: FLASH prod RESULT PASS
+    step0-1008-105215.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:16.320
+    step0-1008-105215.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:17.473
+    step0-1008-105215.log: [calib-io] sent 'c' at 10:52:17.481
+    step0-1008-105215.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105215.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:18.013
+    step0-1008-105215.log: STEP 0 RESULT PASS
+    step1-1008-105219.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:19.699
+    step1-1008-105219.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:20.804
+    step1-1008-105219.log: STEP 1 RESULT PASS
+    step2-1008-105221.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:22.565
+    step2-1008-105221.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:23.765
+    step2-1008-105221.log: [calib-io] sent 'h' at 10:52:23.773
+    step2-1008-105221.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105221.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:24.359
+    step2-1008-105221.log: STEP 2 RESULT PASS
+    step3-1008-105226.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105226.log: STEP 3 RESULT SKIP
+    step4-1008-105227.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:27.771
+    step4-1008-105227.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:29.887
+    step4-1008-105227.log: [calib-io] sent 'H' at 10:52:29.896
+    step4-1008-105227.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105227.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:30.481
+    step4-1008-105227.log: STEP 4 RESULT PASS
+    step5-1008-105232.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:33.199
+    step5-1008-105232.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:35.326
+    step5-1008-105232.log: [calib-io] sent 'G' at 10:52:35.337
+    step5-1008-105232.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-105232.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:35.925
+    step5-1008-105232.log: STEP 5 RESULT PASS
+    step6-1008-105238.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:39.331
+    step6-1008-105238.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:42.131
+    step6-1008-105238.log: [calib-io] sent 'S' at 10:52:42.142
+    step6-1008-105238.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-105238.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:42.706
+    step6-1008-105238.log: [calib-io] sent 'r' at 10:52:42.717
+    step6-1008-105238.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-105238.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:43.343
+    step6-1008-105238.log: STEP 6 RESULT PASS
+    step7-1008-105246.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:47.447
+    step7-1008-105246.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:51.066
+    step7-1008-105246.log: [calib-io] sent 'S' at 10:52:51.076
+    step7-1008-105246.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-105246.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:51.598
+    step7-1008-105246.log: [calib-io] sent 'b' at 10:52:51.610
+    step7-1008-105246.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-105246.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-105246.log: STOPPED before: nothing more in step 7 (only reading)
+    step7-1008-105246.log: STEP 7 RESULT FAIL (1 failed checks)
+    steppre-1008-105211.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0
+
+=== copy-not-taken
+    flash-base-1008-105213.log: [calib-io] sent 'b' at 10:52:13.734
+    flash-base-1008-105213.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105213.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105213.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:14.372
+    flash-base-1008-105213.log: FLASH base RESULT PASS
+    flash-prod-1008-105251.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:51.681
+    flash-prod-1008-105251.log: [calib-io] sent 'b' at 10:52:51.690
+    flash-prod-1008-105251.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105251.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105251.log: FLASH prod RESULT PASS
+    step0-1008-105215.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:16.322
+    step0-1008-105215.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:17.481
+    step0-1008-105215.log: [calib-io] sent 'c' at 10:52:17.490
+    step0-1008-105215.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105215.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:18.002
+    step0-1008-105215.log: STEP 0 RESULT PASS
+    step1-1008-105219.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:19.696
+    step1-1008-105219.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:20.795
+    step1-1008-105219.log: STEP 1 RESULT PASS
+    step2-1008-105221.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:22.563
+    step2-1008-105221.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:23.748
+    step2-1008-105221.log: [calib-io] sent 'h' at 10:52:23.756
+    step2-1008-105221.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105221.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:24.306
+    step2-1008-105221.log: STEP 2 RESULT PASS
+    step3-1008-105226.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105226.log: STEP 3 RESULT SKIP
+    step4-1008-105227.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:27.582
+    step4-1008-105227.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:29.628
+    step4-1008-105227.log: [calib-io] sent 'H' at 10:52:29.637
+    step4-1008-105227.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105227.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:30.164
+    step4-1008-105227.log: STEP 4 RESULT PASS
+    step5-1008-105232.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:32.800
+    step5-1008-105232.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:34.893
+    step5-1008-105232.log: [calib-io] sent 'G' at 10:52:34.901
+    step5-1008-105232.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-105232.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:35.417
+    step5-1008-105232.log: STEP 5 RESULT PASS
+    step6-1008-105238.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:38.742
+    step6-1008-105238.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:41.388
+    step6-1008-105238.log: [calib-io] sent 'S' at 10:52:41.400
+    step6-1008-105238.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-105238.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:41.957
+    step6-1008-105238.log: [calib-io] sent 'r' at 10:52:41.970
+    step6-1008-105238.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-105238.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:42.524
+    step6-1008-105238.log: STEP 6 RESULT PASS
+    step7-1008-105245.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:46.440
+    step7-1008-105245.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:49.908
+    step7-1008-105245.log: [calib-io] sent 'S' at 10:52:49.918
+    step7-1008-105245.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-105245.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:50.418
+    step7-1008-105245.log: [calib-io] sent 'b' at 10:52:50.428
+    step7-1008-105245.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-105245.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-105245.log: STOPPED before: nothing more in step 7 (only reading)
+    step7-1008-105245.log: STEP 7 RESULT FAIL (1 failed checks)
+    steppre-1008-105211.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0
+
+=== early-reset
+    flash-base-1008-105213.log: [calib-io] sent 'b' at 10:52:13.712
+    flash-base-1008-105213.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105213.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105213.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:14.357
+    flash-base-1008-105213.log: FLASH base RESULT PASS
+    flash-prod-1008-105302.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:02.827
+    flash-prod-1008-105302.log: [calib-io] sent 'b' at 10:53:02.837
+    flash-prod-1008-105302.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105302.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105302.log: FLASH prod RESULT PASS
+    step0-1008-105215.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:16.274
+    step0-1008-105215.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:17.405
+    step0-1008-105215.log: [calib-io] sent 'c' at 10:52:17.413
+    step0-1008-105215.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105215.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:17.897
+    step0-1008-105215.log: STEP 0 RESULT PASS
+    step1-1008-105219.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:19.641
+    step1-1008-105219.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:20.760
+    step1-1008-105219.log: STEP 1 RESULT PASS
+    step2-1008-105221.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:22.565
+    step2-1008-105221.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:23.778
+    step2-1008-105221.log: [calib-io] sent 'h' at 10:52:23.785
+    step2-1008-105221.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105221.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:24.359
+    step2-1008-105221.log: NOTE reset NOT observed directly: the disconnect may have completed before the parent looked (unobserved, not 'no reset'); the verdict rests on the boot number and the incident record
+    step2-1008-105221.log: STEP 2 RESULT PASS
+    step3-1008-105226.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105226.log: STEP 3 RESULT SKIP
+    step4-1008-105227.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:27.774
+    step4-1008-105227.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:29.886
+    step4-1008-105227.log: [calib-io] sent 'H' at 10:52:29.895
+    step4-1008-105227.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105227.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:30.482
+    step4-1008-105227.log: STEP 4 RESULT PASS
+    step5-1008-105232.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:33.199
+    step5-1008-105232.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:35.326
+    step5-1008-105232.log: [calib-io] sent 'G' at 10:52:35.336
+    step5-1008-105232.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-105232.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:35.922
+    step5-1008-105232.log: STEP 5 RESULT PASS
+    step6-1008-105238.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:39.331
+    step6-1008-105238.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:42.134
+    step6-1008-105238.log: [calib-io] sent 'S' at 10:52:42.145
+    step6-1008-105238.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-105238.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:42.706
+    step6-1008-105238.log: [calib-io] sent 'r' at 10:52:42.718
+    step6-1008-105238.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-105238.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:43.344
+    step6-1008-105238.log: STEP 6 RESULT PASS
+    step7-1008-105246.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:47.446
+    step7-1008-105246.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:51.061
+    step7-1008-105246.log: [calib-io] sent 'S' at 10:52:51.072
+    step7-1008-105246.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-105246.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:51.600
+    step7-1008-105246.log: [calib-io] sent 'b' at 10:52:51.611
+    step7-1008-105246.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-105246.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-105246.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:52.220
+    step7-1008-105246.log: STEP 7 RESULT PASS
+    step8-1008-105255.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:56.424
+    step8-1008-105255.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:00.355
+    step8-1008-105255.log: [calib-io] sent 'c' at 10:53:00.368
+    step8-1008-105255.log: DEVICE-OP console sent 'c' (child stamp)
+    step8-1008-105255.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:00.852
+    step8-1008-105255.log: STEP 8 RESULT PASS
+    steppre-1008-105211.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION PASS (step 3 SKIP: pin reset not tested) | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=0
+
+=== foreign-uf2
+    flash-base-1008-105213.log: [calib-io] sent 'b' at 10:52:13.734
+    flash-base-1008-105213.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105213.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105213.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:14.357
+    flash-base-1008-105213.log: FLASH base RESULT PASS
+    flash-prod-1008-105252.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:52.812
+    flash-prod-1008-105252.log: [calib-io] sent 'b' at 10:52:52.821
+    flash-prod-1008-105252.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105252.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105252.log: FLASH prod RESULT PASS
+    step0-1008-105215.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:16.322
+    step0-1008-105215.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:17.459
+    step0-1008-105215.log: [calib-io] sent 'c' at 10:52:17.466
+    step0-1008-105215.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105215.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:17.956
+    step0-1008-105215.log: STEP 0 RESULT PASS
+    step1-1008-105219.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:19.689
+    step1-1008-105219.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:20.777
+    step1-1008-105219.log: STEP 1 RESULT PASS
+    step2-1008-105221.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:22.563
+    step2-1008-105221.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:23.767
+    step2-1008-105221.log: [calib-io] sent 'h' at 10:52:23.776
+    step2-1008-105221.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105221.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:24.357
+    step2-1008-105221.log: STEP 2 RESULT PASS
+    step3-1008-105226.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105226.log: STEP 3 RESULT SKIP
+    step4-1008-105227.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:27.771
+    step4-1008-105227.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:29.887
+    step4-1008-105227.log: [calib-io] sent 'H' at 10:52:29.897
+    step4-1008-105227.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105227.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:30.481
+    step4-1008-105227.log: STEP 4 RESULT PASS
+    step5-1008-105232.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:33.182
+    step5-1008-105232.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:35.326
+    step5-1008-105232.log: [calib-io] sent 'G' at 10:52:35.337
+    step5-1008-105232.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-105232.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:35.926
+    step5-1008-105232.log: STEP 5 RESULT PASS
+    step6-1008-105238.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:39.327
+    step6-1008-105238.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:42.133
+    step6-1008-105238.log: [calib-io] sent 'S' at 10:52:42.143
+    step6-1008-105238.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-105238.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:42.706
+    step6-1008-105238.log: [calib-io] sent 'r' at 10:52:42.718
+    step6-1008-105238.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-105238.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:43.343
+    step6-1008-105238.log: STEP 6 RESULT PASS
+    step7-1008-105246.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:47.446
+    step7-1008-105246.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:51.066
+    step7-1008-105246.log: [calib-io] sent 'S' at 10:52:51.076
+    step7-1008-105246.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-105246.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:51.608
+    step7-1008-105246.log: [calib-io] sent 'b' at 10:52:51.620
+    step7-1008-105246.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-105246.log: STOPPED before: copy the alt image to the UF2 drive
+    step7-1008-105246.log: STEP 7 RESULT FAIL (1 failed checks)
+    steppre-1008-105211.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0
+
+=== gate-b
+    flash-base-1008-105254.log: [calib-io] sent 'b' at 10:52:55.380
+    flash-base-1008-105254.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105254.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105254.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:55.960
+    flash-base-1008-105254.log: FLASH base RESULT PASS
+    flash-prod-1008-105331.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:31.991
+    flash-prod-1008-105331.log: [calib-io] sent 'b' at 10:53:32.000
+    flash-prod-1008-105331.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105331.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105331.log: FLASH prod RESULT PASS
+    step0-1008-105257.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:57.640
+    step0-1008-105257.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:58.739
+    step0-1008-105257.log: [calib-io] sent 'c' at 10:52:58.747
+    step0-1008-105257.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105257.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:59.252
+    step0-1008-105257.log: STEP 0 RESULT PASS
+    step1-1008-105300.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:00.907
+    step1-1008-105300.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:02.040
+    step1-1008-105300.log: STEP 1 RESULT PASS
+    step2-1008-105303.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:03.689
+    step2-1008-105303.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:04.747
+    step2-1008-105303.log: [calib-io] sent 'h' at 10:53:04.755
+    step2-1008-105303.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105303.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:05.254
+    step2-1008-105303.log: STEP 2 RESULT PASS
+    step3-1008-105307.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105307.log: STEP 3 RESULT SKIP
+    step4-1008-105307.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:08.543
+    step4-1008-105307.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:10.555
+    step4-1008-105307.log: [calib-io] sent 'H' at 10:53:10.567
+    step4-1008-105307.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105307.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:11.110
+    step4-1008-105307.log: STEP 4 RESULT PASS
+    step5-1008-105313.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:13.758
+    step5-1008-105313.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:15.737
+    step5-1008-105313.log: [calib-io] sent 'G' at 10:53:15.745
+    step5-1008-105313.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-105313.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:16.255
+    step5-1008-105313.log: STEP 5 RESULT PASS
+    step6-1008-105318.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:19.493
+    step6-1008-105318.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:22.061
+    step6-1008-105318.log: [calib-io] sent 'S' at 10:53:22.071
+    step6-1008-105318.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-105318.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:22.598
+    step6-1008-105318.log: [calib-io] sent 'r' at 10:53:22.607
+    step6-1008-105318.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-105318.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:23.125
+    step6-1008-105318.log: STEP 6 RESULT PASS
+    step7-1008-105326.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:26.894
+    step7-1008-105326.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:30.242
+    step7-1008-105326.log: [calib-io] sent 'S' at 10:53:30.253
+    step7-1008-105326.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-105326.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:30.795
+    step7-1008-105326.log: [calib-io] NOT sent 'b': the dump before it is incomplete at 10:53:30.805
+    step7-1008-105326.log: console 'b' NOT sent by the child (exit=2)
+    step7-1008-105326.log: STOPPED before: send 'b'
+    step7-1008-105326.log: STEP 7 RESULT FAIL (1 failed checks)
+    steppre-1008-105253.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0
+
+=== gate-c
+    flash-base-1008-105255.log: [calib-io] sent 'b' at 10:52:56.564
+    flash-base-1008-105255.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105255.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105255.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:57.183
+    flash-base-1008-105255.log: FLASH base RESULT PASS
+    flash-prod-1008-105300.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:01.373
+    flash-prod-1008-105300.log: [calib-io] sent 'b' at 10:53:01.381
+    flash-prod-1008-105300.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105300.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105300.log: FLASH prod RESULT PASS
+    step0-1008-105258.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:58.941
+    step0-1008-105258.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:00.098
+    step0-1008-105258.log: [calib-io] NOT sent 'c': the dump before it has a #TRUNC line at 10:53:00.105
+    step0-1008-105258.log: console 'c' NOT sent by the child (exit=2)
+    step0-1008-105258.log: STOPPED before: send 'c' (clear the ring)
+    step0-1008-105258.log: STEP 0 RESULT FAIL (1 failed checks)
+    steppre-1008-105254.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=1 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== gate-endbroken
+    flash-base-1008-105255.log: [calib-io] sent 'b' at 10:52:56.566
+    flash-base-1008-105255.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105255.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105255.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:57.183
+    flash-base-1008-105255.log: FLASH base RESULT PASS
+    flash-prod-1008-105300.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:01.363
+    flash-prod-1008-105300.log: [calib-io] sent 'b' at 10:53:01.371
+    flash-prod-1008-105300.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105300.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105300.log: FLASH prod RESULT PASS
+    step0-1008-105258.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:52:58.941
+    step0-1008-105258.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:00.099
+    step0-1008-105258.log: [calib-io] NOT sent 'c': the dump before it is incomplete at 10:53:00.106
+    step0-1008-105258.log: console 'c' NOT sent by the child (exit=2)
+    step0-1008-105258.log: STOPPED before: send 'c' (clear the ring)
+    step0-1008-105258.log: STEP 0 RESULT FAIL (1 failed checks)
+    steppre-1008-105254.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=1 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== gate-h
+    flash-base-1008-105304.log: [calib-io] sent 'b' at 10:53:05.212
+    flash-base-1008-105304.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105304.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105304.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:05.836
+    flash-base-1008-105304.log: FLASH base RESULT PASS
+    flash-prod-1008-105315.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:16.224
+    flash-prod-1008-105315.log: [calib-io] sent 'b' at 10:53:16.233
+    flash-prod-1008-105315.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105315.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105315.log: FLASH prod RESULT PASS
+    step0-1008-105307.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:07.660
+    step0-1008-105307.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:08.769
+    step0-1008-105307.log: [calib-io] sent 'c' at 10:53:08.776
+    step0-1008-105307.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105307.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:09.297
+    step0-1008-105307.log: STEP 0 RESULT PASS
+    step1-1008-105310.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:11.000
+    step1-1008-105310.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:12.116
+    step1-1008-105310.log: STEP 1 RESULT PASS
+    step2-1008-105313.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:13.881
+    step2-1008-105313.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:15.027
+    step2-1008-105313.log: [calib-io] NOT sent 'h': the dump before it is incomplete at 10:53:15.036
+    step2-1008-105313.log: console 'h' NOT sent by the child (exit=2)
+    step2-1008-105313.log: STOPPED before: send 'h'
+    step2-1008-105313.log: STEP 2 RESULT FAIL (1 failed checks)
+    steppre-1008-105303.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=1 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== gate-r
+    flash-base-1008-105304.log: [calib-io] sent 'b' at 10:53:05.220
+    flash-base-1008-105304.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105304.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105304.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:05.835
+    flash-base-1008-105304.log: FLASH base RESULT PASS
+    flash-prod-1008-105333.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:33.837
+    flash-prod-1008-105333.log: [calib-io] sent 'b' at 10:53:33.846
+    flash-prod-1008-105333.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105333.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105333.log: FLASH prod RESULT PASS
+    step0-1008-105307.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:07.660
+    step0-1008-105307.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:08.767
+    step0-1008-105307.log: [calib-io] sent 'c' at 10:53:08.775
+    step0-1008-105307.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105307.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:09.297
+    step0-1008-105307.log: STEP 0 RESULT PASS
+    step1-1008-105310.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:11.003
+    step1-1008-105310.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:12.114
+    step1-1008-105310.log: STEP 1 RESULT PASS
+    step2-1008-105313.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:13.882
+    step2-1008-105313.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:15.014
+    step2-1008-105313.log: [calib-io] sent 'h' at 10:53:15.023
+    step2-1008-105313.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105313.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:15.551
+    step2-1008-105313.log: STEP 2 RESULT PASS
+    step3-1008-105317.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105317.log: STEP 3 RESULT SKIP
+    step4-1008-105318.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:18.732
+    step4-1008-105318.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:20.706
+    step4-1008-105318.log: [calib-io] sent 'H' at 10:53:20.715
+    step4-1008-105318.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105318.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:21.239
+    step4-1008-105318.log: STEP 4 RESULT PASS
+    step5-1008-105323.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:23.814
+    step5-1008-105323.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:25.797
+    step5-1008-105323.log: [calib-io] sent 'G' at 10:53:25.806
+    step5-1008-105323.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-105323.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:26.333
+    step5-1008-105323.log: STEP 5 RESULT PASS
+    step6-1008-105329.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:29.627
+    step6-1008-105329.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:32.199
+    step6-1008-105329.log: [calib-io] sent 'S' at 10:53:32.209
+    step6-1008-105329.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-105329.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:32.708
+    step6-1008-105329.log: [calib-io] NOT sent 'r': the dump before it has a #TRUNC line at 10:53:32.717
+    step6-1008-105329.log: console 'r' NOT sent by the child (exit=2)
+    step6-1008-105329.log: STOPPED before: send 'r'
+    step6-1008-105329.log: STEP 6 RESULT FAIL (1 failed checks)
+    steppre-1008-105303.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=1 7=not-run 8=not-run restore=0
+
+=== inc-boot-abort
+    flash-base-1008-105306.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:07.599
+    flash-base-1008-105306.log: [calib-io] sent 'b' at 10:53:07.607
+    flash-base-1008-105306.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105306.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105306.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:08.221
+    flash-base-1008-105306.log: FLASH base RESULT PASS
+    flash-prod-1008-105355.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:56.534
+    flash-prod-1008-105355.log: [calib-io] sent 'b' at 10:53:56.541
+    flash-prod-1008-105355.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105355.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105355.log: FLASH prod RESULT PASS
+    step0-1008-105310.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:10.717
+    step0-1008-105310.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:12.643
+    step0-1008-105310.log: [calib-io] sent 'c' at 10:53:12.652
+    step0-1008-105310.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105310.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:13.174
+    step0-1008-105310.log: STEP 0 RESULT PASS
+    step1-1008-105314.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:15.168
+    step1-1008-105314.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:16.223
+    step1-1008-105314.log: STEP 1 RESULT PASS
+    step2-1008-105317.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:17.921
+    step2-1008-105317.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:19.010
+    step2-1008-105317.log: [calib-io] sent 'h' at 10:53:19.023
+    step2-1008-105317.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105317.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:19.531
+    step2-1008-105317.log: STEP 2 RESULT PASS
+    step3-1008-105321.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105321.log: STEP 3 RESULT SKIP
+    step4-1008-105322.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:22.799
+    step4-1008-105322.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:24.770
+    step4-1008-105322.log: [calib-io] sent 'H' at 10:53:24.780
+    step4-1008-105322.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105322.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:25.304
+    step4-1008-105322.log: STEP 4 RESULT PASS
+    step5-1008-105327.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:27.884
+    step5-1008-105327.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:29.889
+    step5-1008-105327.log: [calib-io] sent 'G' at 10:53:29.899
+    step5-1008-105327.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-105327.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:30.457
+    step5-1008-105327.log: STEP 5 RESULT PASS
+    step6-1008-105333.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:33.722
+    step6-1008-105333.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:36.233
+    step6-1008-105333.log: [calib-io] sent 'S' at 10:53:36.243
+    step6-1008-105333.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-105333.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:36.742
+    step6-1008-105333.log: [calib-io] sent 'r' at 10:53:36.751
+    step6-1008-105333.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-105333.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:37.279
+    step6-1008-105333.log: STEP 6 RESULT PASS
+    step7-1008-105340.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:41.139
+    step7-1008-105340.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:44.508
+    step7-1008-105340.log: [calib-io] sent 'S' at 10:53:44.519
+    step7-1008-105340.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-105340.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:45.027
+    step7-1008-105340.log: [calib-io] sent 'b' at 10:53:45.038
+    step7-1008-105340.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-105340.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-105340.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:45.619
+    step7-1008-105340.log: STEP 7 RESULT PASS
+    step8-1008-105349.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:50.033
+    step8-1008-105349.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:54.054
+    step8-1008-105349.log: [calib-io] sent 'c' at 10:53:54.066
+    step8-1008-105349.log: DEVICE-OP console sent 'c' (child stamp)
+    step8-1008-105349.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:54.561
+    step8-1008-105349.log: STEP 8 RESULT PASS
+    steppre-1008-105304.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:05.345
+    steppre-1008-105304.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION PASS (step 3 SKIP: pin reset not tested) | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=0
+
+=== inc-case
+    flash-base-1008-105319.log: [calib-io] sent 'b' at 10:53:20.016
+    flash-base-1008-105319.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105319.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105319.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:20.615
+    flash-base-1008-105319.log: FLASH base RESULT PASS
+    flash-prod-1008-105359.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:00.534
+    flash-prod-1008-105359.log: [calib-io] sent 'b' at 10:54:00.544
+    flash-prod-1008-105359.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105359.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105359.log: FLASH prod RESULT PASS
+    step0-1008-105321.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:22.401
+    step0-1008-105321.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:23.488
+    step0-1008-105321.log: [calib-io] sent 'c' at 10:53:23.496
+    step0-1008-105321.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105321.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:23.979
+    step0-1008-105321.log: STEP 0 RESULT PASS
+    step1-1008-105325.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:25.630
+    step1-1008-105325.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:26.686
+    step1-1008-105325.log: STEP 1 RESULT PASS
+    step2-1008-105327.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:28.355
+    step2-1008-105327.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:29.459
+    step2-1008-105327.log: [calib-io] sent 'h' at 10:53:29.468
+    step2-1008-105327.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105327.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:29.992
+    step2-1008-105327.log: STEP 2 RESULT PASS
+    step3-1008-105332.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105332.log: STEP 3 RESULT SKIP
+    step4-1008-105332.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:33.215
+    step4-1008-105332.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:35.150
+    step4-1008-105332.log: [calib-io] sent 'H' at 10:53:35.160
+    step4-1008-105332.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105332.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:35.684
+    step4-1008-105332.log: STEP 4 RESULT PASS
+    step5-1008-105337.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:38.255
+    step5-1008-105337.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:40.346
+    step5-1008-105337.log: [calib-io] sent 'G' at 10:53:40.356
+    step5-1008-105337.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-105337.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:40.872
+    step5-1008-105337.log: STEP 5 RESULT PASS
+    step6-1008-105343.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:44.186
+    step6-1008-105343.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:46.719
+    step6-1008-105343.log: [calib-io] sent 'S' at 10:53:46.731
+    step6-1008-105343.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-105343.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:47.221
+    step6-1008-105343.log: [calib-io] sent 'r' at 10:53:47.231
+    step6-1008-105343.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-105343.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:47.750
+    step6-1008-105343.log: STEP 6 RESULT PASS
+    step7-1008-105351.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:51.565
+    step7-1008-105351.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:54.934
+    step7-1008-105351.log: [calib-io] sent 'S' at 10:53:54.946
+    step7-1008-105351.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-105351.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:55.474
+    step7-1008-105351.log: [calib-io] sent 'b' at 10:53:55.484
+    step7-1008-105351.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-105351.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-105351.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:56.056
+    step7-1008-105351.log: STEP 7 RESULT FAIL (1 failed checks)
+    steppre-1008-105318.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0
+
+=== inc-changed
+    flash-base-1008-105335.log: [calib-io] sent 'b' at 10:53:35.684
+    flash-base-1008-105335.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105335.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105335.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:36.290
+    flash-base-1008-105335.log: FLASH base RESULT PASS
+    flash-prod-1008-105415.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:16.336
+    flash-prod-1008-105415.log: [calib-io] sent 'b' at 10:54:16.344
+    flash-prod-1008-105415.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105415.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105415.log: FLASH prod RESULT PASS
+    step0-1008-105337.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:38.015
+    step0-1008-105337.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:39.145
+    step0-1008-105337.log: [calib-io] sent 'c' at 10:53:39.153
+    step0-1008-105337.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105337.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:39.660
+    step0-1008-105337.log: STEP 0 RESULT PASS
+    step1-1008-105340.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:41.368
+    step1-1008-105340.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:42.482
+    step1-1008-105340.log: STEP 1 RESULT PASS
+    step2-1008-105343.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:44.186
+    step2-1008-105343.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:45.313
+    step2-1008-105343.log: [calib-io] sent 'h' at 10:53:45.321
+    step2-1008-105343.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105343.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:45.843
+    step2-1008-105343.log: STEP 2 RESULT PASS
+    step3-1008-105348.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105348.log: STEP 3 RESULT SKIP
+    step4-1008-105348.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:49.090
+    step4-1008-105348.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:51.079
+    step4-1008-105348.log: [calib-io] sent 'H' at 10:53:51.089
+    step4-1008-105348.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105348.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:51.611
+    step4-1008-105348.log: STEP 4 RESULT PASS
+    step5-1008-105353.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:54.239
+    step5-1008-105353.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:56.212
+    step5-1008-105353.log: [calib-io] sent 'G' at 10:53:56.222
+    step5-1008-105353.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-105353.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:56.740
+    step5-1008-105353.log: STEP 5 RESULT PASS
+    step6-1008-105359.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:00.050
+    step6-1008-105359.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:02.540
+    step6-1008-105359.log: [calib-io] sent 'S' at 10:54:02.550
+    step6-1008-105359.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-105359.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:03.048
+    step6-1008-105359.log: [calib-io] sent 'r' at 10:54:03.058
+    step6-1008-105359.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-105359.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:03.578
+    step6-1008-105359.log: STEP 6 RESULT PASS
+    step7-1008-105406.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:07.361
+    step7-1008-105406.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:10.703
+    step7-1008-105406.log: [calib-io] sent 'S' at 10:54:10.713
+    step7-1008-105406.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-105406.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:11.279
+    step7-1008-105406.log: [calib-io] sent 'b' at 10:54:11.291
+    step7-1008-105406.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-105406.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-105406.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:11.889
+    step7-1008-105406.log: STEP 7 RESULT FAIL (1 failed checks)
+    steppre-1008-105333.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0
+
+=== inc-missing-line
+    flash-base-1008-105336.log: [calib-io] sent 'b' at 10:53:37.552
+    flash-base-1008-105336.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105336.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105336.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:38.144
+    flash-base-1008-105336.log: FLASH base RESULT PASS
+    flash-prod-1008-105415.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:16.368
+    flash-prod-1008-105415.log: [calib-io] sent 'b' at 10:54:16.376
+    flash-prod-1008-105415.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105415.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105415.log: FLASH prod RESULT PASS
+    step0-1008-105339.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:39.958
+    step0-1008-105339.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:41.053
+    step0-1008-105339.log: [calib-io] sent 'c' at 10:53:41.060
+    step0-1008-105339.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105339.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:41.568
+    step0-1008-105339.log: STEP 0 RESULT PASS
+    step1-1008-105342.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:43.276
+    step1-1008-105342.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:44.323
+    step1-1008-105342.log: STEP 1 RESULT PASS
+    step2-1008-105345.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:46.016
+    step2-1008-105345.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:47.122
+    step2-1008-105345.log: [calib-io] sent 'h' at 10:53:47.130
+    step2-1008-105345.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105345.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:47.659
+    step2-1008-105345.log: STEP 2 RESULT PASS
+    step3-1008-105349.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105349.log: STEP 3 RESULT SKIP
+    step4-1008-105350.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:50.898
+    step4-1008-105350.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:52.888
+    step4-1008-105350.log: [calib-io] sent 'H' at 10:53:52.897
+    step4-1008-105350.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105350.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:53.420
+    step4-1008-105350.log: STEP 4 RESULT PASS
+    step5-1008-105355.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:56.026
+    step5-1008-105355.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:58.019
+    step5-1008-105355.log: [calib-io] sent 'G' at 10:53:58.030
+    step5-1008-105355.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-105355.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:53:58.542
+    step5-1008-105355.log: STEP 5 RESULT PASS
+    step6-1008-105401.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:01.823
+    step6-1008-105401.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:04.278
+    step6-1008-105401.log: [calib-io] sent 'S' at 10:54:04.288
+    step6-1008-105401.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-105401.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:04.784
+    step6-1008-105401.log: [calib-io] sent 'r' at 10:54:04.793
+    step6-1008-105401.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-105401.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:05.332
+    step6-1008-105401.log: STEP 6 RESULT PASS
+    step7-1008-105408.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:09.129
+    step7-1008-105408.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:12.495
+    step7-1008-105408.log: [calib-io] sent 'S' at 10:54:12.506
+    step7-1008-105408.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-105408.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:13.016
+    step7-1008-105408.log: [calib-io] sent 'b' at 10:54:13.027
+    step7-1008-105408.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-105408.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-105408.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:13.673
+    step7-1008-105408.log: STOPPED before: nothing more in step 7 (only reading)
+    step7-1008-105408.log: STEP 7 RESULT FAIL (1 failed checks)
+    steppre-1008-105335.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0
+
+=== inc-no-regs
+    flash-base-1008-105359.log: [calib-io] sent 'b' at 10:54:00.318
+    flash-base-1008-105359.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105359.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105359.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:00.932
+    flash-base-1008-105359.log: FLASH base RESULT PASS
+    flash-prod-1008-105411.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:12.178
+    flash-prod-1008-105411.log: [calib-io] sent 'b' at 10:54:12.187
+    flash-prod-1008-105411.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105411.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105411.log: FLASH prod RESULT PASS
+    step0-1008-105402.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:02.637
+    step0-1008-105402.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:03.761
+    step0-1008-105402.log: [calib-io] sent 'c' at 10:54:03.768
+    step0-1008-105402.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105402.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:04.262
+    step0-1008-105402.log: STEP 0 RESULT PASS
+    step1-1008-105405.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:05.936
+    step1-1008-105405.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:06.997
+    step1-1008-105405.log: STEP 1 RESULT PASS
+    step2-1008-105408.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:08.681
+    step2-1008-105408.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:09.857
+    step2-1008-105408.log: [calib-io] sent 'h' at 10:54:09.865
+    step2-1008-105408.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105408.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:10.399
+    step2-1008-105408.log: STOPPED before: nothing more in step (only reading)
+    step2-1008-105408.log: STEP 2 RESULT FAIL (1 failed checks)
+    steppre-1008-105358.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=1 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== inc-partial-fire
+    flash-base-1008-105403.log: [calib-io] sent 'b' at 10:54:04.320
+    flash-base-1008-105403.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105403.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105403.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:04.926
+    flash-base-1008-105403.log: FLASH base RESULT PASS
+    flash-prod-1008-105407.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:08.476
+    flash-prod-1008-105407.log: [calib-io] sent 'b' at 10:54:08.484
+    flash-prod-1008-105407.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105407.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105407.log: FLASH prod RESULT PASS
+    step0-1008-105406.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:06.661
+    step0-1008-105406.log: STOPPED before: send 'c' (clear the ring)
+    step0-1008-105406.log: STEP 0 RESULT FAIL (1 failed checks)
+    steppre-1008-105402.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=1 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== io-hang
+    flash-base-1008-105411.log: [calib-io] sent 'b' at 10:54:12.393
+    flash-base-1008-105411.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105411.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105411.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:13.016
+    flash-base-1008-105411.log: FLASH base RESULT PASS
+    flash-prod-1008-105426.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:26.633
+    flash-prod-1008-105426.log: [calib-io] sent 'b' at 10:54:26.640
+    flash-prod-1008-105426.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105426.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105426.log: FLASH prod RESULT PASS
+    step0-1008-105414.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:14.689
+    step0-1008-105414.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:15.785
+    step0-1008-105414.log: [calib-io] sent 'c' at 10:54:15.793
+    step0-1008-105414.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105414.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:16.276
+    step0-1008-105414.log: STEP 0 RESULT PASS
+    step1-1008-105417.log: FAIL console child returned within 3s (timed out; killed with its process tree, termination confirmed; sent stamp absent)
+    step1-1008-105417.log: FAIL console child returned within 3s (timed out; killed with its process tree, termination confirmed; sent stamp absent)
+    step1-1008-105417.log: STOPPED before: nothing (read only)
+    step1-1008-105417.log: STEP 1 RESULT FAIL (3 failed checks)
+    steppre-1008-105410.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=1 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== io-kill-req-hang
+    flash-base-1008-105415.log: [calib-io] sent 'b' at 10:54:15.960
+    flash-base-1008-105415.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105415.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105415.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:16.544
+    flash-base-1008-105415.log: FLASH base RESULT PASS
+    step0-1008-105417.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:18.241
+    step0-1008-105417.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:19.221
+    step0-1008-105417.log: [calib-io] sent 'c' at 10:54:19.229
+    step0-1008-105417.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105417.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:19.687
+    step0-1008-105417.log: STEP 0 RESULT PASS
+    step1-1008-105420.log: termination confirmed=False: kill helper did not return within 20s (last phase=terminate); dropping it with Process.Kill (not a confirmation)
+    step1-1008-105420.log: FAIL console child returned within 3s (timed out; termination NOT confirmed, pids still alive [88240]; sent stamp absent)
+    step1-1008-105420.log: STOPPED before: nothing (read only)
+    step1-1008-105420.log: STEP 1 RESULT FAIL (1 failed checks; a console child may still be alive)
+    steppre-1008-105414.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore FAIL (rc=not-attempted)
+    summary.log: CALIBRATION FAIL | RESTORE FAIL
+    summary.log: results: pre=0 flash-base=0 0=0 1=5 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=not-attempted
+
+=== kill-enum-hang
+    flash-base-1008-105419.log: [calib-io] sent 'b' at 10:54:19.996
+    flash-base-1008-105419.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105419.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105419.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:20.598
+    flash-base-1008-105419.log: FLASH base RESULT PASS
+    step0-1008-105421.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:22.299
+    step0-1008-105421.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:23.342
+    step0-1008-105421.log: [calib-io] sent 'c' at 10:54:23.351
+    step0-1008-105421.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105421.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:23.827
+    step0-1008-105421.log: STEP 0 RESULT PASS
+    step1-1008-105424.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:25.406
+    step1-1008-105424.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:26.401
+    step1-1008-105424.log: STEP 1 RESULT PASS
+    step2-1008-105427.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:27.950
+    step2-1008-105427.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:28.946
+    step2-1008-105427.log: [calib-io] sent 'h' at 10:54:28.953
+    step2-1008-105427.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105427.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:29.450
+    step2-1008-105427.log: STEP 2 RESULT PASS
+    step3-1008-105431.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105431.log: STEP 3 RESULT SKIP
+    step4-1008-105431.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:32.505
+    step4-1008-105431.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:34.387
+    step4-1008-105431.log: [calib-io] sent 'H' at 10:55:34.395
+    step4-1008-105431.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105431.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:34.898
+    step4-1008-105431.log: STEP 4 RESULT PASS
+    steppre-1008-105418.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: termination confirmed=False: kill helper did not return within 20s (last phase=enumerate); dropping it with Process.Kill (not a confirmation)
+    summary.log: 4 did not return within 8s: termination NOT confirmed (pids still alive: [82688]); a calibration process may still operate the device
+    summary.log: restore FAIL (rc=not-attempted)
+    summary.log: CALIBRATION FAIL | RESTORE FAIL
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=TIMEOUT-ALIVE 5=not-run 6=not-run 7=not-run 8=not-run restore=not-attempted
+
+=== kill-fail
+    flash-base-1008-105419.log: [calib-io] sent 'b' at 10:54:19.996
+    flash-base-1008-105419.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105419.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105419.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:20.599
+    flash-base-1008-105419.log: FLASH base RESULT PASS
+    step0-1008-105421.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:22.299
+    step0-1008-105421.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:23.342
+    step0-1008-105421.log: [calib-io] sent 'c' at 10:54:23.351
+    step0-1008-105421.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105421.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:23.828
+    step0-1008-105421.log: STEP 0 RESULT PASS
+    step1-1008-105424.log: FAIL console child returned within 3s (timed out; termination NOT confirmed, pids still alive [85580]; sent stamp absent)
+    step1-1008-105424.log: STOPPED before: nothing (read only)
+    step1-1008-105424.log: STEP 1 RESULT FAIL (1 failed checks; a console child may still be alive)
+    steppre-1008-105418.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore FAIL (rc=not-attempted)
+    summary.log: CALIBRATION FAIL | RESTORE FAIL
+    summary.log: results: pre=0 flash-base=0 0=0 1=5 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=not-attempted
+
+=== kill-linger
+    flash-base-1008-105429.log: [calib-io] sent 'b' at 10:54:30.171
+    flash-base-1008-105429.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105429.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105429.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:30.731
+    flash-base-1008-105429.log: FLASH base RESULT PASS
+    step0-1008-105431.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:32.347
+    step0-1008-105431.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:33.317
+    step0-1008-105431.log: [calib-io] sent 'c' at 10:54:33.325
+    step0-1008-105431.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105431.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:33.769
+    step0-1008-105431.log: STEP 0 RESULT PASS
+    step1-1008-105434.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:35.295
+    step1-1008-105434.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:36.227
+    step1-1008-105434.log: STEP 1 RESULT PASS
+    step2-1008-105437.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:37.764
+    step2-1008-105437.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:38.768
+    step2-1008-105437.log: [calib-io] sent 'h' at 10:54:38.776
+    step2-1008-105437.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105437.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:54:39.249
+    step2-1008-105437.log: STEP 2 RESULT PASS
+    step3-1008-105441.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105441.log: STEP 3 RESULT SKIP
+    step4-1008-105441.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:42.254
+    step4-1008-105441.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:44.165
+    step4-1008-105441.log: [calib-io] sent 'H' at 10:55:44.175
+    step4-1008-105441.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105441.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:44.684
+    step4-1008-105441.log: STEP 4 RESULT PASS
+    steppre-1008-105428.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: 4 did not return within 8s: termination NOT confirmed (pids still alive: [90860]); a calibration process may still operate the device
+    summary.log: restore FAIL (rc=not-attempted)
+    summary.log: CALIBRATION FAIL | RESTORE FAIL
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=TIMEOUT-ALIVE 5=not-run 6=not-run 7=not-run 8=not-run restore=not-attempted
+
+=== kill-req-hang
+    flash-base-1008-105523.log: [calib-io] sent 'b' at 10:55:23.974
+    flash-base-1008-105523.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105523.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105523.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:24.508
+    flash-base-1008-105523.log: FLASH base RESULT PASS
+    step0-1008-105525.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:26.091
+    step0-1008-105525.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:27.072
+    step0-1008-105525.log: [calib-io] sent 'c' at 10:55:27.080
+    step0-1008-105525.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105525.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:27.541
+    step0-1008-105525.log: STEP 0 RESULT PASS
+    step1-1008-105528.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:29.096
+    step1-1008-105528.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:30.054
+    step1-1008-105528.log: STEP 1 RESULT PASS
+    step2-1008-105531.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:31.641
+    step2-1008-105531.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:32.667
+    step2-1008-105531.log: [calib-io] sent 'h' at 10:55:32.674
+    step2-1008-105531.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105531.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:33.208
+    step2-1008-105531.log: STEP 2 RESULT PASS
+    step3-1008-105535.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105535.log: STEP 3 RESULT SKIP
+    step4-1008-105535.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:36.310
+    step4-1008-105535.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:38.310
+    step4-1008-105535.log: [calib-io] sent 'H' at 10:56:38.319
+    step4-1008-105535.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105535.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:38.859
+    step4-1008-105535.log: STEP 4 RESULT PASS
+    steppre-1008-105522.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: termination confirmed=False: kill helper did not return within 20s (last phase=terminate); dropping it with Process.Kill (not a confirmation)
+    summary.log: 4 did not return within 8s: termination NOT confirmed (pids still alive: [59668]); a calibration process may still operate the device
+    summary.log: restore FAIL (rc=not-attempted)
+    summary.log: CALIBRATION FAIL | RESTORE FAIL
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=TIMEOUT-ALIVE 5=not-run 6=not-run 7=not-run 8=not-run restore=not-attempted
+
+=== missing-end
+    flash-base-1008-105527.log: [calib-io] sent 'b' at 10:55:28.162
+    flash-base-1008-105527.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105527.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105527.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:28.718
+    flash-base-1008-105527.log: FLASH base RESULT PASS
+    flash-prod-1008-105533.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:34.567
+    flash-prod-1008-105533.log: [calib-io] sent 'b' at 10:55:34.576
+    flash-prod-1008-105533.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105533.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105533.log: FLASH prod RESULT PASS
+    step0-1008-105529.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:30.312
+    step0-1008-105529.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:31.305
+    step0-1008-105529.log: [calib-io] sent 'c' at 10:55:31.312
+    step0-1008-105529.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105529.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:31.770
+    step0-1008-105529.log: STEP 0 RESULT PASS
+    step1-1008-105532.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:33.389
+    step1-1008-105532.log: STOPPED before: nothing (read only)
+    step1-1008-105532.log: STEP 1 RESULT FAIL (1 failed checks)
+    steppre-1008-105526.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=1 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== missing-field
+    flash-base-1008-105537.log: [calib-io] sent 'b' at 10:55:38.077
+    flash-base-1008-105537.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105537.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105537.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:38.625
+    flash-base-1008-105537.log: FLASH base RESULT PASS
+    flash-prod-1008-105544.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:45.340
+    flash-prod-1008-105544.log: [calib-io] sent 'b' at 10:55:45.348
+    flash-prod-1008-105544.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105544.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105544.log: FLASH prod RESULT PASS
+    step0-1008-105539.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:40.475
+    step0-1008-105539.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:41.571
+    step0-1008-105539.log: [calib-io] sent 'c' at 10:55:41.578
+    step0-1008-105539.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105539.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:42.035
+    step0-1008-105539.log: STEP 0 RESULT PASS
+    step1-1008-105543.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:43.642
+    step1-1008-105543.log: STOPPED before: nothing (read only)
+    step1-1008-105543.log: STEP 1 RESULT FAIL (1 failed checks)
+    steppre-1008-105536.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=1 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== mock-badjson
+    summary.log: ﻿10:55:36.935 MOCK FILE MISSING/INVALID: flash-base.json invalid (':' または '}' ではなく無効なオブジェクトが渡されました。 (8): { this is not json) -> nothing launched (mock mode is all-or-nothing)
+    summary.log: CALIBRATION NOT RUN | RESTORE NOT RUN
+
+=== mock-missing
+    summary.log: ﻿10:55:37.562 MOCK FILE MISSING/INVALID: flash-prod.json missing -> nothing launched (mock mode is all-or-nothing)
+    summary.log: CALIBRATION NOT RUN | RESTORE NOT RUN
+
+=== no-dump
+    flash-base-1008-105539.log: [calib-io] sent 'b' at 10:55:40.590
+    flash-base-1008-105539.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105539.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105539.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:41.229
+    flash-base-1008-105539.log: FLASH base RESULT PASS
+    flash-prod-1008-105547.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:47.662
+    flash-prod-1008-105547.log: [calib-io] sent 'b' at 10:55:47.671
+    flash-prod-1008-105547.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105547.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105547.log: FLASH prod RESULT PASS
+    step0-1008-105542.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:42.863
+    step0-1008-105542.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:43.921
+    step0-1008-105542.log: [calib-io] sent 'c' at 10:55:43.930
+    step0-1008-105542.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105542.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:44.436
+    step0-1008-105542.log: STEP 0 RESULT PASS
+    step1-1008-105545.log: STOPPED before: nothing (read only)
+    step1-1008-105545.log: STEP 1 RESULT FAIL (1 failed checks)
+    steppre-1008-105538.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=1 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== no-reset
+    flash-base-1008-105548.log: [calib-io] sent 'b' at 10:55:48.979
+    flash-base-1008-105548.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105548.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105548.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:49.580
+    flash-base-1008-105548.log: FLASH base RESULT PASS
+    flash-prod-1008-105559.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:00.593
+    flash-prod-1008-105559.log: [calib-io] sent 'b' at 10:56:00.603
+    flash-prod-1008-105559.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105559.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105559.log: FLASH prod RESULT PASS
+    step0-1008-105550.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:51.254
+    step0-1008-105550.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:52.367
+    step0-1008-105550.log: [calib-io] sent 'c' at 10:55:52.375
+    step0-1008-105550.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105550.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:52.874
+    step0-1008-105550.log: STEP 0 RESULT PASS
+    step1-1008-105553.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:54.493
+    step1-1008-105553.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:55.562
+    step1-1008-105553.log: STEP 1 RESULT PASS
+    step2-1008-105556.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:57.241
+    step2-1008-105556.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:58.313
+    step2-1008-105556.log: [calib-io] sent 'h' at 10:55:58.320
+    step2-1008-105556.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105556.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:58.842
+    step2-1008-105556.log: NOTE reset NOT observed directly: the disconnect may have completed before the parent looked (unobserved, not 'no reset'); the verdict rests on the boot number and the incident record
+    step2-1008-105556.log: STOPPED before: nothing more in step (only reading)
+    step2-1008-105556.log: STEP 2 RESULT FAIL (3 failed checks)
+    steppre-1008-105547.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=1 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== normal
+    flash-base-1008-105548.log: [calib-io] sent 'b' at 10:55:48.980
+    flash-base-1008-105548.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105548.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105548.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:49.580
+    flash-base-1008-105548.log: FLASH base RESULT PASS
+    flash-prod-1008-105633.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:34.333
+    flash-prod-1008-105633.log: [calib-io] sent 'b' at 10:56:34.341
+    flash-prod-1008-105633.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105633.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105633.log: FLASH prod RESULT PASS
+    step0-1008-105550.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:51.254
+    step0-1008-105550.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:52.367
+    step0-1008-105550.log: [calib-io] sent 'c' at 10:55:52.374
+    step0-1008-105550.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105550.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:52.874
+    step0-1008-105550.log: STEP 0 RESULT PASS
+    step1-1008-105553.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:54.491
+    step1-1008-105553.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:55.563
+    step1-1008-105553.log: STEP 1 RESULT PASS
+    step2-1008-105556.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:57.241
+    step2-1008-105556.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:58.314
+    step2-1008-105556.log: [calib-io] sent 'h' at 10:55:58.321
+    step2-1008-105556.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105556.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:58.842
+    step2-1008-105556.log: STEP 2 RESULT PASS
+    step3-1008-105600.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105600.log: STEP 3 RESULT SKIP
+    step4-1008-105601.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:01.964
+    step4-1008-105601.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:03.877
+    step4-1008-105601.log: [calib-io] sent 'H' at 10:56:03.885
+    step4-1008-105601.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105601.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:04.375
+    step4-1008-105601.log: STEP 4 RESULT PASS
+    step5-1008-105606.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:06.884
+    step5-1008-105606.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:08.837
+    step5-1008-105606.log: [calib-io] sent 'G' at 10:56:08.847
+    step5-1008-105606.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-105606.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:09.356
+    step5-1008-105606.log: STEP 5 RESULT PASS
+    step6-1008-105611.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:12.479
+    step6-1008-105611.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:14.927
+    step6-1008-105611.log: [calib-io] sent 'S' at 10:56:14.936
+    step6-1008-105611.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-105611.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:15.417
+    step6-1008-105611.log: [calib-io] sent 'r' at 10:56:15.426
+    step6-1008-105611.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-105611.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:15.946
+    step6-1008-105611.log: STEP 6 RESULT PASS
+    step7-1008-105619.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:19.580
+    step7-1008-105619.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:22.749
+    step7-1008-105619.log: [calib-io] sent 'S' at 10:56:22.759
+    step7-1008-105619.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-105619.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:23.242
+    step7-1008-105619.log: [calib-io] sent 'b' at 10:56:23.253
+    step7-1008-105619.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-105619.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-105619.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:23.824
+    step7-1008-105619.log: STEP 7 RESULT PASS
+    step8-1008-105627.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:28.088
+    step8-1008-105627.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:31.954
+    step8-1008-105627.log: [calib-io] sent 'c' at 10:56:31.965
+    step8-1008-105627.log: DEVICE-OP console sent 'c' (child stamp)
+    step8-1008-105627.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:32.425
+    step8-1008-105627.log: STEP 8 RESULT PASS
+    steppre-1008-105547.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION PASS (step 3 SKIP: pin reset not tested) | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=0
+
+=== normal-from-test
+    flash-base-1008-105551.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:52.368
+    flash-base-1008-105551.log: [calib-io] sent 'b' at 10:55:52.377
+    flash-base-1008-105551.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105551.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105551.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:52.940
+    flash-base-1008-105551.log: FLASH base RESULT PASS
+    flash-prod-1008-105639.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:39.785
+    flash-prod-1008-105639.log: [calib-io] sent 'b' at 10:56:39.794
+    flash-prod-1008-105639.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105639.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105639.log: FLASH prod RESULT PASS
+    step0-1008-105554.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:55.450
+    step0-1008-105554.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:57.421
+    step0-1008-105554.log: [calib-io] sent 'c' at 10:55:57.431
+    step0-1008-105554.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105554.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:57.918
+    step0-1008-105554.log: STEP 0 RESULT PASS
+    step1-1008-105559.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:59.798
+    step1-1008-105559.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:00.880
+    step1-1008-105559.log: STEP 1 RESULT PASS
+    step2-1008-105601.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:02.496
+    step2-1008-105601.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:03.583
+    step2-1008-105601.log: [calib-io] sent 'h' at 10:56:03.591
+    step2-1008-105601.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105601.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:04.090
+    step2-1008-105601.log: STEP 2 RESULT PASS
+    step3-1008-105606.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105606.log: STEP 3 RESULT SKIP
+    step4-1008-105606.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:07.218
+    step4-1008-105606.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:09.163
+    step4-1008-105606.log: [calib-io] sent 'H' at 10:56:09.172
+    step4-1008-105606.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105606.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:09.686
+    step4-1008-105606.log: STEP 4 RESULT PASS
+    step5-1008-105611.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:12.158
+    step5-1008-105611.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:14.108
+    step5-1008-105611.log: [calib-io] sent 'G' at 10:56:14.117
+    step5-1008-105611.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-105611.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:14.637
+    step5-1008-105611.log: STEP 5 RESULT PASS
+    step6-1008-105617.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:17.791
+    step6-1008-105617.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:20.233
+    step6-1008-105617.log: [calib-io] sent 'S' at 10:56:20.242
+    step6-1008-105617.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-105617.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:20.725
+    step6-1008-105617.log: [calib-io] sent 'r' at 10:56:20.735
+    step6-1008-105617.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-105617.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:21.220
+    step6-1008-105617.log: STEP 6 RESULT PASS
+    step7-1008-105624.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:24.865
+    step7-1008-105624.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:28.096
+    step7-1008-105624.log: [calib-io] sent 'S' at 10:56:28.107
+    step7-1008-105624.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-105624.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:28.582
+    step7-1008-105624.log: [calib-io] sent 'b' at 10:56:28.592
+    step7-1008-105624.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-105624.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-105624.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:29.162
+    step7-1008-105624.log: STEP 7 RESULT PASS
+    step8-1008-105632.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:33.428
+    step8-1008-105632.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:37.286
+    step8-1008-105632.log: [calib-io] sent 'c' at 10:56:37.299
+    step8-1008-105632.log: DEVICE-OP console sent 'c' (child stamp)
+    step8-1008-105632.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:37.813
+    step8-1008-105632.log: STEP 8 RESULT PASS
+    steppre-1008-105549.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:55:50.096
+    steppre-1008-105549.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION PASS (step 3 SKIP: pin reset not tested) | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=0
+
+=== prod-md5
+    flash-prod-1008-105603.log: STOPPED before: nothing (preflight)
+    flash-prod-1008-105603.log: FLASH prod RESULT FAIL (1 failed checks)
+    steppre-1008-105602.log: STOPPED before: nothing (preflight only)
+    steppre-1008-105602.log: STEP pre RESULT FAIL (1 failed checks)
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore FAIL (rc=1)
+    summary.log: CALIBRATION FAIL | RESTORE FAIL
+    summary.log: results: pre=1 0=not-run 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=1
+
+=== prod-missing
+    flash-prod-1008-105605.log: STOPPED before: nothing (preflight)
+    flash-prod-1008-105605.log: FLASH prod RESULT FAIL (1 failed checks)
+    steppre-1008-105604.log: STOPPED before: nothing (preflight only)
+    steppre-1008-105604.log: STEP pre RESULT FAIL (1 failed checks)
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore FAIL (rc=1)
+    summary.log: CALIBRATION FAIL | RESTORE FAIL
+    summary.log: results: pre=1 0=not-run 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=1
+
+=== prod-still-test
+    flash-base-1008-105607.log: [calib-io] sent 'b' at 10:56:08.329
+    flash-base-1008-105607.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105607.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105607.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:08.913
+    flash-base-1008-105607.log: FLASH base RESULT PASS
+    flash-prod-1008-105653.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:54.194
+    flash-prod-1008-105653.log: [calib-io] sent 'b' at 10:56:54.201
+    flash-prod-1008-105653.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105653.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105653.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:54.808
+    flash-prod-1008-105653.log: FLASH prod RESULT FAIL (1 failed checks)
+    step0-1008-105610.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:10.568
+    step0-1008-105610.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:11.630
+    step0-1008-105610.log: [calib-io] sent 'c' at 10:56:11.638
+    step0-1008-105610.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105610.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:12.108
+    step0-1008-105610.log: STEP 0 RESULT PASS
+    step1-1008-105613.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:13.751
+    step1-1008-105613.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:14.765
+    step1-1008-105613.log: STEP 1 RESULT PASS
+    step2-1008-105615.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:16.407
+    step2-1008-105615.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:17.451
+    step2-1008-105615.log: [calib-io] sent 'h' at 10:56:17.459
+    step2-1008-105615.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105615.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:17.964
+    step2-1008-105615.log: STEP 2 RESULT PASS
+    step3-1008-105620.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105620.log: STEP 3 RESULT SKIP
+    step4-1008-105620.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:21.077
+    step4-1008-105620.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:23.016
+    step4-1008-105620.log: [calib-io] sent 'H' at 10:56:23.026
+    step4-1008-105620.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105620.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:23.518
+    step4-1008-105620.log: STEP 4 RESULT PASS
+    step5-1008-105625.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:26.032
+    step5-1008-105625.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:27.970
+    step5-1008-105625.log: [calib-io] sent 'G' at 10:56:27.978
+    step5-1008-105625.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-105625.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:28.472
+    step5-1008-105625.log: STEP 5 RESULT PASS
+    step6-1008-105631.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:31.703
+    step6-1008-105631.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:34.142
+    step6-1008-105631.log: [calib-io] sent 'S' at 10:56:34.151
+    step6-1008-105631.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-105631.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:34.630
+    step6-1008-105631.log: [calib-io] sent 'r' at 10:56:34.641
+    step6-1008-105631.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-105631.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:35.135
+    step6-1008-105631.log: STEP 6 RESULT PASS
+    step7-1008-105638.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:38.962
+    step7-1008-105638.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:42.252
+    step7-1008-105638.log: [calib-io] sent 'S' at 10:56:42.262
+    step7-1008-105638.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-105638.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:42.767
+    step7-1008-105638.log: [calib-io] sent 'b' at 10:56:42.777
+    step7-1008-105638.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-105638.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-105638.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:43.360
+    step7-1008-105638.log: STEP 7 RESULT PASS
+    step8-1008-105647.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:47.801
+    step8-1008-105647.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:51.711
+    step8-1008-105647.log: [calib-io] sent 'c' at 10:56:51.722
+    step8-1008-105647.log: DEVICE-OP console sent 'c' (child stamp)
+    step8-1008-105647.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:52.221
+    step8-1008-105647.log: STEP 8 RESULT PASS
+    steppre-1008-105606.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore FAIL (rc=1)
+    summary.log: CALIBRATION PASS (step 3 SKIP: pin reset not tested) | RESTORE FAIL
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=1
+
+=== prod-trunc
+    flash-base-1008-105637.log: [calib-io] sent 'b' at 10:56:38.177
+    flash-base-1008-105637.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105637.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105637.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:38.777
+    flash-base-1008-105637.log: FLASH base RESULT PASS
+    flash-prod-1008-105724.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:25.037
+    flash-prod-1008-105724.log: [calib-io] sent 'b' at 10:57:25.047
+    flash-prod-1008-105724.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105724.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105724.log: STOPPED before: nothing more (only reading)
+    flash-prod-1008-105724.log: FLASH prod RESULT FAIL (1 failed checks)
+    step0-1008-105639.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:40.499
+    step0-1008-105639.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:41.591
+    step0-1008-105639.log: [calib-io] sent 'c' at 10:56:41.599
+    step0-1008-105639.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105639.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:42.095
+    step0-1008-105639.log: STEP 0 RESULT PASS
+    step1-1008-105643.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:43.778
+    step1-1008-105643.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:44.845
+    step1-1008-105643.log: STEP 1 RESULT PASS
+    step2-1008-105645.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:46.537
+    step2-1008-105645.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:47.648
+    step2-1008-105645.log: [calib-io] sent 'h' at 10:56:47.656
+    step2-1008-105645.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105645.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:48.174
+    step2-1008-105645.log: STEP 2 RESULT PASS
+    step3-1008-105650.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105650.log: STEP 3 RESULT SKIP
+    step4-1008-105650.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:51.373
+    step4-1008-105650.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:53.364
+    step4-1008-105650.log: [calib-io] sent 'H' at 10:56:53.372
+    step4-1008-105650.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105650.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:53.907
+    step4-1008-105650.log: STEP 4 RESULT PASS
+    step5-1008-105655.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:56.538
+    step5-1008-105655.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:58.545
+    step5-1008-105655.log: [calib-io] sent 'G' at 10:56:58.555
+    step5-1008-105655.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-105655.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:59.081
+    step5-1008-105655.log: STEP 5 RESULT PASS
+    step6-1008-105701.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:02.359
+    step6-1008-105701.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:04.958
+    step6-1008-105701.log: [calib-io] sent 'S' at 10:57:04.968
+    step6-1008-105701.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-105701.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:05.494
+    step6-1008-105701.log: [calib-io] sent 'r' at 10:57:05.504
+    step6-1008-105701.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-105701.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:06.012
+    step6-1008-105701.log: STEP 6 RESULT PASS
+    step7-1008-105709.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:09.863
+    step7-1008-105709.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:13.195
+    step7-1008-105709.log: [calib-io] sent 'S' at 10:57:13.205
+    step7-1008-105709.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-105709.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:13.724
+    step7-1008-105709.log: [calib-io] sent 'b' at 10:57:13.735
+    step7-1008-105709.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-105709.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-105709.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:14.326
+    step7-1008-105709.log: STEP 7 RESULT PASS
+    step8-1008-105718.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:18.765
+    step8-1008-105718.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:22.628
+    step8-1008-105718.log: [calib-io] sent 'c' at 10:57:22.639
+    step8-1008-105718.log: DEVICE-OP console sent 'c' (child stamp)
+    step8-1008-105718.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:23.115
+    step8-1008-105718.log: STEP 8 RESULT PASS
+    steppre-1008-105636.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore FAIL (rc=1)
+    summary.log: CALIBRATION PASS (step 3 SKIP: pin reset not tested) | RESTORE FAIL
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=1
+
+=== restore-hang
+    flash-base-1008-105642.log: [calib-io] sent 'b' at 10:56:43.380
+    flash-base-1008-105642.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105642.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105642.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:44.002
+    flash-base-1008-105642.log: FLASH base RESULT PASS
+    step0-1008-105645.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:45.742
+    step0-1008-105645.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:46.833
+    step0-1008-105645.log: [calib-io] sent 'c' at 10:56:46.839
+    step0-1008-105645.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105645.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:47.370
+    step0-1008-105645.log: STEP 0 RESULT PASS
+    step1-1008-105648.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:49.006
+    step1-1008-105648.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:50.089
+    step1-1008-105648.log: STEP 1 RESULT PASS
+    step2-1008-105651.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:51.769
+    step2-1008-105651.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:52.870
+    step2-1008-105651.log: [calib-io] sent 'h' at 10:56:52.878
+    step2-1008-105651.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105651.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:53.397
+    step2-1008-105651.log: STEP 2 RESULT PASS
+    step3-1008-105655.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105655.log: STEP 3 RESULT SKIP
+    step4-1008-105656.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:56.656
+    step4-1008-105656.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:58.673
+    step4-1008-105656.log: [calib-io] sent 'H' at 10:56:58.682
+    step4-1008-105656.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105656.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:59.200
+    step4-1008-105656.log: STEP 4 RESULT PASS
+    step5-1008-105701.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:01.842
+    step5-1008-105701.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:03.885
+    step5-1008-105701.log: [calib-io] sent 'G' at 10:57:03.894
+    step5-1008-105701.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-105701.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:04.405
+    step5-1008-105701.log: STEP 5 RESULT PASS
+    step6-1008-105707.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:07.791
+    step6-1008-105707.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:10.335
+    step6-1008-105707.log: [calib-io] sent 'S' at 10:57:10.346
+    step6-1008-105707.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-105707.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:10.851
+    step6-1008-105707.log: [calib-io] sent 'r' at 10:57:10.861
+    step6-1008-105707.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-105707.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:11.381
+    step6-1008-105707.log: STEP 6 RESULT PASS
+    step7-1008-105714.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:15.235
+    step7-1008-105714.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:18.625
+    step7-1008-105714.log: [calib-io] sent 'S' at 10:57:18.636
+    step7-1008-105714.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-105714.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:19.164
+    step7-1008-105714.log: [calib-io] sent 'b' at 10:57:19.175
+    step7-1008-105714.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-105714.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-105714.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:19.741
+    step7-1008-105714.log: STEP 7 RESULT PASS
+    step8-1008-105723.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:24.009
+    step8-1008-105723.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:27.854
+    step8-1008-105723.log: [calib-io] sent 'c' at 10:57:27.865
+    step8-1008-105723.log: DEVICE-OP console sent 'c' (child stamp)
+    step8-1008-105723.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:28.352
+    step8-1008-105723.log: STEP 8 RESULT PASS
+    steppre-1008-105641.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: flash-prod did not return within 8s: killed with its process tree, termination confirmed (its log and \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim12\logs-1008-105210\restore-hang\child-flash-prod.out hold what it wrote)
+    summary.log: restore FAIL (rc=TIMEOUT)
+    summary.log: CALIBRATION PASS (step 3 SKIP: pin reset not tested) | RESTORE FAIL
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=TIMEOUT
+
+=== restore-kill-linger
+    flash-base-1008-105642.log: [calib-io] sent 'b' at 10:56:43.559
+    flash-base-1008-105642.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105642.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105642.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:44.178
+    flash-base-1008-105642.log: FLASH base RESULT PASS
+    flash-prod-1008-105729.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:58:30.404
+    flash-prod-1008-105729.log: [calib-io] sent 'b' at 10:58:30.412
+    flash-prod-1008-105729.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105729.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105729.log: FLASH prod RESULT PASS
+    step0-1008-105645.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:45.883
+    step0-1008-105645.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:46.987
+    step0-1008-105645.log: [calib-io] sent 'c' at 10:56:46.996
+    step0-1008-105645.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105645.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:47.515
+    step0-1008-105645.log: STEP 0 RESULT PASS
+    step1-1008-105648.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:49.161
+    step1-1008-105648.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:50.242
+    step1-1008-105648.log: STEP 1 RESULT PASS
+    step2-1008-105651.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:51.932
+    step2-1008-105651.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:53.024
+    step2-1008-105651.log: [calib-io] sent 'h' at 10:56:53.032
+    step2-1008-105651.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105651.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:53.563
+    step2-1008-105651.log: STEP 2 RESULT PASS
+    step3-1008-105655.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105655.log: STEP 3 RESULT SKIP
+    step4-1008-105656.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:56.849
+    step4-1008-105656.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:58.838
+    step4-1008-105656.log: [calib-io] sent 'H' at 10:56:58.848
+    step4-1008-105656.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105656.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:59.364
+    step4-1008-105656.log: STEP 4 RESULT PASS
+    step5-1008-105701.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:02.003
+    step5-1008-105701.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:04.033
+    step5-1008-105701.log: [calib-io] sent 'G' at 10:57:04.042
+    step5-1008-105701.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-105701.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:04.576
+    step5-1008-105701.log: STEP 5 RESULT PASS
+    step6-1008-105707.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:07.979
+    step6-1008-105707.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:10.519
+    step6-1008-105707.log: [calib-io] sent 'S' at 10:57:10.529
+    step6-1008-105707.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-105707.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:11.040
+    step6-1008-105707.log: [calib-io] sent 'r' at 10:57:11.051
+    step6-1008-105707.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-105707.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:11.559
+    step6-1008-105707.log: STEP 6 RESULT PASS
+    step7-1008-105714.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:15.424
+    step7-1008-105714.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:18.796
+    step7-1008-105714.log: [calib-io] sent 'S' at 10:57:18.807
+    step7-1008-105714.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-105714.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:19.322
+    step7-1008-105714.log: [calib-io] sent 'b' at 10:57:19.332
+    step7-1008-105714.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-105714.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4-alt.uf2 -> E:
+    step7-1008-105714.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:19.892
+    step7-1008-105714.log: STEP 7 RESULT PASS
+    step8-1008-105723.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:24.148
+    step8-1008-105723.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:27.994
+    step8-1008-105723.log: [calib-io] sent 'c' at 10:57:28.005
+    step8-1008-105723.log: DEVICE-OP console sent 'c' (child stamp)
+    step8-1008-105723.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:28.491
+    step8-1008-105723.log: STEP 8 RESULT PASS
+    steppre-1008-105641.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: flash-prod did not return within 8s: termination NOT confirmed (pids still alive: [86044]); a calibration process may still operate the device
+    summary.log: restore process not confirmed dead: the device state is unknown and no further device operation is done
+    summary.log: restore FAIL (rc=TIMEOUT-ALIVE)
+    summary.log: CALIBRATION PASS (step 3 SKIP: pin reset not tested) | RESTORE FAIL
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=TIMEOUT-ALIVE
+
+=== ring-count-mismatch
+    flash-base-1008-105657.log: [calib-io] sent 'b' at 10:56:58.547
+    flash-base-1008-105657.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105657.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105657.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:56:59.148
+    flash-base-1008-105657.log: FLASH base RESULT PASS
+    flash-prod-1008-105701.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:02.359
+    flash-prod-1008-105701.log: [calib-io] sent 'b' at 10:57:02.367
+    flash-prod-1008-105701.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105701.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105701.log: FLASH prod RESULT PASS
+    step0-1008-105700.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:00.955
+    step0-1008-105700.log: STOPPED before: send 'c' (clear the ring)
+    step0-1008-105700.log: STEP 0 RESULT FAIL (1 failed checks)
+    steppre-1008-105656.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=1 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== step-hang
+    flash-base-1008-105705.log: [calib-io] sent 'b' at 10:57:06.219
+    flash-base-1008-105705.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105705.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105705.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:06.862
+    flash-base-1008-105705.log: FLASH base RESULT PASS
+    flash-prod-1008-105727.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:28.570
+    flash-prod-1008-105727.log: [calib-io] sent 'b' at 10:57:28.579
+    flash-prod-1008-105727.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105727.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105727.log: FLASH prod RESULT PASS
+    step0-1008-105708.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:08.643
+    step0-1008-105708.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:09.729
+    step0-1008-105708.log: [calib-io] sent 'c' at 10:57:09.738
+    step0-1008-105708.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105708.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:10.236
+    step0-1008-105708.log: STEP 0 RESULT PASS
+    step1-1008-105711.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:11.869
+    step1-1008-105711.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:12.969
+    step1-1008-105711.log: STEP 1 RESULT PASS
+    step2-1008-105714.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:14.695
+    step2-1008-105714.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:15.777
+    step2-1008-105714.log: [calib-io] sent 'h' at 10:57:15.785
+    step2-1008-105714.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105714.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:16.305
+    step2-1008-105714.log: STEP 2 RESULT PASS
+    step3-1008-105718.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105718.log: STEP 3 RESULT SKIP
+    steppre-1008-105704.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: 4 did not return within 8s: killed with its process tree, termination confirmed (its log and \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim12\logs-1008-105210\step-hang\child-4.out hold what it wrote)
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=TIMEOUT 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== tree-kill
+    flash-base-1008-105728.log: [calib-io] sent 'b' at 10:57:28.727
+    flash-base-1008-105728.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105728.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105728.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:29.320
+    flash-base-1008-105728.log: FLASH base RESULT PASS
+    flash-prod-1008-105749.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:50.182
+    flash-prod-1008-105749.log: [calib-io] sent 'b' at 10:57:50.190
+    flash-prod-1008-105749.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105749.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105749.log: FLASH prod RESULT PASS
+    step0-1008-105730.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:30.974
+    step0-1008-105730.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:31.965
+    step0-1008-105730.log: [calib-io] sent 'c' at 10:57:31.973
+    step0-1008-105730.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105730.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:32.427
+    step0-1008-105730.log: STEP 0 RESULT PASS
+    step1-1008-105733.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:33.986
+    step1-1008-105733.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:34.958
+    step1-1008-105733.log: STEP 1 RESULT PASS
+    step2-1008-105736.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:36.567
+    step2-1008-105736.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:37.596
+    step2-1008-105736.log: [calib-io] sent 'h' at 10:57:37.604
+    step2-1008-105736.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105736.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:38.098
+    step2-1008-105736.log: STEP 2 RESULT PASS
+    step3-1008-105740.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105740.log: STEP 3 RESULT SKIP
+    steppre-1008-105726.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: 4 did not return within 8s: killed with its process tree, termination confirmed (its log and \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim12\logs-1008-105210\tree-kill\child-4.out hold what it wrote)
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=TIMEOUT 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== trunc
+    flash-base-1008-105731.log: [calib-io] sent 'b' at 10:57:32.157
+    flash-base-1008-105731.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105731.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105731.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:32.709
+    flash-base-1008-105731.log: FLASH base RESULT PASS
+    flash-prod-1008-105734.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:35.548
+    flash-prod-1008-105734.log: [calib-io] sent 'b' at 10:57:35.555
+    flash-prod-1008-105734.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105734.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105734.log: FLASH prod RESULT PASS
+    step0-1008-105733.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:34.346
+    step0-1008-105733.log: STOPPED before: send 'c' (clear the ring)
+    step0-1008-105733.log: STEP 0 RESULT FAIL (1 failed checks)
+    steppre-1008-105730.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=1 1=not-run 2=not-run 3=not-run 4=not-run 5=not-run 6=not-run 7=not-run 8=not-run restore=0
+
+=== two-uf2
+    flash-base-1008-105738.log: [calib-io] sent 'b' at 10:57:39.148
+    flash-base-1008-105738.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-base-1008-105738.log: DEVICE-OP copy (mock) C:\T\coron_R-bt4.uf2 -> E:
+    flash-base-1008-105738.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:39.704
+    flash-base-1008-105738.log: FLASH base RESULT PASS
+    flash-prod-1008-105811.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:58:11.910
+    flash-prod-1008-105811.log: [calib-io] sent 'b' at 10:58:11.919
+    flash-prod-1008-105811.log: DEVICE-OP console sent 'b' (child stamp)
+    flash-prod-1008-105811.log: DEVICE-OP copy (mock) C:\T\coron_R-prod-2725423.uf2 -> E:
+    flash-prod-1008-105811.log: FLASH prod RESULT PASS
+    step0-1008-105740.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:41.269
+    step0-1008-105740.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:42.235
+    step0-1008-105740.log: [calib-io] sent 'c' at 10:57:42.243
+    step0-1008-105740.log: DEVICE-OP console sent 'c' (child stamp)
+    step0-1008-105740.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:42.687
+    step0-1008-105740.log: STEP 0 RESULT PASS
+    step1-1008-105743.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:44.191
+    step1-1008-105743.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:45.131
+    step1-1008-105743.log: STEP 1 RESULT PASS
+    step2-1008-105746.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:46.675
+    step2-1008-105746.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:47.644
+    step2-1008-105746.log: [calib-io] sent 'h' at 10:57:47.651
+    step2-1008-105746.log: DEVICE-OP console sent 'h' (child stamp)
+    step2-1008-105746.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:48.128
+    step2-1008-105746.log: STEP 2 RESULT PASS
+    step3-1008-105750.log: SKIP step 3 (pin reset by hand): no manual operation in this run; retention across a pin reset stays unverified
+    step3-1008-105750.log: STEP 3 RESULT SKIP
+    step4-1008-105750.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:51.099
+    step4-1008-105750.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:52.850
+    step4-1008-105750.log: [calib-io] sent 'H' at 10:57:52.859
+    step4-1008-105750.log: DEVICE-OP console sent 'H' (child stamp)
+    step4-1008-105750.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:53.329
+    step4-1008-105750.log: STEP 4 RESULT PASS
+    step5-1008-105755.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:55.624
+    step5-1008-105755.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:57.397
+    step5-1008-105755.log: [calib-io] sent 'G' at 10:57:57.405
+    step5-1008-105755.log: DEVICE-OP console sent 'G' (child stamp)
+    step5-1008-105755.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:57:57.880
+    step5-1008-105755.log: STEP 5 RESULT PASS
+    step6-1008-105800.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:58:00.782
+    step6-1008-105800.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:58:03.010
+    step6-1008-105800.log: [calib-io] sent 'S' at 10:58:03.020
+    step6-1008-105800.log: DEVICE-OP console sent 'S' (child stamp)
+    step6-1008-105800.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:58:03.496
+    step6-1008-105800.log: [calib-io] sent 'r' at 10:58:03.508
+    step6-1008-105800.log: DEVICE-OP console sent 'r' (child stamp)
+    step6-1008-105800.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:58:03.989
+    step6-1008-105800.log: STEP 6 RESULT PASS
+    step7-1008-105806.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:58:07.382
+    step7-1008-105806.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:58:10.312
+    step7-1008-105806.log: [calib-io] sent 'S' at 10:58:10.324
+    step7-1008-105806.log: DEVICE-OP console sent 'S' (child stamp)
+    step7-1008-105806.log: [calib-io] sent 'd' (dump request; no dump within 1.5 s of opening) at 10:58:10.781
+    step7-1008-105806.log: [calib-io] sent 'b' at 10:58:10.791
+    step7-1008-105806.log: DEVICE-OP console sent 'b' (child stamp)
+    step7-1008-105806.log: STOPPED before: copy the alt image to the UF2 drive
+    step7-1008-105806.log: STEP 7 RESULT FAIL (1 failed checks)
+    steppre-1008-105737.log: STEP pre RESULT PASS
+    summary.log: CALIBRATION start serial=B17318CDBE9A61B1
+    summary.log: step 3 SKIP
+    summary.log: restore PASS
+    summary.log: CALIBRATION FAIL | RESTORE PASS
+    summary.log: results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=1 8=not-run restore=0

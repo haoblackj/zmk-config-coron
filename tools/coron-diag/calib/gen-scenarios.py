@@ -101,7 +101,8 @@ def reply(send, rc=0, returned=False):
 
 
 def ex(send, pre, post='', lost=False, hang_s=0, open_error='', stderr='', io_timeout_s=None):
-    e = dict(send=send, pre=pre, post=post, lost=lost)
+    # a test image (ZBOOT lines) has no line control and dumps only on 'd'; the production image dumps on DTR
+    e = dict(send=send, pre=pre, post=post, lost=lost, dump_on_request=('ZBOOT' in pre))
     if hang_s:
         e['hang_s'] = hang_s
     if open_error:
@@ -233,10 +234,10 @@ def add(name, steps, exp, drop=(), raw=None):
 
 # ------------------------------------------------------------------ normal runs
 N = normal(True)
-add('normal', N, expect(0, results(), must=[in_file('steppre-*.log', 'no ZBOOT line'), r"DEVICE-OP copy \(mock\)", 'CALIBRATION PASS',
-                                            in_file('step2-*.log', 'reset observed directly'),
-                                            in_file('step2-*.log', 'inc0 evidence: ZBOOT inc0 fire4')],
-                        must_not=['NOT sent', 'timed out', ' #TRUNC\\s*$']))
+add('normal', N, expect(0, results(),
+                        must=[in_file('steppre-*.log', 'no ZBOOT line'), in_file('step0-*.log', "sent 'd' \\(dump request"), in_file('flash-prod-*.log', 'ZDIAG begin version=prof1'),
+                              r"DEVICE-OP copy \(mock\)", 'CALIBRATION PASS', in_file('step2-*.log', 'reset observed directly'), in_file('step2-*.log', 'inc0 evidence: ZBOOT inc0 fire4')],
+                        must_not=['NOT sent', 'timed out', ' #TRUNC\\s*$', in_file('steppre-*.log', "sent 'd'"), in_file('flash-prod-*-io2.out', "sent 'd'")]))
 NT = normal(False)
 add('normal-from-test', NT, expect(0, results(), must=[in_file('steppre-*.log', 'saved ZBOOT inc0 fire4'), in_file('step0-*.log', 'saved ZBOOT inc0 a ')],
                                    must_not=['NOT sent', 'timed out']))

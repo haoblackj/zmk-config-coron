@@ -177,13 +177,18 @@ function Wait-Leave-App([int]$seconds) {
 # Walks USB device -> USBSTOR disk (its PNPDeviceID carries the USB serial) -> partition ->
 # logical disk, and returns the drive letters whose chain ends at $script:Serial and which carry
 # INFO_UF2.TXT. The caller copies only when exactly one letter comes back (review #8, point 3).
+# The instance id of this bootloader's disk, as read on the real PC (2026-10-08 10:42):
+#   USBSTOR\DISK&VEN_ADAFRUIT&PROD_NRF_UF2&REV_1.0\A&258725EA&0&B17318CDBE9A61B1&0
+# i.e. Windows prefixes the serial with a generated "A&258725EA&0&", so the serial is matched as
+# the element right before the trailing "&<n>", after either "\" or "&" (the earlier
+# "\<serial>&<n>" form found nothing and stopped the first real run before any copy).
 function Get-Uf2DrivesOfSerial() {
     if ($script:Scn) {
         return @($script:Scn.uf2.drives | Where-Object { $_.serial -ceq $script:Serial } | ForEach-Object { $_.letter })
     }
     $out = @()
     $disks = Get-CimInstance Win32_DiskDrive -ErrorAction SilentlyContinue |
-        Where-Object { $_.PNPDeviceID -match "^USBSTOR\\DISK&.*\\$script:Serial&[0-9]+$" }
+        Where-Object { $_.PNPDeviceID -match "^USBSTOR\\DISK&.*(\\|&)$script:Serial&[0-9]+$" }
     foreach ($d in $disks) {
         $parts = Get-CimAssociatedInstance -InputObject $d -ResultClassName Win32_DiskPartition -ErrorAction SilentlyContinue
         foreach ($p in $parts) {

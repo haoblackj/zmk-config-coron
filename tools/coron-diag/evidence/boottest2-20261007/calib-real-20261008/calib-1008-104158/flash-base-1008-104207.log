@@ -1,0 +1,50 @@
+﻿10:42:07.218 FLASH base start serial=B17318CDBE9A61B1 file=C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-bt4.uf2
+10:42:07.284 PASS base image exists (C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-bt4.uf2)
+10:42:07.289 PASS base image md5 (have=df108d7ad2009afccfbfbba66b6ad093 want=df108d7ad2009afccfbfbba66b6ad093)
+10:42:08.082 initial state=app
+10:42:08.937 PASS diag port present (ports)
+----- console COM7 send='b' read=2s exit=2 timed_out=False deadline=22s -----
+[calib-io] opened COM7 at 10:42:10.092
+[calib-io] no dump (no begin mark within 1.5 s) at 10:42:11.615
+[calib-io] NOT sent 'b': the dump before it is incomplete at 10:42:11.616
+[calib-io] closing at 10:42:11.617
+
+----- end console -----
+10:42:11.655 console 'b' NOT sent by the child (exit=2)
+----- console COM5 send='b' read=2s exit=0 timed_out=False deadline=22s -----
+[calib-io] opened COM5 at 10:42:11.944
+ZDIAG begin version=prof1 up_ms=28786756 boot=1 reset=0x2
+ZDIAG now count host_conn=1 host_disc=0 split_conn=1 split_disc=0
+ZDIAG ev boot=1 ms=1250 type=split-conn a=6 b=30
+ZDIAG ev boot=1 ms=2389 type=split-param a=23 b=7
+ZDIAG ev boot=1 ms=7235 type=host-conn a=12 b=30
+ZDIAG ev boot=1 ms=7995 type=split-param a=6 b=30
+ZDIAG ev boot=1 ms=13676 type=host-param a=12 b=10
+ZPROF snap #1 why=host-conn up_ms=7535
+ZPROF profile 0* addr=50:BB:B5:73:A4:C9 (public) open=0 connected=1
+ZPROF profile 1 addr=7C:70:DB:D6:8E:D5 (public) open=0 connected=0
+ZPROF profile 2 addr=00:00:00:00:00:00 (public) open=1 connected=0
+ZPROF profile 3 addr=00:00:00:00:00:00 (public) open=1 connected=0
+ZPROF bond 7C:70:DB:D6:8E:D5 (public)
+ZPROF bond 50:BB:B5:73:A4:C9 (public)
+ZPROF bond E5:8F:CD:66:97:1D (random)
+ZPROF conn idx=0 role=periph state=CONNECTED id=0 dst=50:BB:B5:73:A4:C9 (public) get_dst=50:BB:B5:73:A4:C9 (public) sec=1
+ZPROF conn idx=1 role=central state=CONNECTED id=0 dst=E5:8F:CD:66:97:1D (random) get_dst=E5:8F:CD:66:97:1D (random) sec=2
+ZPROF lookup(active) -> idx=0 state=CONNECTED
+ZPROF active_is_connected=1
+ZDIAG end
+[calib-io] dump complete at 10:42:13.467
+[calib-io] sent 'b' at 10:42:13.469
+ZDIAG bootloader rc=0
+[calib-io] read window over at 10:42:15.515
+[calib-io] closing at 10:42:15.515
+
+----- end console -----
+10:42:15.738 DEVICE-OP console sent 'b' (child stamp)
+10:42:15.741 PASS 'b' written by the console child (its pre-send dump complete and without #TRUNC) (child stamp "sent")
+10:42:15.743 PASS b acknowledged (ZDIAG bootloader)
+10:42:16.774 PASS bootloader of this serial on USB within 30 s (state=boot)
+10:42:18.159 FAIL exactly one UF2 drive tied to this serial (drives of serial=[] all uf2 drives=[E])
+10:42:18.161 ABORT precondition failed: exactly one UF2 drive tied to this serial; not performing: copy the image to the UF2 drive
+10:42:18.169 STOPPED before: copy the image to the UF2 drive
+10:42:18.171 FLASH base RESULT FAIL (1 failed checks)

@@ -84,3 +84,9 @@
 ファームウェアの校正可、第 3 段の SKIP、37 場面の結果はレビューが承認。残った 1 点は「終了処理そのものに期限が無い」（`Get-ProcessTree` の CIM 呼び出しと同期実行の `taskkill` は、戻らなければ 5 秒の確認に到達しない）。
 対応: 列挙、終了要求、確認を専用の子プロセス `calib-kill.ps1` に分離し、司令側（`Invoke-Child`）はそれを 20 秒の期限で待つ。子は段階ごとの進捗を逐次出力するので、戻らなくても到達した段階が残る。期限内に戻って `confirmed=True`（`taskkill` が 0 を返し全 PID が消えた）のときだけ終了確認済み。戻らなければ到達段階を記録し、子を `Process.Kill()` で捨て（Microsoft の文書どおり非同期で待たないので、確認には数えない）、終了未確認として扱う。終了未確認の扱い（段は終了コード 5 か `TIMEOUT-ALIVE`、復帰を試みず `RESTORE NOT ATTEMPTED`、終了コード 3、押下依頼も応答待ちも無し）は前回のまま。
 追加場面: `kill-enum-hang`（列挙が戻らない）、`kill-req-hang`（終了要求が戻らない）、`io-kill-req-hang`（交換の子の終了要求が戻らない）。いずれも司令側が 20 秒で結果を確定し、`RESTORE NOT ATTEMPTED` を残し、後続の命令送信と複写を行わないことを機械照合した。模擬は補助プロセスの該当段階で止まるだけで、列挙と確認の処理は実物。40 場面の記録は `calib-sim11-20261008/`（09:32〜09:39）。
+
+## 実機初回（2026-10-08 10:41〜、レビュー #12 の後）で見つかった 2 件
+記録は `calib-real-20261008/`。どちらも模擬が前提を写していたために模擬では捕まらず、実機の読み取りで確定した。
+1. USBSTOR のインスタンス ID の形: 実機は `USBSTOR\DISK&VEN_ADAFRUIT&PROD_NRF_UF2&REV_1.0\A&258725EA&0&B17318CDBE9A61B1&0`（シリアルの前に `A&258725EA&0&`）。照合を「末尾の `&N` の直前の要素がシリアル（直前が `\` でも `&` でもよい）」に直した（`calib-lib.ps1` の `Get-Uf2DrivesOfSerial`。1 行）。読むだけの確認で `drives of serial=[E]`、ブートローダー 1 台。この修正で本番復帰は通った。
+2. 試験像は DTR で dump しない: bt4/bt4A は `CONFIG_UART_LINE_CTRL` 無効（`coron_R-bt4.config`）で、`diag_min.c` は line control が取れないと「`d` のときだけ dump」になる。本番像は line control ありで開くだけで dump する。子 `calib-io.ps1` は開いて 1.5 秒で dump が無ければ `d`（読み出し要求）を 1 回送るようにした。命令の関門（直前の dump が完全で `#TRUNC` なし）はそのまま。模擬の試験像の交換は「`d` で初めて dump する」缶詰（`dump_on_request`）にし、本番像の交換は従来どおり開くだけで dump する。
+3 回目（10:58:50、両修正入り）で校正 PASS（第 3 段 SKIP）、本番復帰 PASS。実測は `calib-real-20261008/README.md`。

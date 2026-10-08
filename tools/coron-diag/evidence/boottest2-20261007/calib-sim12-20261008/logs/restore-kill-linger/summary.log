@@ -1,0 +1,38 @@
+﻿10:56:41.246 MOCK mode: every child gets its scenario file from \\wsl.localhost\Ubuntu\tmp\claude-1000\-home-yagu001-repo-github-com-haoblackj-zmk-workspace\f1edcf4a-4bc3-45f7-a2ec-c1b2a3233983\scratchpad\calib-sim12\sim\restore-kill-linger
+10:56:41.259 CALIBRATION start serial=B17318CDBE9A61B1
+10:56:41.273 launch pre (deadline 90s)
+10:56:42.523 pre rc=0
+10:56:42.531 launch flash-base (deadline 300s)
+10:56:44.911 flash-base rc=0
+10:56:44.920 launch 0 (deadline 90s)
+10:56:48.149 step 0 PASS
+10:56:48.156 launch 1 (deadline 90s)
+10:56:50.921 step 1 PASS
+10:56:50.928 launch 2 (deadline 240s)
+10:56:55.287 step 2 PASS
+10:56:55.295 launch 3 (deadline 30s)
+10:56:55.845 step 3 SKIP
+10:56:55.853 launch 4 (deadline 150s)
+10:57:00.982 step 4 PASS
+10:57:00.995 launch 5 (deadline 240s)
+10:57:06.890 step 5 PASS
+10:57:06.899 launch 6 (deadline 240s)
+10:57:14.398 step 6 PASS
+10:57:14.405 launch 7 (deadline 400s)
+10:57:23.178 step 7 PASS
+10:57:23.186 launch 8 (deadline 90s)
+10:57:29.449 step 8 PASS
+10:57:29.459 launch flash-prod (deadline 8s)
+10:57:37.498 deadline 8s passed for pid 86044: terminating through calib-kill.ps1 (deadline 20s for enumeration + request + confirmation)
+10:57:43.204 kill: phase=enumerate pid=86044
+10:57:43.211 kill: tree=[86044]
+10:57:43.218 kill: phase=terminate
+10:57:43.225 kill: taskkill rc=0: (mock) taskkill NOT invoked: simulated success without effect
+10:57:43.232 kill: phase=confirm
+10:57:43.239 kill: alive=[86044] confirmed=False (after 5 s)
+10:57:43.253 termination confirmed=False (kill helper rc=1; pids still alive: [86044])
+10:57:43.262 flash-prod did not return within 8s: termination NOT confirmed (pids still alive: [86044]); a calibration process may still operate the device
+10:57:43.269 restore process not confirmed dead: the device state is unknown and no further device operation is done
+10:57:43.276 restore FAIL (rc=TIMEOUT-ALIVE)
+10:57:43.283 CALIBRATION PASS (step 3 SKIP: pin reset not tested) | RESTORE FAIL
+10:57:43.294 results: pre=0 flash-base=0 0=0 1=0 2=0 3=2 4=0 5=0 6=0 7=0 8=0 restore=TIMEOUT-ALIVE

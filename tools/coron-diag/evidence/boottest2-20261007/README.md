@@ -95,9 +95,10 @@ GitHub で読める写しは `haoblackj/zmk-config-coron` の `feat/dya-diagnost
 | 6 | `S` → `r` | `S rc=0` と `returned` を確認してから `r`。`ZDIAG reboot`。復帰後: seq +2、ring count +1、`inc2`: reason=1、calib=S、done=0、stage=6、usb=0、seq=前の seq+1、pc ∈ `diag_spin_forever` |
 | 7 | `d` で既存事故記録の全行を保存 → `S` → `b` → 最適化像を複写 | `S rc=0`/`returned`、`b` 受理、シリアル一致の UF2 ドライブ 1 つ、ブートローダー 1 台、md5 再確認、複写エラーなし、ドライブ消失、app 復帰。dump: cur tag=bt4A-R、addr cur=0x2002c818、seq +2、ring count +1、`inc0`〜`inc2` の全行が 1 文字も変わらず残る（行の欠落も、大文字小文字の違いも FAIL）、`inc3`: tag=bt4A-R、reason=1、calib=S、done=0、stage=6、seq=前の seq+1、pc ∈ 最適化像の `diag_spin_forever`（0x38a08〜）、reinit=0、dropped/invalid 不変 |
 | 8 | `d` で保存 → `c` → `d` | `ring count=0`。本番復帰はこの段に含めない（別スクリプト、上の条件） |
+実機での実施（2026-10-08 10:41〜11:04、3 回目で校正 PASS・本番復帰 PASS。1、2 回目が止まった理由と修正は `calib-real-20261008/README.md` と `review6-fixes.md` の「実機初回」）。
 校正の発火は自然発生の件数に数えない。自動復帰で救えない停止（NVIC 優先度 0 まで抑止、TIMER4 準備前、ブートローダー内）は、この計測器では救えない。
 
-### 模擬試験（実機なし。`calib-sim.py`、2026-10-08 09:32〜09:39。記録は `calib-sim11-20261008/`。レビュー #9 時点の 29 場面は `calib-sim9-20261008/`、レビュー #10 時点の 37 場面は `calib-sim10-20261008/`）
+### 模擬試験（実機なし。`calib-sim.py`、2026-10-08 10:52〜10:58。記録は `calib-sim12-20261008/`（実機初回の 2 件の修正後。試験像の交換は `d` で初めて dump する缶詰）。レビュー #11 時点の 40 場面は `calib-sim11-20261008/`、レビュー #9 時点の 29 場面は `calib-sim9-20261008/`、レビュー #10 時点の 37 場面は `calib-sim10-20261008/`）
 `calib-sim.py` が `gen-scenarios.py` の 40 場面をすべて `calib-all.ps1` の全体実行（事前確認 → 基準像 → 第 0〜8 段 → 本番復帰）として流し、各場面の `expect.json`（終了コード、`results:` 行の全段の値、ログに必ず現れる正規表現と現れてはならない正規表現。ファイル名の glob で段を限定できる）と機械的に照合する。1 つでも不一致なら非ゼロで終わる。模擬は USB 状態、UF2 ドライブ、複写結果、ファイルの md5 を差し替え（PnP も CIM も Copy-Item も呼ばない）、コンソールの子プロセス `calib-io.ps1` は実物を起動してポートだけを缶詰（`-MockFile`）に置き換えるので、子の送信の関門、刻印、期限超過時の強制終了がそのまま試験される。異常場面も全体実行なので、「失敗した段の後の段が `not-run`」「それでも復帰が走り別に判定される」が `results:` 行で確かめられる。
 03:01 の旧版（`calib-sim.sh`、`calib-sim-20261008/`）は単段実行で期待の照合が無かったので、この版で置き換えた。08:12 の版（29 場面）の初回実行で、旧版では見えなかった欠陥を 1 つ捕まえて直した: 子の刻印 `dump incomplete (no ZDIAG end within 4 s)` に文字列 `ZDIAG end` が含まれ、親の「dump 完了」判定（`-cmatch 'ZDIAG end'`）が刻印に当たって PASS になっていた（`no dump (no ZDIAG begin …)` も同様）。判定を行頭アンカー（`(?m)^ZDIAG end\s*$`）にし、刻印の文言から印の文字列を外した。
 40 場面の結果（全部期待どおり。`report.txt`）:

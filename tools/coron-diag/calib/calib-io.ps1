@@ -21,8 +21,9 @@
 # -MockFile <json>: replaces the SerialPort by a canned port (fields: pre = text the device
 # emits before the command, post = text after it, lost = the port vanishes after post,
 # hang_s = block that long inside Open (a child that never returns), open_error = fail to open,
-# stderr = text to print on stderr). Used by the simulation only; the gate and the stamps are
-# the real code paths.
+# stderr = text to print on stderr, dump_on_request = pre is delivered only after a 'd' write,
+# like the test images). Used by the simulation only; the gate and the stamps are the real code
+# paths.
 param([Parameter(Mandatory = $true)][string]$Com, [string]$Send = '', [int]$ReadSeconds = 0, [string]$MockFile = '')
 $script:mock = $null
 function Emit([string]$s) { if ($s) { [Console]::Out.Write($s); [Console]::Out.Flush() } }
@@ -37,10 +38,13 @@ function New-MockPort {
         if ($script:mock.hang_s) { Start-Sleep -Seconds ([int]$script:mock.hang_s) }
     }
     $o | Add-Member -MemberType ScriptMethod -Name Close -Value { $this.IsOpen = $false }
-    $o | Add-Member -MemberType ScriptMethod -Name Write -Value { param($s) $this.phase = 2 }
+    $o | Add-Member -MemberType ScriptMethod -Name Write -Value { param($s)
+        if ($s -ceq 'd' -and $this.phase -le 1) { $this.phase = 5; return }   # dump request -> deliver pre on the next read
+        $this.phase = 2 }
     $o | Add-Member -MemberType ScriptMethod -Name ReadExisting -Value {
         switch ($this.phase) {
-            0 { $this.phase = 1; return [string]$script:mock.pre }
+            0 { $this.phase = 1; if ($script:mock.dump_on_request) { return '' }; return [string]$script:mock.pre }
+            5 { $this.phase = 1; return [string]$script:mock.pre }
             2 { $this.phase = 3; return [string]$script:mock.post }
             3 { if ($script:mock.lost) { $this.phase = 4; throw (New-Object System.IO.IOException 'The device does not recognize the command.') }; return '' }
             default { return '' }
@@ -73,6 +77,21 @@ try {
     Stamp "opened $Com"
     Nap 1500
     ReadChunk
+    if ($text -cnotmatch $BEGIN) {
+        # The test images are built without CONFIG_UART_LINE_CTRL (seen on the real device,
+        # 2026-10-08 10:49): the console cannot see DTR and dumps only on 'd'. 'd' is a read-only
+        # request (the firmware prints the records; nothing changes), so it is sent once here
+        # whenever the open did not produce a dump. The production image dumps on DTR by itself.
+        $sp.Write('d')
+        Stamp "sent 'd' (dump request; no dump within 1.5 s of opening)"
+        $deadline = (Get-Date).AddSeconds(4); $iter = 0
+        while ($text -cnotmatch $BEGIN) {
+            if ($script:mock) { if ($iter -ge 3) { break } } elseif ((Get-Date) -ge $deadline) { break }
+            $iter++
+            Nap 200
+            ReadChunk
+        }
+    }
     if ($text -cmatch $BEGIN) {
         $deadline = (Get-Date).AddSeconds(4); $iter = 0
         while ($text -cnotmatch $END) {

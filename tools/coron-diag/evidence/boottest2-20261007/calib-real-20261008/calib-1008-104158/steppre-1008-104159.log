@@ -1,0 +1,47 @@
+﻿10:41:59.713 STEP pre start serial=B17318CDBE9A61B1
+10:41:59.784 PASS base image exists (C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-bt4.uf2)
+10:41:59.789 PASS base image md5 (have=df108d7ad2009afccfbfbba66b6ad093 want=df108d7ad2009afccfbfbba66b6ad093)
+10:41:59.794 PASS alt image exists (C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-bt4-alt.uf2)
+10:41:59.797 PASS alt image md5 (have=e1e62efeeda0f87a1678a3d53f8151cf want=e1e62efeeda0f87a1678a3d53f8151cf)
+10:41:59.801 PASS production image exists (C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-prod-2725423.uf2)
+10:41:59.804 PASS production image md5 (have=889f3a4816c82bdd4adc253b16f28689 want=889f3a4816c82bdd4adc253b16f28689)
+10:42:01.540 PASS device on USB as app with a diag port (state=app)
+----- console COM7 send='' read=0s exit=0 timed_out=False deadline=20s -----
+[calib-io] opened COM7 at 10:42:03.443
+[calib-io] no dump (no begin mark within 1.5 s) at 10:42:04.964
+[calib-io] closing at 10:42:04.965
+
+----- end console -----
+----- console COM5 send='' read=0s exit=0 timed_out=False deadline=20s -----
+[calib-io] opened COM5 at 10:42:05.341
+*** Booting Zephyr OS build 10ba6d0cb38b ***
+ZDIAG begin version=prof1 up_ms=28780045 boot=1 reset=0x2
+ZDIAG now count host_conn=1 host_disc=0 split_conn=1 split_disc=0
+ZDIAG ev boot=1 ms=1250 type=split-conn a=6 b=30
+ZDIAG ev boot=1 ms=2389 type=split-param a=23 b=7
+ZDIAG ev boot=1 ms=7235 type=host-conn a=12 b=30
+ZDIAG ev boot=1 ms=7995 type=split-param a=6 b=30
+ZDIAG ev boot=1 ms=13676 type=host-param a=12 b=10
+ZPROF snap #1 why=host-conn up_ms=7535
+ZPROF profile 0* addr=50:BB:B5:73:A4:C9 (public) open=0 connected=1
+ZPROF profile 1 addr=7C:70:DB:D6:8E:D5 (public) open=0 connected=0
+ZPROF profile 2 addr=00:00:00:00:00:00 (public) open=1 connected=0
+ZPROF profile 3 addr=00:00:00:00:00:00 (public) open=1 connected=0
+ZPROF bond 7C:70:DB:D6:8E:D5 (public)
+ZPROF bond 50:BB:B5:73:A4:C9 (public)
+ZPROF bond E5:8F:CD:66:97:1D (random)
+ZPROF conn idx=0 role=periph state=CONNECTED id=0 dst=50:BB:B5:73:A4:C9 (public) get_dst=50:BB:B5:73:A4:C9 (public) sec=1
+ZPROF conn idx=1 role=central state=CONNECTED id=0 dst=E5:8F:CD:66:97:1D (random) get_dst=E5:8F:CD:66:97:1D (random) sec=2
+ZPROF lookup(active) -> idx=0 state=CONNECTED
+ZPROF active_is_connected=1
+ZDIAG end
+[calib-io] dump complete at 10:42:06.859
+[calib-io] closing at 10:42:06.859
+
+----- end console -----
+10:42:06.888 PASS preflight:dump present (ZDIAG begin)
+10:42:06.895 PASS preflight:dump complete (ZDIAG end line)
+10:42:06.900 PASS preflight:no #TRUNC line (trunc lines=0)
+10:42:06.903 preflight: no ZBOOT line (the running image has no boot instrument)
+10:42:06.905 preflight: running image answers without ZBOOT lines (no boot instrument; the base image will be written next)
+10:42:06.907 STEP pre RESULT PASS
