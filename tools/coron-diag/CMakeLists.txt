@@ -28,6 +28,15 @@ if(CONFIG_CORON_DIAG_LAB)
     -Wl,--wrap=ticker_start -Wl,--wrap=ticker_stop -Wl,--wrap=ticker_update
     -Wl,--wrap=lll_conn_central_is_abort_cb -Wl,--wrap=lll_conn_peripheral_is_abort_cb
     -Wl,--wrap=lll_conn_abort_cb)
+  # v6: the addresses of lll.c's static preempt bookkeeping (nm of a first-pass build; the RAM
+  # layout does not depend on these constants, so the second pass lands them at the same place;
+  # build-lab-2pass.sh checks that). Without them the record says valid=0.
+  if(DEFINED LAB_ADDR_PREEMPT_REQ)
+    target_compile_definitions(app PRIVATE LAB_ADDR_PREEMPT_REQ=${LAB_ADDR_PREEMPT_REQ}
+      LAB_ADDR_PREEMPT_ACK=${LAB_ADDR_PREEMPT_ACK} LAB_ADDR_PREEMPT_START_REQ=${LAB_ADDR_PREEMPT_START_REQ}
+      LAB_ADDR_PREEMPT_START_ACK=${LAB_ADDR_PREEMPT_START_ACK} LAB_ADDR_PREEMPT_STOP_REQ=${LAB_ADDR_PREEMPT_STOP_REQ}
+      LAB_ADDR_PREEMPT_STOP_ACK=${LAB_ADDR_PREEMPT_STOP_ACK} LAB_ADDR_TICKS_AT_PREEMPT=${LAB_ADDR_TICKS_AT_PREEMPT})
+  endif()
   set(_ctlr ${ZEPHYR_BASE}/subsys/bluetooth/controller)
   # TARGET_DIRECTORY app: source properties are directory-scoped, and 'app' lives in zmk/app
   set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/src/diag_lab_ctlr.c TARGET_DIRECTORY app PROPERTIES

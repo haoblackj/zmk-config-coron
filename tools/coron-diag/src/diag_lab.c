@@ -59,7 +59,7 @@
 
 #include "diag_lab.h"
 
-#define LAB_MAGIC 0x3542414cu /* 'LAB5' */
+#define LAB_MAGIC 0x3642414cu /* 'LAB6' */
 #define LAB_ADDR 0x2002d000u
 #define LAB_SIZE 0xb000u
 #define PERIOD_US 1000u
@@ -282,6 +282,7 @@ BUILD_ASSERT(DT_REG_ADDR(DT_NODELABEL(diagrec)) == 0x2002c000 && DT_REG_SIZE(DT_
 #define REC ((struct labrec *)LAB_ADDR)
 
 uint32_t diag_entry_seq(void);
+uint32_t ticker_ticks_now_get(void);
 uint32_t diag_min_events_tail(struct ev_out *dst, uint32_t max);
 const char *diag_min_ev_name(uint8_t type);
 
@@ -1003,6 +1004,9 @@ static void print_crash(void (*out)(const char *fmt, ...), const struct crash_re
     out("ZDIAG lab %sstat max=%u over=%u/%u/%u/%u skipped=%u nlat=%u ticker=%u rtc0=%u nvmc=%x/%x", tag,
         c->max_us, c->over[0], c->over[1], c->over[2], c->over[3], c->skipped, c->n_lat, c->ctlr.ticker_now,
         c->ctlr.rtc0_counter, c->ctlr.nvmc_config, c->ctlr.nvmc_ready);
+    out("ZDIAG lab %spv valid=%u req=%u ack=%u start_req=%u start_ack=%u stop_req=%u stop_ack=%u ticks_at_preempt=%u",
+        tag, c->ctlr.pre.valid, c->ctlr.pre.req, c->ctlr.pre.ack, c->ctlr.pre.start_req, c->ctlr.pre.start_ack,
+        c->ctlr.pre.stop_req, c->ctlr.pre.stop_ack, c->ctlr.pre.ticks_at_preempt);
     for (uint32_t h = 0; h < LAB_CONN_MAX; h++) {
         const struct lab_conn_snap *s = &c->ctlr.conn[h];
 
@@ -1056,9 +1060,16 @@ void diag_lab_print(void (*out)(const char *fmt, ...)) {
         out("ZDIAG lab invalid");
         return;
     }
-    out("ZDIAG lab live v5 ticks=%u skipped=%u max=%u@%u over=%u/%u/%u/%u nlat=%u isr=%u ctl=%u thr=%u marks=%u crashes=%u dropped=%u prestate=%u flips=%u stale_runs=%u",
+    out("ZDIAG lab live v6 ticks=%u skipped=%u max=%u@%u over=%u/%u/%u/%u nlat=%u isr=%u ctl=%u thr=%u marks=%u crashes=%u dropped=%u prestate=%u flips=%u stale_runs=%u",
         r->ticks, r->skipped, r->max_us, r->max_at_ms, r->over[0], r->over[1], r->over[2], r->over[3], r->n_lat,
         r->isr_head, r->ctl_head, r->thr_n, r->marks, r->crash_n, r->dropped, r->pre_state, r->flips, r->stale_runs);
+    {
+        struct lab_preempt_vars v;
+
+        diag_lab_preempt_vars(&v);
+        out("ZDIAG lab livepv valid=%u req=%u ack=%u start_req=%u start_ack=%u stop_req=%u stop_ack=%u ticks_at_preempt=%u now=%u",
+            v.valid, v.req, v.ack, v.start_req, v.start_ack, v.stop_req, v.stop_ack, v.ticks_at_preempt, ticker_ticks_now_get());
+    }
     for (uint32_t i = 0; i < r->thr_n && i < THR_MAX; i++) {
         out("ZDIAG lab thr%u=%s", i, r->thr_name[i]);
     }

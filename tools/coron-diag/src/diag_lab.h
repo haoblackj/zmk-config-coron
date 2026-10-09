@@ -24,7 +24,23 @@ struct lab_conn_snap {
     uint32_t ticks_slot;
 };
 
+/* lll.c's preempt-timeout bookkeeping (static variables, read by address: the two-pass build puts
+ * the addresses nm reports into LAB_ADDR_* defines, CMakeLists.txt / build-lab-2pass.sh) */
+struct lab_preempt_vars {
+    uint8_t valid;     /* 0 = addresses not compiled in */
+    uint8_t req;       /* preempt_req / preempt_ack: a preempt ticker is scheduled when they differ */
+    uint8_t ack;
+    uint8_t start_req; /* a ticker_start was requested; equal to start_ack once the job answered */
+    uint8_t start_ack;
+    uint8_t stop_req;
+    uint8_t stop_ack;
+    uint8_t pad;
+    uint32_t ticks_at_preempt; /* the expiry the last request was made for */
+};
+void diag_lab_preempt_vars(struct lab_preempt_vars *v);
+
 struct lab_ctlr_snap {
+    struct lab_preempt_vars pre;
     uint32_t ticker_now;   /* ticker_ticks_now_get(): RTC0 ticks (30.517 us) */
     uint32_t rtc0_counter; /* NRF_RTC0->COUNTER */
     uint32_t nvmc_config;  /* NRF_NVMC->CONFIG: 1 = write enabled, 2 = erase enabled */

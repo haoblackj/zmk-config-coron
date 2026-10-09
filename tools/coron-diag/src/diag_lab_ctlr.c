@@ -78,8 +78,23 @@ uint8_t diag_lab_handle_of(const void *lll) {
     return 0xfe;
 }
 
+void diag_lab_preempt_vars(struct lab_preempt_vars *v) {
+    memset(v, 0, sizeof(*v));
+#if defined(LAB_ADDR_PREEMPT_REQ)
+    v->valid = 1;
+    v->req = *(volatile uint8_t *)LAB_ADDR_PREEMPT_REQ;
+    v->ack = *(volatile uint8_t *)LAB_ADDR_PREEMPT_ACK;
+    v->start_req = *(volatile uint8_t *)LAB_ADDR_PREEMPT_START_REQ;
+    v->start_ack = *(volatile uint8_t *)LAB_ADDR_PREEMPT_START_ACK;
+    v->stop_req = *(volatile uint8_t *)LAB_ADDR_PREEMPT_STOP_REQ;
+    v->stop_ack = *(volatile uint8_t *)LAB_ADDR_PREEMPT_STOP_ACK;
+    v->ticks_at_preempt = *(volatile uint32_t *)LAB_ADDR_TICKS_AT_PREEMPT;
+#endif
+}
+
 void diag_lab_ctlr_snapshot(struct lab_ctlr_snap *s) {
     memset(s, 0, sizeof(*s));
+    diag_lab_preempt_vars(&s->pre);
     s->ticker_now = ticker_ticks_now_get();
     s->rtc0_counter = NRF_RTC0->COUNTER;
     s->nvmc_config = NRF_NVMC->CONFIG;
