@@ -26,7 +26,9 @@
 # stderr = text to print on stderr, dump_on_request = pre is delivered only after a 'd' write,
 # like the test images). Used by the simulation only; the gate and the stamps are the real code
 # paths.
-param([Parameter(Mandatory = $true)][string]$Com, [string]$Send = '', [int]$ReadSeconds = 0, [string]$MockFile = '')
+# -DumpSeconds: how long to wait for the end mark after the begin mark (the lab image's dump with
+# four crash records is ~1,000 lines at 5 ms each; 4 s was enough for the production dump only).
+param([Parameter(Mandatory = $true)][string]$Com, [string]$Send = '', [int]$ReadSeconds = 0, [string]$MockFile = '', [int]$DumpSeconds = 20)
 $script:mock = $null
 function Emit([string]$s) { if ($s) { [Console]::Out.Write($s); [Console]::Out.Flush() } }
 function Stamp([string]$m) { Emit ("[calib-io] $m at " + (Get-Date).ToString('HH:mm:ss.fff') + "`n") }
@@ -96,14 +98,14 @@ try {
         }
     }
     if ($text -cmatch $BEGIN) {
-        $deadline = (Get-Date).AddSeconds(4); $iter = 0
+        $deadline = (Get-Date).AddSeconds($DumpSeconds); $iter = 0
         while ($text -cnotmatch $END) {
             if ($script:mock) { if ($iter -ge 3) { break } } elseif ((Get-Date) -ge $deadline) { break }
             $iter++
             Nap 100
             ReadChunk
         }
-        if ($text -cmatch $END) { Stamp 'dump complete' } else { Stamp 'dump incomplete (no end mark within 4 s)' }
+        if ($text -cmatch $END) { Stamp 'dump complete' } else { Stamp "dump incomplete (no end mark within $DumpSeconds s)" }
     } else {
         Stamp 'no dump (no begin mark within 1.5 s)'
     }

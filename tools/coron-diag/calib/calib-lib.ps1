@@ -289,9 +289,11 @@ function Exchange([string]$Send = '', [int]$ReadSeconds = 0) {
         $script:xn++
         $base = Join-Path $dir (((Split-Path -Leaf $script:LogFile) -replace '\.log$', '') + "-io$($script:xn)")
         $outFile = "$base.out"; $errFile = "$base.err"
-        $argv = @('-Com', $com, '-ReadSeconds', "$ReadSeconds")
+        $dumpSec = 20
+        if ($script:DumpSeconds) { $dumpSec = [int]$script:DumpSeconds }
+        $argv = @('-Com', $com, '-ReadSeconds', "$ReadSeconds", '-DumpSeconds', "$dumpSec")
         if ($Send) { $argv += @('-Send', $Send) }
-        $timeout = $ReadSeconds + 20
+        $timeout = $ReadSeconds + $dumpSec + 20
         if ($script:Scn) {
             $m = $script:Scn
             if ($m.ei -ge $m.exchanges.Count) { Log "MOCK: no exchange left for send='$Send'"; $script:fails++; return $null }
