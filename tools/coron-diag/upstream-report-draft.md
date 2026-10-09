@@ -83,8 +83,6 @@ No write outside the array. Either the disconnected callback only queues the bat
 
 **Additional context**
 
-Full measurement notes (controller scheduling trace, the DWT trap records, counters read before and
-after the fix) are in our config repository: https://github.com/haoblackj/zmk-config-coron (branch
-`feat/dya-diagnostics`, `tools/coron-diag/evidence/.../lab7-20261009/README.md` and `lab8-20261009/`).
-This report was drafted by an AI assistant (Claude) from those measurements and reviewed by the
-repository owner before posting.
+This report was drafted by an AI assistant (Claude) from our measurements (controller scheduling
+trace, DWT trap records, the controller's counters read before and after the fix) and reviewed by
+the repository owner before posting.
