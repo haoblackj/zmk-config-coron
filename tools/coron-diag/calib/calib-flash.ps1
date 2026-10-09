@@ -31,6 +31,7 @@ if (-not (Test-Path -LiteralPath $LogDir)) { New-Item -ItemType Directory -Path 
 $script:Serial = $Serial
 $script:LogFile = Join-Path $LogDir ("flash-$Expect-" + (Get-Date).ToString('MMdd-HHmmss') + '.log')
 $script:Scn = $null
+$script:DumpSeconds = 120
 if ($Mock) {
     try { Load-Mock $Mock } catch { Log "MOCK ERROR $($_.Exception.Message); nothing done"; exit 4 }
     if ($script:Scn.step_hang_s -gt 0) { Log "MOCK: this script hangs for $($script:Scn.step_hang_s) s (simulated non-returning restore)"; Start-Sleep -Seconds $script:Scn.step_hang_s }

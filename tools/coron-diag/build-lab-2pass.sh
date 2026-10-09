@@ -3,16 +3,17 @@
 #   pass 1: normal build; read the RAM addresses of lll.c's static preempt bookkeeping with nm
 #   pass 2: rebuild with those addresses as LAB_ADDR_* defines (CMakeLists.txt); check with nm that
 #           they did not move (the RAM layout does not depend on code constants)
-# usage: build-lab-2pass.sh <builddir-name>
+# usage: build-lab-2pass.sh <builddir-name> [extra conf files, ';'-separated; default prod-entry-lab.conf]
 set -euo pipefail
 BD=$1
 cd ~/zmk-dya-build
 C=$PWD/config/zmk-config-coron
+CONFS=${2:-$PWD/local/coron-diag/prod-entry-lab.conf}
 NM=/nix/store/57hybry1spzvsy5ml99wdm6p49hlr3nh-zephyr-sdk-0.16.9/arm-zephyr-eabi/bin/arm-zephyr-eabi-nm
 build() { # extra cmake args
     env -u LD_LIBRARY_PATH nix develop --command bash -c "
 export ZEPHYR_TOOLCHAIN_VARIANT=zephyr
-west build -p -s zmk/app -d .build/$BD -b xiao_ble//zmk -S studio-rpc-usb-uart -- -DZMK_CONFIG=$C/config \"-DZMK_EXTRA_MODULES=$C;$PWD/local/coron-diag\" -DSHIELD=coron_R -DEXTRA_CONF_FILE=$PWD/local/coron-diag/prod-entry-lab.conf -DEXTRA_DTC_OVERLAY_FILE=$PWD/local/coron-diag/diagrec.overlay $* > .build/$BD.log 2>&1 || true
+west build -p -s zmk/app -d .build/$BD -b xiao_ble//zmk -S studio-rpc-usb-uart -- -DZMK_CONFIG=$C/config \"-DZMK_EXTRA_MODULES=$C;$PWD/local/coron-diag\" -DSHIELD=coron_R \"-DEXTRA_CONF_FILE=$CONFS\" -DEXTRA_DTC_OVERLAY_FILE=$PWD/local/coron-diag/diagrec.overlay $* > .build/$BD.log 2>&1 || true
 ninja -C .build/$BD >> .build/$BD.log 2>&1
 "
 }
