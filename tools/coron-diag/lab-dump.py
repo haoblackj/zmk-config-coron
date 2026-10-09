@@ -129,6 +129,10 @@ def main():
         for l in lines:
             if l.startswith('ZDIAG lab livectl '):
                 print('   ', ctl_text(l[len('ZDIAG lab livectl '):]))
+        print('  -- live preempt history (sparse ring, reaches further back):')
+        for l in lines:
+            if l.startswith('ZDIAG lab livepre '):
+                print('   ', ctl_text(l[len('ZDIAG lab livepre '):]))
 
     crashes = sorted({m.group(1) for m in re.finditer(r'^ZDIAG lab (crash\d+) ', text, re.M)})
     for c in crashes:
@@ -160,6 +164,17 @@ def main():
         for l in lines:
             if l.startswith(f'ZDIAG lab {c}prep '):
                 print('   ', l[len(f'ZDIAG lab {c}prep '):])
+        print('  -- preempt history (sparse ring: queued prepares, the preempt timeout, aborts; dt us):')
+        for l in lines:
+            if l.startswith(f'ZDIAG lab {c}pre '):
+                print('   ', ctl_text(l[len(f'ZDIAG lab {c}pre '):]))
+        for l in lines:
+            if l.startswith(f'ZDIAG lab {c}tk '):
+                d = kv(l)
+                items = [x for x in l.split() if ':' in x and x[0].isdigit()]
+                print(f'  -- the ticker list when the record was filled (ticks_current={d.get("cur")}): ' +
+                      ', '.join(f'{tid(int(i.split(":")[0]))} in {int(i.split(":")[1])} ticks' for i in items) if items else
+                      f'  -- the ticker list when the record was filled: empty (n={d.get("n")})')
         # merged timeline: ISR trace + masked samples + controller steps, by dt
         events = []
         for l in lines:

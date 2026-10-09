@@ -33,6 +33,21 @@ struct lab_ctlr_snap {
 };
 
 void diag_lab_ctlr_snapshot(struct lab_ctlr_snap *s);
+
+/* the ticker's own list at the moment of a record (thread context only: it asks the ticker job
+ * and waits for the answer); every ticker, slot or not, in expiry order */
+#define LAB_TICKERS 8
+struct lab_ticker_snap {
+    uint32_t ticks_current;
+    uint8_t n;
+    uint8_t pad[3];
+    struct {
+        uint8_t id;
+        uint8_t pad[3];
+        uint32_t ticks_to_expire; /* from ticks_current */
+    } t[LAB_TICKERS];
+};
+void diag_lab_ticker_snapshot(struct lab_ticker_snap *s);
 /* TICKER_ID_CONN_BASE of this build: a prepare's ticker_id minus this is the connection handle */
 uint32_t diag_lab_ticker_conn_base(void);
 

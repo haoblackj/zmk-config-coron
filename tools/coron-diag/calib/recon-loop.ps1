@@ -28,7 +28,7 @@ New-Item -ItemType Directory -Force -Path $RunDir | Out-Null
 $script:Serial = $Serial
 $script:LogFile = Join-Path $RunDir 'recon.log'
 $script:Scn = $null
-$script:DumpSeconds = 30
+$script:DumpSeconds = 60   # the v3/v4 dump with 3 records is ~70 KB; 30 s cut it off (2026-10-09 19:41)
 $summary = Join-Path $RunDir 'summary.log'
 function SLog([string]$m) {
     $line = (Get-Date).ToString('HH:mm:ss.fff') + ' ' + $m

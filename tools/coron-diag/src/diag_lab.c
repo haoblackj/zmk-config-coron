@@ -59,7 +59,7 @@
 
 #include "diag_lab.h"
 
-#define LAB_MAGIC 0x3342414cu /* 'LAB3' */
+#define LAB_MAGIC 0x3442414cu /* 'LAB4' */
 #define LAB_ADDR 0x2002d000u
 #define LAB_SIZE 0xb000u
 #define PERIOD_US 1000u
@@ -71,6 +71,7 @@
 #define MSK_RING 384
 #define PK_RING 2048
 #define CTL_RING 256
+#define PRE_RING 256  /* sparse: only the preempt-related steps, so it reaches minutes back */
 #define PREP_RING 64
 #define CRASHES 3
 #define NAME_LEN 12
@@ -79,14 +80,16 @@
 /* tails copied into a record */
 #define LAT_TAIL 8
 #define ACT_TAIL 64
-#define ISR_TAIL 256
+#define ISR_TAIL 192
 #define MSK_TAIL 128
 #define PK_TAIL 384
 #define EV_TAIL 24
-#define CTL_TAIL 160
+#define CTL_TAIL 128
+#define PRE_TAIL 96
 #define PREP_TAIL 32
 #define PREP_STATS 8
 #define LIVE_CTL 48
+#define LIVE_PRE 48
 
 #if defined(CONFIG_ZERO_LATENCY_IRQS)
 #define HAVE_MSK 1
@@ -213,6 +216,9 @@ struct crash_rec {
     struct prep_stat pstat[PREP_STATS];
     uint32_t ctl_n;
     struct ctl_ev ctl[CTL_TAIL];
+    uint32_t pre_n;
+    struct ctl_ev pre[PRE_TAIL];
+    struct lab_ticker_snap tk; /* mark records only (thread context) */
     uint32_t sum; /* FNV-1a over the record with sum = 0 */
 };
 
@@ -253,6 +259,8 @@ struct labrec {
     struct prep_stat pstat[PREP_STATS];
     uint32_t ctl_head;
     struct ctl_ev ctl[CTL_RING];
+    uint32_t pre_head;
+    struct ctl_ev pre[PRE_RING];
     uint32_t marks;     /* late prepares seen (records taken or dropped) */
     uint32_t mark_busy; /* a mark is waiting for its record */
     uint32_t mark_t_us;
@@ -541,6 +549,23 @@ void diag_lab_ctl_put(uint8_t type, uint8_t a, uint16_t b, uint32_t c, uint32_t 
     e.d = d;
     r->ctl[r->ctl_head % CTL_RING] = e;
     r->ctl_head++;
+    /* the sparse ring: everything about the preempt timeout and the pipeline, nothing routine
+     * (a prepare that ran at once, its lateness check when on time, the pipeline runs) */
+    switch (type) {
+    case CT_PREPCALC:
+        if (b == 0) { return; }
+        break;
+    case CT_PREP:
+        if ((b & 3u) == 0u && d == 0u) { return; }
+        break;
+    case CT_DEQ:
+    case CT_TUPD:
+        return;
+    default:
+        break;
+    }
+    r->pre[r->pre_head % PRE_RING] = e;
+    r->pre_head++;
 }
 
 void diag_lab_prep_put(uint8_t ticker_id, uint32_t ticks_at_event, uint32_t ticks_now, uint32_t result) {
@@ -741,6 +766,7 @@ static struct crash_rec *take_record(uint32_t kind, const char *file, uint32_t l
     copy_tail_u8(c->prep, r->prep, sizeof(struct prep_ev), PREP_RING, r->prep_head, PREP_TAIL, &c->prep_n);
     memcpy(c->pstat, r->pstat, sizeof(c->pstat));
     copy_tail_u8(c->ctl, r->ctl, sizeof(struct ctl_ev), CTL_RING, r->ctl_head, CTL_TAIL, &c->ctl_n);
+    copy_tail_u8(c->pre, r->pre, sizeof(struct ctl_ev), PRE_RING, r->pre_head, PRE_TAIL, &c->pre_n);
     return c;
 }
 
@@ -772,6 +798,7 @@ static void mark_work_fn(struct k_work *w) {
     c = take_record(KIND_MARK, "late", r->mark_id, r->mark_t_us);
     if (c != NULL) {
         c->late_ticks = r->mark_late;
+        diag_lab_ticker_snapshot(&c->tk); /* asks the ticker job; a few ms */
         commit_record(c);
     }
     r->mark_busy = 0;
@@ -965,6 +992,17 @@ static void print_crash(void (*out)(const char *fmt, ...), const struct crash_re
     print_prep(out, t2, c->pstat, c->prep, MIN(c->prep_n, (uint32_t)PREP_TAIL), c->t_us);
     snprintk(t2, sizeof(t2), "%sctl", tag);
     print_ctl(out, t2, c->ctl, MIN(c->ctl_n, (uint32_t)CTL_TAIL), c->t_us);
+    snprintk(t2, sizeof(t2), "%spre", tag);
+    print_ctl(out, t2, c->pre, MIN(c->pre_n, (uint32_t)PRE_TAIL), c->t_us);
+    {
+        char line[160];
+        int k = snprintk(line, sizeof(line), "ZDIAG lab %stk cur=%u n=%u", tag, c->tk.ticks_current, c->tk.n);
+
+        for (uint32_t i = 0; i < MIN(c->tk.n, (uint32_t)LAB_TICKERS); i++) {
+            k += snprintk(line + k, sizeof(line) - k, " %u:%u", c->tk.t[i].id, c->tk.t[i].ticks_to_expire);
+        }
+        out("%s", line);
+    }
     snprintk(t2, sizeof(t2), "%sact", tag);
     print_act(out, t2, c->thr_name, c->thr_n, c->act, MIN(c->act_n, (uint32_t)ACT_TAIL));
     snprintk(t2, sizeof(t2), "%sisr", tag);
@@ -984,7 +1022,7 @@ void diag_lab_print(void (*out)(const char *fmt, ...)) {
         out("ZDIAG lab invalid");
         return;
     }
-    out("ZDIAG lab live v3 ticks=%u skipped=%u max=%u@%u over=%u/%u/%u/%u nlat=%u isr=%u ctl=%u thr=%u marks=%u crashes=%u dropped=%u",
+    out("ZDIAG lab live v4 ticks=%u skipped=%u max=%u@%u over=%u/%u/%u/%u nlat=%u isr=%u ctl=%u thr=%u marks=%u crashes=%u dropped=%u",
         r->ticks, r->skipped, r->max_us, r->max_at_ms, r->over[0], r->over[1], r->over[2], r->over[3], r->n_lat,
         r->isr_head, r->ctl_head, r->thr_n, r->marks, r->crash_n, r->dropped);
     for (uint32_t i = 0; i < r->thr_n && i < THR_MAX; i++) {
@@ -1013,6 +1051,8 @@ void diag_lab_print(void (*out)(const char *fmt, ...)) {
 
         copy_tail_u8(tail, r->ctl, sizeof(struct ctl_ev), CTL_RING, r->ctl_head, LIVE_CTL, &n);
         print_ctl(out, "livectl", tail, n, now_us());
+        copy_tail_u8(tail, r->pre, sizeof(struct ctl_ev), PRE_RING, r->pre_head, LIVE_PRE, &n);
+        print_ctl(out, "livepre", tail, n, now_us());
     }
     for (uint32_t k = 0; k < MIN(r->crash_n, (uint32_t)CRASHES); k++) {
         if (r->crash[k].magic == LAB_MAGIC) {

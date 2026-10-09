@@ -16,6 +16,7 @@ if (-not (Test-Path -LiteralPath $LogDir)) { New-Item -ItemType Directory -Path 
 $script:Serial = $Serial
 $script:LogFile = Join-Path $LogDir ("halfio-" + (Get-Date).ToString('MMdd-HHmmss-fff') + '.log')
 $script:Scn = $null
+$script:DumpSeconds = 60
 if ($Bootloader) {
     Log "HALFIO bootloader serial=$Serial"
     $state = Get-State

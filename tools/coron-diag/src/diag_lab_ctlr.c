@@ -110,6 +110,53 @@ void diag_lab_ctlr_snapshot(struct lab_ctlr_snap *s) {
     }
 }
 
+/* ---- the ticker's list (thread context: ticker_next_slot_get_ext answers through the job) ------- */
+
+static K_SEM_DEFINE(tk_sem, 0, 1);
+
+static void tk_op(uint32_t status, void *op_context) {
+    ARG_UNUSED(status);
+    ARG_UNUSED(op_context);
+    k_sem_give(&tk_sem);
+}
+
+static bool tk_match_all(uint8_t ticker_id, uint32_t ticks_slot, uint32_t ticks_to_expire, void *op_context) {
+    ARG_UNUSED(ticker_id);
+    ARG_UNUSED(ticks_slot);
+    ARG_UNUSED(ticks_to_expire);
+    ARG_UNUSED(op_context);
+    return true; /* every node, including the slot-less preempt ticker */
+}
+
+void diag_lab_ticker_snapshot(struct lab_ticker_snap *s) {
+    uint8_t id = TICKER_NULL;
+    uint32_t cur = 0, to = 0;
+
+    memset(s, 0, sizeof(*s));
+    if (k_is_in_isr()) {
+        return;
+    }
+    k_sem_reset(&tk_sem);
+    for (uint32_t i = 0; i < LAB_TICKERS; i++) {
+        uint32_t ret = ticker_next_slot_get_ext(TICKER_INSTANCE_ID_CTLR, TICKER_USER_ID_THREAD, &id, &cur, &to, NULL,
+                                                NULL, tk_match_all, NULL, tk_op, NULL);
+
+        if (ret == TICKER_STATUS_FAILURE) {
+            break;
+        }
+        if (k_sem_take(&tk_sem, K_MSEC(100)) != 0) {
+            break;
+        }
+        if (id == TICKER_NULL) {
+            break;
+        }
+        s->t[s->n].id = id;
+        s->t[s->n].ticks_to_expire = to;
+        s->n++;
+    }
+    s->ticks_current = cur;
+}
+
 /* ---- lll_preempt_calc: the prepare's lateness check -------------------------------------------- */
 
 uint32_t __real_lll_preempt_calc(struct ull_hdr *ull, uint8_t ticker_id, uint32_t ticks_at_event);
