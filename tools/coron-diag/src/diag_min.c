@@ -96,6 +96,29 @@ static void on_param_updated(struct bt_conn *conn, uint16_t interval, uint16_t l
     }
 }
 
+/* The newest events, oldest first, for the lab crash record (diag_lab.c). Called from the asserting
+ * context, so no lock: a torn entry at crash time is acceptable. */
+struct diag_min_ev_out {
+    uint32_t ms;
+    uint8_t type;
+    uint16_t a;
+    uint16_t b;
+};
+uint32_t diag_min_events_tail(struct diag_min_ev_out *dst, uint32_t max) {
+    uint32_t head = event_head;
+    uint32_t n = MIN(head, MIN(max, (uint32_t)EVENT_COUNT));
+
+    for (uint32_t i = 0; i < n; i++) {
+        struct rec_event e = events[(head - n + i) % EVENT_COUNT];
+
+        dst[i] = (struct diag_min_ev_out){.ms = e.ms, .type = e.type, .a = e.a, .b = e.b};
+    }
+    return n;
+}
+const char *diag_min_ev_name(uint8_t type) {
+    return (type > 0 && type < ARRAY_SIZE(ev_names) && ev_names[type]) ? ev_names[type] : "?";
+}
+
 BT_CONN_CB_DEFINE(diag_min_conn_cb) = {
     .connected = on_connected,
     .disconnected = on_disconnected,
@@ -156,6 +179,10 @@ __weak void diag_boot_clear_ring(void) {}
 __weak void diag_entry_print(void (*out)(const char *fmt, ...)) { ARG_UNUSED(out); }
 /* diag_lat.c is built only with CONFIG_CORON_DIAG_LAT (lab: latency probe + assert capture). */
 __weak void diag_lat_print(void (*out)(const char *fmt, ...)) { ARG_UNUSED(out); }
+/* diag_lab.c is built only with CONFIG_CORON_DIAG_LAB (lab: everything, once). */
+__weak void diag_lab_print(void (*out)(const char *fmt, ...)) { ARG_UNUSED(out); }
+__weak void diag_lab_clear(void) {}
+__weak void diag_lab_selftest(void) {}
 
 static void dump(void) {
     out("ZDIAG begin version=prof1 up_ms=%u boot=1 reset=0x%x", k_uptime_get_32(), reset_cause);
@@ -174,6 +201,7 @@ static void dump(void) {
     diag_boot_print(out);
     diag_entry_print(out);
     diag_lat_print(out);
+    diag_lab_print(out);
     out("ZDIAG end");
 }
 
@@ -224,6 +252,11 @@ static void diag_min_thread(void *p1, void *p2, void *p3) {
                 dump();
             } else if (ch == 'x') {
                 bt_conn_foreach(BT_CONN_TYPE_LE, drop_host_conn, NULL);
+            } else if (ch == 'A') {
+                /* lab image only: crash-path self-test (diag_lab.c); the device reboots within 1 ms */
+                out("ZDIAG selftest");
+                k_msleep(50);
+                diag_lab_selftest();
             } else if (ch == 'r') {
                 /* Plain soft reset (the same path a fatal-error reboot takes). */
                 out("ZDIAG reboot");
@@ -248,6 +281,7 @@ static void diag_min_thread(void *p1, void *p2, void *p3) {
                 }
             } else if (ch == 'c') {
                 diag_boot_clear_ring();
+                diag_lab_clear();
                 out("ZDIAG ring cleared");
             } else if (ch == 'b') {
                 /* Same two paths as ZMK's &bootloader behavior. */

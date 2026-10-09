@@ -149,6 +149,9 @@ static int cs_app_last(void) {
 }
 SYS_INIT(cs_app_last, APPLICATION, 99);
 
+/* This boot's breadcrumb seq, for the lab crash record (diag_lab.c). */
+uint32_t diag_entry_seq(void) { return diag_crumb.seq; }
+
 /* One line in the console dump (diag_min.c): pv = previous crumb valid, pseq/pst/prst/pint/
  * piser1 = the previous boot's seq, stage, RESETREAS, POWER/CLOCK INTEN and NVIC ISER[1] at its
  * hook, seq/st = this boot. Longest possible line: 104 characters (under the 150 limit). */
