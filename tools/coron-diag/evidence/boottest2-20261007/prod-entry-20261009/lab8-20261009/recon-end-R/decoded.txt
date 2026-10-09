@@ -1,0 +1,175 @@
+ZDIAG begin version=prof1 up_ms=1579547 boot=1 reset=0x2
+ZDIAG crumb pv=1 pseq=395 pst=10 prst=0x4 pint=0x0 piser1=0x0 seq=396 st=10
+ZDIAG lab live v7 ticks=1580076 skipped=0 max=108@1242737 over=3/0/0/0 nlat=3 isr=4111654 ctl=635430 thr=14 marks=2 crashes=0 dropped=0 prestate=1 flips=1 stale_runs=2
+ZDIAG lab livepv valid=1 req=70 ack=70 start_req=70 start_ack=70 stop_req=0 stop_ack=0 ticks_at_preempt=16440586 now=1426574
+ZDIAG lab livelat up=82356 lat=104 iabr=8000800/0 pc=6ba22 lr=6b315 thr=idle arch_cpu_idle (cpu_idle.c:103)
+ZDIAG lab livelat up=280111 lat=103 iabr=8000800/0 pc=6ba22 lr=6b315 thr=idle arch_cpu_idle (cpu_idle.c:103)
+ZDIAG lab livelat up=1242737 lat=108 iabr=8000800/0 pc=6ba22 lr=6b315 thr=idle arch_cpu_idle (cpu_idle.c:103)
+ZDIAG lab liveprepstat id=2 n=500 max_late=3 last_late=0 over=0 (ticks of 30.52us; conn=id-5) 
+ZDIAG lab liveprepstat id=4 n=4 max_late=1 last_late=1 over=0 (ticks of 30.52us; conn=id-5) 
+ZDIAG lab liveprepstat id=6 n=203854 max_late=4 last_late=0 over=0 (ticks of 30.52us; conn=id-5) 
+ZDIAG lab liveprepstat id=5 n=3837 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5) 
+  -- live controller steps (dt us relative to the dump):
+     -116027  lateness check conn1: event at 1432596, now 1432549 (-47 ticks) -> ok
+     -116024  prepare conn1 ticks_at_expire=1432547 -> ran, ret=0
+     -114013  dequeue (run the pipeline) caller=0 now=1432615
+     -108520  lateness check conn1: event at 1432842, now 1432795 (-47 ticks) -> ok
+     -108517  prepare conn1 ticks_at_expire=1432793 -> ran, ret=0
+     -106523  dequeue (run the pipeline) caller=0 now=1432860
+     -101025  lateness check conn1: event at 1433088, now 1433040 (-48 ticks) -> ok
+     -101021  prepare conn1 ticks_at_expire=1433039 -> ran, ret=0
+      -99014  dequeue (run the pipeline) caller=0 now=1433107
+      -93497  lateness check conn1: event at 1433334, now 1433287 (-47 ticks) -> ok
+      -93494  prepare conn1 ticks_at_expire=1433285 -> ran, ret=0
+      -91516  dequeue (run the pipeline) caller=0 now=1433352
+      -86030  lateness check conn1: event at 1433579, now 1433532 (-47 ticks) -> ok
+      -86026  prepare conn1 ticks_at_expire=1433530 -> ran, ret=0
+      -84025  dequeue (run the pipeline) caller=0 now=1433598
+      -78534  lateness check conn1: event at 1433825, now 1433777 (-48 ticks) -> ok
+      -78531  prepare conn1 ticks_at_expire=1433776 -> ran, ret=0
+      -76516  dequeue (run the pipeline) caller=0 now=1433844
+      -71016  lateness check conn1: event at 1434071, now 1434024 (-47 ticks) -> ok
+      -71012  prepare conn1 ticks_at_expire=1434022 -> ran, ret=0
+      -69015  dequeue (run the pipeline) caller=0 now=1434090
+      -63500  lateness check conn1: event at 1434317, now 1434270 (-47 ticks) -> ok
+      -63497  prepare conn1 ticks_at_expire=1434268 -> ran, ret=0
+      -61526  dequeue (run the pipeline) caller=0 now=1434335
+      -56044  lateness check conn1: event at 1434562, now 1434514 (-48 ticks) -> ok
+      -56040  prepare conn1 ticks_at_expire=1434513 -> ran, ret=0
+      -54015  dequeue (run the pipeline) caller=0 now=1434581
+      -48525  lateness check conn1: event at 1434808, now 1434761 (-47 ticks) -> ok
+      -48522  prepare conn1 ticks_at_expire=1434759 -> ran, ret=0
+      -46516  dequeue (run the pipeline) caller=0 now=1434827
+      -41018  lateness check conn1: event at 1435054, now 1435007 (-47 ticks) -> ok
+      -41015  prepare conn1 ticks_at_expire=1435005 -> ran, ret=0
+      -39027  dequeue (run the pipeline) caller=0 now=1435072
+      -33523  lateness check conn1: event at 1435300, now 1435252 (-48 ticks) -> ok
+      -33519  prepare conn1 ticks_at_expire=1435251 -> ran, ret=0
+      -31516  dequeue (run the pipeline) caller=0 now=1435318
+      -26035  lateness check conn1: event at 1435545, now 1435498 (-47 ticks) -> ok
+      -26031  prepare conn1 ticks_at_expire=1435496 -> ran, ret=0
+      -24017  dequeue (run the pipeline) caller=0 now=1435564
+      -18528  lateness check conn1: event at 1435791, now 1435744 (-47 ticks) -> ok
+      -18524  prepare conn1 ticks_at_expire=1435742 -> ran, ret=0
+      -16526  dequeue (run the pipeline) caller=0 now=1435810
+      -11032  lateness check conn1: event at 1436037, now 1435989 (-48 ticks) -> ok
+      -11029  prepare conn1 ticks_at_expire=1435988 -> ran, ret=0
+       -9017  dequeue (run the pipeline) caller=0 now=1436056
+       -3505  lateness check conn1: event at 1436283, now 1436236 (-47 ticks) -> ok
+       -3501  prepare conn1 ticks_at_expire=1436234 -> ran, ret=0
+       -1516  dequeue (run the pipeline) caller=0 now=1436301
+  -- DWT watchpoint hits on preempt_req (write sites; dt us relative to the dump):
+    dwt n=1094 zero=4 comp=2001f0a0 func=6 demcr=1010000 
+    dwthit dt=-84094135 pc=54d48 lr=47fc9 xpsr=100001b value=7 ack=6 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-83629158 pc=54d48 lr=47fc9 xpsr=100001b value=8 ack=7 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-83164181 pc=54d48 lr=47fc9 xpsr=100001b value=9 ack=8 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-82699204 pc=54d48 lr=47fc9 xpsr=100001b value=10 ack=9 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-82234226 pc=54d48 lr=47fc9 xpsr=100001b value=11 ack=10 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-81769277 pc=54d48 lr=47fc9 xpsr=100001b value=12 ack=11 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-81304244 pc=54d48 lr=47fc9 xpsr=100001b value=13 ack=12 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-80839293 pc=54d48 lr=47fc9 xpsr=100001b value=14 ack=13 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-80374316 pc=54d48 lr=47fc9 xpsr=100001b value=15 ack=14 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-79909339 pc=54d48 lr=47fc9 xpsr=100001b value=16 ack=15 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-79444362 pc=54d48 lr=47fc9 xpsr=100001b value=17 ack=16 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-78979386 pc=54d48 lr=47fc9 xpsr=100001b value=18 ack=17 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-78514409 pc=54d48 lr=47fc9 xpsr=100001b value=19 ack=18 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-78049432 pc=54d48 lr=47fc9 xpsr=100001b value=20 ack=19 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-77584424 pc=54d48 lr=47fc9 xpsr=100001b value=21 ack=20 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-77119448 pc=54d48 lr=47fc9 xpsr=100001b value=22 ack=21 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-76654471 pc=54d48 lr=47fc9 xpsr=100001b value=23 ack=22 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-76189494 pc=54d48 lr=47fc9 xpsr=100001b value=24 ack=23 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-75724517 pc=54d48 lr=47fc9 xpsr=100001b value=25 ack=24 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-75259541 pc=54d48 lr=47fc9 xpsr=100001b value=26 ack=25 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-74794571 pc=54d48 lr=47fc9 xpsr=100001b value=27 ack=26 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-74329579 pc=54d48 lr=47fc9 xpsr=100001b value=28 ack=27 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-73864571 pc=54d48 lr=47fc9 xpsr=100001b value=29 ack=28 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-73399594 pc=54d48 lr=47fc9 xpsr=100001b value=30 ack=29 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-72934617 pc=54d48 lr=47fc9 xpsr=100001b value=31 ack=30 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-72469640 pc=54d48 lr=47fc9 xpsr=100001b value=32 ack=31 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-72004663 pc=54d48 lr=47fc9 xpsr=100001b value=33 ack=32 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-71539696 pc=54d48 lr=47fc9 xpsr=100001b value=34 ack=33 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-71074719 pc=54d48 lr=47fc9 xpsr=100001b value=35 ack=34 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-70609742 pc=54d48 lr=47fc9 xpsr=100001b value=36 ack=35 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-70144765 pc=54d48 lr=47fc9 xpsr=100001b value=37 ack=36 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-69679758 pc=54d48 lr=47fc9 xpsr=100001b value=38 ack=37 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-69214781 pc=54d48 lr=47fc9 xpsr=100001b value=39 ack=38 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-68749804 pc=54d48 lr=47fc9 xpsr=100001b value=40 ack=39 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-68284827 pc=54d48 lr=47fc9 xpsr=100001b value=41 ack=40 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-67819851 pc=54d48 lr=47fc9 xpsr=100001b value=42 ack=41 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-67804837 pc=54d48 lr=47fc9 xpsr=100001b value=43 ack=42 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-67339860 pc=54d48 lr=47fc9 xpsr=100001b value=44 ack=43 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-66874883 pc=54d48 lr=47fc9 xpsr=100001b value=45 ack=44 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-66409906 pc=54d48 lr=47fc9 xpsr=100001b value=46 ack=45 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-65944929 pc=54d48 lr=47fc9 xpsr=100001b value=47 ack=46 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-65479952 pc=54d48 lr=47fc9 xpsr=100001b value=48 ack=47 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-65014975 pc=54d48 lr=47fc9 xpsr=100001b value=49 ack=48 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-64549977 pc=54d48 lr=47fc9 xpsr=100001b value=50 ack=49 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-64534985 pc=54d48 lr=47fc9 xpsr=100001b value=51 ack=50 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-64054994 pc=54d48 lr=47fc9 xpsr=100001b value=52 ack=51 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-63590017 pc=54d48 lr=47fc9 xpsr=100001b value=53 ack=52 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-63125041 pc=54d48 lr=47fc9 xpsr=100001b value=54 ack=53 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-62660064 pc=54d48 lr=47fc9 xpsr=100001b value=55 ack=54 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-62195087 pc=54d48 lr=47fc9 xpsr=100001b value=56 ack=55 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-61730110 pc=54d48 lr=47fc9 xpsr=100001b value=57 ack=56 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-61265133 pc=54d48 lr=47fc9 xpsr=100001b value=58 ack=57 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-60800158 pc=54d48 lr=47fc9 xpsr=100001b value=59 ack=58 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-60335148 pc=54d48 lr=47fc9 xpsr=100001b value=60 ack=59 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-59870172 pc=54d48 lr=47fc9 xpsr=100001b value=61 ack=60 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-59435192 pc=54d48 lr=47fc9 xpsr=100001b value=62 ack=61 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-59210194 pc=54d48 lr=47fc9 xpsr=100001b value=63 ack=62 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-58992704 pc=54d48 lr=47fc9 xpsr=100001b value=64 ack=63 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-58051458 pc=54d48 lr=47fc9 xpsr=100001b value=65 ack=64 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-56495253 pc=54d48 lr=47fc9 xpsr=100001b value=66 ack=65 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-56030276 pc=54d48 lr=47fc9 xpsr=100001b value=67 ack=66 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-55565299 pc=54d48 lr=47fc9 xpsr=100001b value=68 ack=67 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-55100323 pc=54d48 lr=47fc9 xpsr=100001b value=69 ack=68 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+    dwthit dt=-54635346 pc=54d48 lr=47fc9 xpsr=100001b value=70 ack=69 late=0 dfsr=4 -> pc ticker_start_op_cb (lll.c:1082 (discriminator 3)) / lr ticker_job_op_cb (ticker.c:1669)
+  -- live preempt history (sparse ring, reaches further back):
+    -58944426  prepare conn1 dequeue ticks_at_expire=16290622 -> ran, ret=0
+    -58943471  PREEMPT TICKER FIRED for conn1: at_expire=16290671 now=16290671 lazy=0 force=1
+    -58727455  enqueue conn1 ticks_at_expire=16297749
+    -58727442  ticker_start PREEMPT user=0 anchor=16297749 first=49 (expiry 16297798) -> busy (job pending)
+    -58727437  prepare conn1 ticks_at_expire=16297749 -> queued (-EINPROGRESS)
+    -58727395  preempt ticker start answered: status=0 now=16297752
+    -58726967  prepare conn1 dequeue ticks_at_expire=16297749 -> ran, ret=0
+    -58725982  PREEMPT TICKER FIRED for conn1: at_expire=16297798 now=16297798 lazy=0 force=1
+    -58562470  ticker_start conn1 user=1 anchor=16303155 first=1 (expiry 16303156) -> busy (job pending)
+    -57786209  enqueue conn1 ticks_at_expire=16328592
+    -57786196  ticker_start PREEMPT user=0 anchor=16328592 first=49 (expiry 16328641) -> busy (job pending)
+    -57786191  prepare conn1 ticks_at_expire=16328592 -> queued (-EINPROGRESS)
+    -57786149  preempt ticker start answered: status=0 now=16328596
+    -57785611  prepare conn1 dequeue ticks_at_expire=16328592 -> ran, ret=0
+    -57784767  PREEMPT TICKER FIRED for conn1: at_expire=16328641 now=16328641 lazy=0 force=1
+    -57699988  ticker_start conn1 user=1 anchor=16331418 first=1 (expiry 16331419) -> busy (job pending)
+    -57269593  ticker_start conn0 user=1 anchor=16345382 first=157 (expiry 16345539) -> busy (job pending)
+    -56492519  ticker_start conn1 user=1 anchor=16370986 first=1 (expiry 16370987) -> busy (job pending)
+    -56230004  enqueue conn1 ticks_at_expire=16379589
+    -56229991  ticker_start PREEMPT user=0 anchor=16379589 first=49 (expiry 16379638) -> busy (job pending)
+    -56229987  prepare conn1 ticks_at_expire=16379589 -> queued (-EINPROGRESS)
+    -56229944  preempt ticker start answered: status=0 now=16379592
+    -56228757  prepare conn1 dequeue ticks_at_expire=16379589 -> ran, ret=0
+    -56228528  PREEMPT TICKER FIRED for conn1: at_expire=16379638 now=16379638 lazy=0 force=1
+    -55765027  enqueue conn1 ticks_at_expire=16394826
+    -55765014  ticker_start PREEMPT user=0 anchor=16394826 first=49 (expiry 16394875) -> busy (job pending)
+    -55765010  prepare conn1 ticks_at_expire=16394826 -> queued (-EINPROGRESS)
+    -55764967  preempt ticker start answered: status=0 now=16394829
+    -55763833  prepare conn1 dequeue ticks_at_expire=16394826 -> ran, ret=0
+    -55763562  PREEMPT TICKER FIRED for conn1: at_expire=16394875 now=16394875 lazy=0 force=1
+    -55300051  enqueue conn1 ticks_at_expire=16410063
+    -55300038  ticker_start PREEMPT user=0 anchor=16410063 first=49 (expiry 16410112) -> busy (job pending)
+    -55300033  prepare conn1 ticks_at_expire=16410063 -> queued (-EINPROGRESS)
+    -55299991  preempt ticker start answered: status=0 now=16410066
+    -55298836  prepare conn1 dequeue ticks_at_expire=16410063 -> ran, ret=0
+    -55298574  PREEMPT TICKER FIRED for conn1: at_expire=16410112 now=16410112 lazy=0 force=1
+    -54835074  enqueue conn1 ticks_at_expire=16425300
+    -54835061  ticker_start PREEMPT user=0 anchor=16425300 first=49 (expiry 16425349) -> busy (job pending)
+    -54835056  prepare conn1 ticks_at_expire=16425300 -> queued (-EINPROGRESS)
+    -54835014  preempt ticker start answered: status=0 now=16425303
+    -54833838  prepare conn1 dequeue ticks_at_expire=16425300 -> ran, ret=0
+    -54833597  PREEMPT TICKER FIRED for conn1: at_expire=16425349 now=16425349 lazy=0 force=1
+    -54370097  enqueue conn1 ticks_at_expire=16440537
+    -54370084  ticker_start PREEMPT user=0 anchor=16440537 first=49 (expiry 16440586) -> busy (job pending)
+    -54370079  prepare conn1 ticks_at_expire=16440537 -> queued (-EINPROGRESS)
+    -54370037  preempt ticker start answered: status=0 now=16440540
+    -54368841  prepare conn1 dequeue ticks_at_expire=16440537 -> ran, ret=0
+    -54368621  PREEMPT TICKER FIRED for conn1: at_expire=16440586 now=16440586 lazy=0 force=1
