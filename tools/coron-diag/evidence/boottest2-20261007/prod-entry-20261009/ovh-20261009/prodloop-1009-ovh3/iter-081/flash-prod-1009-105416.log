@@ -1,0 +1,70 @@
+﻿10:54:16.777 FLASH prod start serial=B17318CDBE9A61B1 file=C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-prod-entry-ovh.uf2
+10:54:16.843 PASS prod image exists (C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-prod-entry-ovh.uf2)
+10:54:16.847 PASS prod image md5 (have=fd65d78cc2e30cc4b4a3e4ab4228102a want=fd65d78cc2e30cc4b4a3e4ab4228102a)
+10:54:17.629 initial state=app
+10:54:18.457 PASS diag port present (ports)
+----- console COM5 send='b' read=2s exit=0 timed_out=False deadline=22s -----
+[calib-io] opened COM5 at 10:54:19.547
+ZDIAG begin version=prof1 up_ms=68856 boot=1 reset=0x2
+ZDIAG now count host_conn=1 host_disc=0 split_conn=1 split_disc=0
+ZDIAG ev boot=1 ms=1379 type=split-conn a=6 b=30
+ZDIAG ev boot=1 ms=2511 type=split-param a=23 b=7
+ZDIAG ev boot=1 ms=3000 type=host-conn a=12 b=10
+ZDIAG ev boot=1 ms=3574 type=split-param a=6 b=30
+ZPROF snap #1 why=host-conn up_ms=3300
+ZPROF profile 0* addr=50:BB:B5:73:A4:C9 (public) open=0 connected=1
+ZPROF profile 1 addr=7C:70:DB:D6:8E:D5 (public) open=0 connected=0
+ZPROF profile 2 addr=00:00:00:00:00:00 (public) open=1 connected=0
+ZPROF profile 3 addr=00:00:00:00:00:00 (public) open=1 connected=0
+ZPROF bond 7C:70:DB:D6:8E:D5 (public)
+ZPROF bond 50:BB:B5:73:A4:C9 (public)
+ZPROF bond E5:8F:CD:66:97:1D (random)
+ZPROF conn idx=0 role=periph state=CONNECTED id=0 dst=50:BB:B5:73:A4:C9 (public) get_dst=50:BB:B5:73:A4:C9 (public) sec=2
+ZPROF conn idx=1 role=central state=CONNECTED id=0 dst=E5:8F:CD:66:97:1D (random) get_dst=E5:8F:CD:66:97:1D (random) sec=2
+ZPROF lookup(active) -> idx=0 state=CONNECTED
+ZPROF active_is_connected=1
+ZDIAG crumb pv=1 pseq=338 pst=10 prst=0x4 pint=0x380 piser1=0x80 seq=339 st=10
+ZDIAG end
+[calib-io] dump complete at 10:54:21.065
+[calib-io] sent 'b' at 10:54:21.067
+ZDIAG bootloader rc=0
+[calib-io] read window over at 10:54:23.074
+[calib-io] closing at 10:54:23.075
+
+----- end console -----
+10:54:23.244 send classification for 'b': True (sent stamp=True, NOT-sent stamp=False, timed_out=False, child exit=0)
+10:54:23.247 DEVICE-OP console sent 'b' (child stamp)
+10:54:23.250 PASS 'b' written by the console child (its pre-send dump complete and without #TRUNC) (child stamp "sent")
+10:54:23.257 'b' reply: ack line 'ZDIAG bootloader' seen=True, port lost after the send=False (the firmware prints the line ~100 ms before it reboots, so the line can be lost with the port; the gate is the USB state that follows, not this line)
+10:54:24.231 PASS bootloader of this serial on USB within 30 s (state=boot)
+10:54:25.543 PASS exactly one UF2 drive tied to this serial (drives of serial=[I] all uf2 drives=[I])
+10:54:26.165 PASS exactly one bootloader on USB (count=1)
+10:54:26.172 PASS image md5 (re-checked at copy time) (fd65d78cc2e30cc4b4a3e4ab4228102a)
+10:54:43.498 DEVICE-OP copied C:\Users\yagu001\AppData\Local\Temp\coron-flash\coron_R-prod-entry-ovh.uf2 -> I:
+10:54:43.500 PASS copy raised no error (to I)
+10:54:43.503 PASS UF2 drive vanished within 30 s (image taken) (drive I)
+10:54:45.431 PASS device back as app within 90 s (state=app)
+----- console COM5 send='' read=0s exit=1 timed_out=False deadline=20s -----
+[calib-io] error on COM5 ("0" 個の引数を指定して "Open" を呼び出し中に例外が発生しました: "ポート 'COM5' は存在しません。") at 10:54:47.201
+[calib-io] closing at 10:54:47.207
+
+----- end console -----
+----- console COM5 send='' read=0s exit=0 timed_out=False deadline=20s -----
+[calib-io] opened COM5 at 10:54:49.861
+*** Booting Zephyr OS build 10ba6d0cb38b ***
+ZDIAG begin version=prof1 up_ms=3027 boot=1 reset=0x2
+ZDIAG now count host_conn=0 host_disc=0 split_conn=0 split_disc=0
+ZDIAG crumb pv=1 pseq=340 pst=10 prst=0x4 pint=0x380 piser1=0x80 seq=341 st=10
+ZDIAG end
+[calib-io] dump complete at 10:54:51.388
+[calib-io] closing at 10:54:51.388
+
+----- end console -----
+10:54:51.425 PASS dump present (ZDIAG begin)
+10:54:51.447 dump: ZDIAG begin version=prof1 up_ms=3027 boot=1 reset=0x2 ; ZBOOT lines=0
+10:54:51.454 PASS after flash:dump complete (ZDIAG end line)
+10:54:51.456 PASS after flash:no #TRUNC line (trunc lines=0)
+10:54:51.459 after flash: no ZBOOT line (the running image has no boot instrument)
+10:54:51.461 PASS production image answers (version=prof1) (ZDIAG begin version=prof1 up_ms=3027 boot=1 reset=0x2)
+10:54:51.463 PASS no ZBOOT line (not a test image) (zboot=0)
+10:54:51.465 FLASH prod RESULT PASS
