@@ -25,6 +25,18 @@ config CORON_DIAG_ENTRY
 	  with CORON_DIAG_BOOT (same early hook). See src/diag_entry.c. Re-review if EARLY init,
 	  a SoC early hook or SoftDevice/MPSL is ever enabled.
 
+config CORON_DIAG_LAT
+	bool "Lab: interrupt-latency probe (TIMER4, 1 kHz, the LLL's IRQ level) and link-layer assert capture"
+	depends on CORON_DIAG_ENTRY
+	select BT_CTLR_ASSERT_HANDLER
+	select THREAD_NAME
+	help
+	  Lab image only (2026-10-09). Records every interrupt latency of 100 us or more with
+	  the interrupted context (thread frame PC/LR, NVIC active bits, thread name), and, when
+	  the controller asserts, file/line and the same context, into 0x2002c800 of the DIAGREC
+	  region. The next boot's console dump prints both ('ZDIAG lat ...'). See src/diag_lat.c.
+	  TIMER4 is taken (CORON_DIAG_BOOT also uses it; CORON_DIAG_ENTRY excludes that one).
+
 config CORON_DIAG_ENTRY_CLEAN
 	bool "In the early hook, right after the net is armed, clear what the bootloader's DFU exit leaves behind"
 	depends on CORON_DIAG_BOOT
