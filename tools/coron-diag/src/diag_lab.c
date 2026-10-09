@@ -232,14 +232,22 @@ void bt_ctlr_assert_handle(char *file, uint32_t line);
 
 /* ---- small helpers (ISR-safe: memory reads and stores only) ----------------------------------- */
 
-static uint32_t fnv1a(const void *p, size_t n) {
+static uint32_t fnv1a_step(uint32_t h, const void *p, size_t n) {
     const uint8_t *b = p;
-    uint32_t h = 0x811c9dc5u;
 
     for (size_t i = 0; i < n; i++) {
         h ^= b[i];
         h *= 0x01000193u;
     }
+    return h;
+}
+
+/* checksum of a crash record in place (no copy: the record is ~6 KB and the console thread's stack
+ * is 2 KB; v2's copy on the stack faulted the device on every dump), skipping the sum field */
+static uint32_t rec_sum(const struct crash_rec *c) {
+    uint32_t h = 0x811c9dc5u;
+
+    h = fnv1a_step(h, c, offsetof(struct crash_rec, sum));
     return h;
 }
 
@@ -668,8 +676,7 @@ void bt_ctlr_assert_handle(char *file, uint32_t line) {
     c->ev_n = diag_min_events_tail(c->ev, EV_TAIL);
     copy_tail_u8(c->prep, r->prep, sizeof(struct prep_ev), PREP_RING, r->prep_head, PREP_TAIL, &c->prep_n);
     memcpy(c->pstat, r->pstat, sizeof(c->pstat));
-    c->sum = 0;
-    c->sum = fnv1a(c, sizeof(*c));
+    c->sum = rec_sum(c);
     __DSB();
     r->crash_n++;
     __DSB();
@@ -782,12 +789,8 @@ static void print_prep(void (*out)(const char *fmt, ...), const char *tag, const
 
 static void print_crash(void (*out)(const char *fmt, ...), const struct crash_rec *c) {
     char tag[16], t2[24];
-    struct crash_rec tmp;
-    uint32_t sum;
+    uint32_t sum = rec_sum(c);
 
-    memcpy(&tmp, c, sizeof(tmp));
-    tmp.sum = 0;
-    sum = fnv1a(&tmp, sizeof(tmp));
     snprintk(tag, sizeof(tag), "crash%u", c->idx);
     out("ZDIAG lab %s seq=%u line=%u file=%s up=%u t=%u ipsr=%u iabr=%x/%x pc=%x lr=%x xpsr=%x thr=%s sum=%s",
         tag, c->seq, c->line, c->file, c->up_ms, c->t_us, c->ipsr, c->iabr0, c->iabr1, c->pc, c->lr, c->xpsr,

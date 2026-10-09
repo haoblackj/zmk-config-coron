@@ -73,6 +73,7 @@ if [ "$from" -le 1 ]; then
     say "step 1: write the lab image to R ($RMD5)"
     flash_half "$RSER" coron_R-lab.uf2 "$RMD5" lab-1009-flashR || exit 1
     read_half "$RSER" lab-1009-R0 | grep -E 'crumb|lab live' || exit 1
+    send_cmd "$RSER" c lab-1009-R0-clear >/dev/null   # records left by an earlier image
 fi
 if [ "$from" -le 2 ]; then
     say "step 2: right self-test"; selftest "$RSER" lab-1009-selfR || exit 1
@@ -81,6 +82,7 @@ if [ "$from" -le 3 ]; then
     say "step 3: write the lab image to L ($LMD5) and self-test"
     flash_half "$LSER" coron_L-lab.uf2 "$LMD5" lab-1009-flashL || exit 1
     read_half "$LSER" lab-1009-L0 | grep -E 'crumb|lab live' || exit 1
+    send_cmd "$LSER" c lab-1009-L0-clear >/dev/null
     selftest "$LSER" lab-1009-selfL || exit 1
 fi
 if [ "$from" -le 4 ]; then
