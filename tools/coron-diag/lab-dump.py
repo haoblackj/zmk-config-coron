@@ -75,11 +75,11 @@ def ctl_text(body):
     elif name == 'prepare':
         flags = ('resume ' if b & 1 else '') + ('dequeue ' if b & 2 else '') + (f'lazy={b >> 2} ' if b >> 2 else '')
         ret = d - 0x100000000 if d & 0x80000000 else d
-        t = f'prepare {h(a)} {flags}ticks_at_expire={c} -> {"queued (-EINPROGRESS)" if ret == -115 else ("ran, ret=" + str(ret))}'
+        t = f'prepare {h(a)} {flags}ticks_at_expire={c} -> {"queued (-EINPROGRESS)" if ret == -119 else ("ran, ret=" + str(ret))}'
     elif name == 'tstart':
-        t = f'ticker_start {tid(a)} user={b & 0xff} anchor={c} first={d} (expiry {(c + d) & 0xffffff}) -> {"ok" if (b >> 8) == 0 else ("busy" if (b >> 8) == 1 else "FAIL " + str(b >> 8))}'
+        t = f'ticker_start {tid(a)} user={b & 0xff} anchor={c} first={d} (expiry {(c + d) & 0xffffff}) -> {"ok" if (b >> 8) == 0 else ("busy (job pending)" if (b >> 8) == 2 else "FAIL " + str(b >> 8))}'
     elif name == 'tstop':
-        t = f'ticker_stop {tid(a)} user={b & 0xff} now={c} -> {"ok" if (b >> 8) == 0 else ("busy" if (b >> 8) == 1 else "FAIL " + str(b >> 8))}'
+        t = f'ticker_stop {tid(a)} user={b & 0xff} now={c} -> {"ok" if (b >> 8) == 0 else ("busy (job pending)" if (b >> 8) == 2 else "FAIL " + str(b >> 8))}'
     elif name == 'tstart-op':
         t = f'preempt ticker start answered: status={b} now={c}'
     elif name == 'tstop-op':
@@ -88,7 +88,7 @@ def ctl_text(body):
         t = f'PREEMPT TICKER FIRED for {h(a)}: at_expire={c} now={d} lazy={b & 0xff} force={b >> 8}'
     elif name == 'is-abort':
         ret = c - 0x100000000 if c & 0x80000000 else c
-        t = f'is_abort? curr={h(a)} ({"peripheral" if b >> 8 & 1 else "central"}{", FORCED" if b >> 9 & 1 else ""}) next={h(b & 0xff)} -> {"keep running (0)" if ret == 0 else ("abort (-ECANCELED)" if ret == -125 else ("busy" if ret == -16 else ("resume (-EAGAIN)" if ret == -11 else str(ret))))} now={d}'
+        t = f'is_abort? curr={h(a)} ({"peripheral" if b >> 8 & 1 else "central"}{", FORCED" if b >> 9 & 1 else ""}) next={h(b & 0xff)} -> {"keep running (0)" if ret == 0 else ("abort (-ECANCELED)" if ret == -140 else ("busy" if ret == -16 else ("resume (-EAGAIN)" if ret == -11 else str(ret))))} now={d}'
     elif name == 'abort':
         t = f'abort {h(a)}: {"cancel queued prepare ticks_at_expire=" + str(c) if b else "abort the running event now=" + str(c)}'
     elif name == 'enqueue':
