@@ -59,7 +59,7 @@
 
 #include "diag_lab.h"
 
-#define LAB_MAGIC 0x3442414cu /* 'LAB4' */
+#define LAB_MAGIC 0x3542414cu /* 'LAB5' */
 #define LAB_ADDR 0x2002d000u
 #define LAB_SIZE 0xb000u
 #define PERIOD_US 1000u
@@ -261,6 +261,14 @@ struct labrec {
     struct ctl_ev ctl[CTL_RING];
     uint32_t pre_head;
     struct ctl_ev pre[PRE_RING];
+    /* v5: does a queued prepare get its preempt timeout started? (healthy) or not (the controller
+     * believes one is pending: the stale state seen on 2026-10-09). Tracked per enqueue -> the
+     * dequeued prepare runs; a change of state is a CT_FLIP entry and a record. */
+    uint32_t pre_enq_pending;
+    uint32_t pre_tstart_seen;
+    uint32_t pre_state;  /* 0 unknown, 1 healthy, 2 stale */
+    uint32_t flips;
+    uint32_t stale_runs; /* dequeued prepares that ran without a preempt timeout having been started */
     uint32_t marks;     /* late prepares seen (records taken or dropped) */
     uint32_t mark_busy; /* a mark is waiting for its record */
     uint32_t mark_t_us;
@@ -566,6 +574,31 @@ void diag_lab_ctl_put(uint8_t type, uint8_t a, uint16_t b, uint32_t c, uint32_t 
     }
     r->pre[r->pre_head % PRE_RING] = e;
     r->pre_head++;
+    /* the preempt-timeout health state machine (see the labrec fields) */
+    if (type == CT_ENQ) {
+        r->pre_enq_pending = 1;
+        r->pre_tstart_seen = 0;
+    } else if (type == CT_TSTART && a == 0u) {
+        r->pre_tstart_seen = 1;
+    } else if (type == CT_PREP && (b & 2u) && r->pre_enq_pending) {
+        uint32_t st = r->pre_tstart_seen ? 1u : 2u;
+
+        r->pre_enq_pending = 0;
+        if (st == 2u) {
+            r->stale_runs++;
+        }
+        if (r->pre_state != 0u && st != r->pre_state) {
+            struct ctl_ev f = { .t_us = now_us(), .type = CT_FLIP, .a = (st == 1u), .b = 0, .c = c, .d = r->stale_runs };
+
+            r->flips++;
+            r->ctl[r->ctl_head % CTL_RING] = f;
+            r->ctl_head++;
+            r->pre[r->pre_head % PRE_RING] = f;
+            r->pre_head++;
+            diag_lab_mark((st == 1u) ? 0xf2 : 0xf1, 0); /* a record: 0xf1 = became stale, 0xf2 = healthy again */
+        }
+        r->pre_state = st;
+    }
 }
 
 void diag_lab_prep_put(uint8_t ticker_id, uint32_t ticks_at_event, uint32_t ticks_now, uint32_t result) {
@@ -846,6 +879,7 @@ static const char *ctl_name(uint8_t t) {
     case CT_DEQ: return "dequeue";
     case CT_TUPD: return "tupdate";
     case CT_MARK: return "MARK";
+    case CT_FLIP: return "FLIP";
     default: return "?";
     }
 }
@@ -1022,9 +1056,9 @@ void diag_lab_print(void (*out)(const char *fmt, ...)) {
         out("ZDIAG lab invalid");
         return;
     }
-    out("ZDIAG lab live v4 ticks=%u skipped=%u max=%u@%u over=%u/%u/%u/%u nlat=%u isr=%u ctl=%u thr=%u marks=%u crashes=%u dropped=%u",
+    out("ZDIAG lab live v5 ticks=%u skipped=%u max=%u@%u over=%u/%u/%u/%u nlat=%u isr=%u ctl=%u thr=%u marks=%u crashes=%u dropped=%u prestate=%u flips=%u stale_runs=%u",
         r->ticks, r->skipped, r->max_us, r->max_at_ms, r->over[0], r->over[1], r->over[2], r->over[3], r->n_lat,
-        r->isr_head, r->ctl_head, r->thr_n, r->marks, r->crash_n, r->dropped);
+        r->isr_head, r->ctl_head, r->thr_n, r->marks, r->crash_n, r->dropped, r->pre_state, r->flips, r->stale_runs);
     for (uint32_t i = 0; i < r->thr_n && i < THR_MAX; i++) {
         out("ZDIAG lab thr%u=%s", i, r->thr_name[i]);
     }

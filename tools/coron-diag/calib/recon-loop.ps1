@@ -42,7 +42,7 @@ function Parse([string]$t) {
     if ($t -cmatch 'ZDIAG crumb .* seq=(\d+) st=(\d+)') { $r.seq = [int]$Matches[1]; $r.st = [int]$Matches[2] }
     if ($t -cmatch 'ZDIAG now count host_conn=(\d+)') { $r.host = [int]$Matches[1] }
     if ($t -cmatch 'ZDIAG lab live .* max=(\d+)@\d+ .* crashes=(\d+) dropped=(\d+)') { $r.max = [int]$Matches[1]; $r.crashes = [int]$Matches[2]; $r.dropped = [int]$Matches[3] }
-    if ($t -cmatch 'ZDIAG lab live v3 .* marks=(\d+)') { $r.marks = [int]$Matches[1] }
+    if ($t -cmatch 'ZDIAG lab live v\d+ .* marks=(\d+)') { $r.marks = [int]$Matches[1] }
     # per-ticker lateness counters: id 5 = PC connection (handle 0), id 6 = split connection (handle 1)
     if ($t -cmatch 'ZDIAG lab liveprepstat id=5 n=(\d+) max_late=(\d+) last_late=\d+ over=(\d+)') { $r.over5 = "n=$($Matches[1]) max=$($Matches[2]) over=$($Matches[3])" }
     if ($t -cmatch 'ZDIAG lab liveprepstat id=6 n=(\d+) max_late=(\d+) last_late=\d+ over=(\d+)') { $r.over6 = "n=$($Matches[1]) max=$($Matches[2]) over=$($Matches[3])" }

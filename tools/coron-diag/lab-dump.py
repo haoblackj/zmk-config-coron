@@ -98,7 +98,9 @@ def ctl_text(body):
     elif name == 'tupdate':
         t = f'ticker_update {tid(a)} lazy={b & 0x7fff}{" FORCE" if b & 0x8000 else ""} drift+={c} drift-={d}'
     elif name == 'MARK':
-        t = f'*** late prepare recorded: {tid(a)} late={c} ticks'
+        t = f'*** late prepare recorded: {tid(a)} late={c} ticks' if a < 0xf0 else f'*** record taken: {"became STALE" if a == 0xf1 else ("healthy again" if a == 0xf2 else "self-test")}'
+    elif name == 'FLIP':
+        t = f'*** preempt timeout {"HEALTHY again (started for queued prepares)" if a else "STALE (no longer started for queued prepares)"}: dequeued prepare ticks_at_expire={c}, stale runs so far={d}'
     else:
         t = body
     return f'{dt:8d}  {t}'
