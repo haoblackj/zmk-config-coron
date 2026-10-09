@@ -16,11 +16,14 @@
  *    Stores only: no waits, no clock operations (LFCLKSRC is never written; the spec forbids it
  *    while the LFCLK runs).
  *
- * 2. Breadcrumb: one small record at the fixed address 0x2002c000 (diagrec.overlay) that the
- *    next boot reads back, so a boot that never reaches the console still tells how far it got.
- *    Stage markers are plain stores at the same init levels the test instrument uses. 'running'
- *    is a one-shot work item on the system workqueue, submitted at APPLICATION 99. No periodic
- *    feeding. The console dump prints the previous and the current crumb (diag_min.c).
+ * 2. Breadcrumb (CONFIG_CORON_DIAG_ENTRY_CRUMB, lab images only): one small record at the fixed
+ *    address 0x2002c000 (diagrec.overlay) that the next boot reads back, so a boot that never
+ *    reaches the console still tells how far it got. Stage markers are plain stores at the same
+ *    init levels the test instrument uses. 'running' is a one-shot work item on the system
+ *    workqueue, submitted at APPLICATION 99. No periodic feeding. The console dump prints the
+ *    previous and the current crumb (diag_min.c). The production image does not keep it (leader,
+ *    2026-10-09: no record inside the chip across resets; records go to the PC), so it needs no
+ *    overlay and keeps the full RAM.
  */
 
 #include <string.h>
@@ -34,6 +37,7 @@
 
 #define CRUMB_MAGIC 0x314d5243u /* 'CRM1' */
 #define CRUMB_FMT_VER 1
+#define CRUMB IS_ENABLED(CONFIG_CORON_DIAG_ENTRY_CRUMB)
 
 enum crumb_stage {
     CS_NONE = 0,
@@ -60,6 +64,7 @@ struct crumb {
     uint32_t entry_iser1; /* NVIC ISER[1] at the hook, before the clean (bit 7 = USBD) */
 };
 
+#if CRUMB
 /* The first 32 bytes of the DIAGREC region. The test instrument's diag_area (a different layout,
  * different magic) uses the same region in test builds; the two never coexist in one image. */
 struct crumb diag_crumb Z_GENERIC_SECTION(DIAGREC);
@@ -77,8 +82,12 @@ static inline void crumb_set(uint32_t s) {
     diag_crumb.stage_inv = ~s;
     __DSB();
 }
+#else
+static inline void crumb_set(uint32_t s) { ARG_UNUSED(s); }
+#endif
 
 void board_early_init_hook(void) {
+#if CRUMB
     uint32_t inten = NRF_POWER->INTENSET;
     uint32_t iser1 = NVIC->ISER[1];
 
@@ -92,6 +101,7 @@ void board_early_init_hook(void) {
      * pair stage/~stage written last is the commit point; no CRC needed. */
     diag_crumb.stage_inv = diag_crumb.stage;
     __DSB();
+#endif
 
     /* entry clean (see the header). The USBD is disabled here and every IRQ is masked, so the
      * leftover SUSPEND/RESUME causes and the USBEVENT event are cleared with plain stores. */
@@ -107,6 +117,7 @@ void board_early_init_hook(void) {
     __DSB();
     __ISB();
 
+#if CRUMB
     /* this boot's crumb; the stage pair last */
     diag_crumb.magic = CRUMB_MAGIC;
     diag_crumb.fmt_ver = CRUMB_FMT_VER;
@@ -116,8 +127,10 @@ void board_early_init_hook(void) {
     diag_crumb.entry_iser1 = iser1;
     __DSB();
     crumb_set(CS_HOOK);
+#endif
 }
 
+#if CRUMB
 static int cs_pk1_early(void) { crumb_set(CS_PK1_EARLY); return 0; }
 SYS_INIT(cs_pk1_early, PRE_KERNEL_1, 1);
 static int cs_pk1_after_clk(void) { crumb_set(CS_PK1_AFTER_CLK); return 0; }
@@ -161,3 +174,4 @@ void diag_entry_print(void (*out)(const char *fmt, ...)) {
         prev_valid ? prev.resetreas : 0, prev_valid ? prev.entry_inten : 0,
         prev_valid ? prev.entry_iser1 : 0, diag_crumb.seq, diag_crumb.stage);
 }
+#endif /* CRUMB */

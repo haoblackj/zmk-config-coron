@@ -25,9 +25,19 @@ config CORON_DIAG_ENTRY
 	  with CORON_DIAG_BOOT (same early hook). See src/diag_entry.c. Re-review if EARLY init,
 	  a SoC early hook or SoftDevice/MPSL is ever enabled.
 
+config CORON_DIAG_ENTRY_CRUMB
+	bool "Lab: keep the 8-word boot breadcrumb at 0x2002c000 (needs diagrec.overlay)"
+	depends on CORON_DIAG_ENTRY
+	help
+	  Lab images only (leader, 2026-10-09: nothing kept inside the chip across resets in
+	  production; records go to the PC). Keeps the breadcrumb that the next boot prints as
+	  'ZDIAG crumb ...'. Requires diagrec.overlay (the build fails without the node) and
+	  shrinks the application's RAM to 176 KB. The production image leaves this off: the
+	  entry clean stays, the overlay goes, the RAM is the full 256 KB.
+
 config CORON_DIAG_LAB
 	bool "Lab, once: lateness probe + activity timeline + ISR trace + controller scheduling trace + printk capture + records (3 kept)"
-	depends on CORON_DIAG_ENTRY && !CORON_DIAG_LAT
+	depends on CORON_DIAG_ENTRY_CRUMB && !CORON_DIAG_LAT
 	select BT_CTLR_ASSERT_HANDLER
 	select THREAD_NAME
 	help
@@ -41,7 +51,7 @@ config CORON_DIAG_LAB
 
 config CORON_DIAG_LAT
 	bool "Lab: interrupt-latency probe (TIMER4, 1 kHz, the LLL's IRQ level) and link-layer assert capture"
-	depends on CORON_DIAG_ENTRY
+	depends on CORON_DIAG_ENTRY_CRUMB
 	select BT_CTLR_ASSERT_HANDLER
 	select THREAD_NAME
 	help
