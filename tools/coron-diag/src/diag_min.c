@@ -183,6 +183,7 @@ __weak void diag_lat_print(void (*out)(const char *fmt, ...)) { ARG_UNUSED(out);
 __weak void diag_lab_print(void (*out)(const char *fmt, ...)) { ARG_UNUSED(out); }
 __weak void diag_lab_clear(void) {}
 __weak void diag_lab_selftest(void) {}
+__weak void diag_lab_marktest(void) {}
 
 static void dump(void) {
     out("ZDIAG begin version=prof1 up_ms=%u boot=1 reset=0x%x", k_uptime_get_32(), reset_cause);
@@ -286,6 +287,10 @@ static void diag_min_thread(void *p1, void *p2, void *p3) {
                 out("ZDIAG selftest");
                 k_msleep(50);
                 diag_lab_selftest();
+            } else if (ch == 'M') {
+                /* lab image only: mark-path self-test (a record without a reboot; 'd' shows it) */
+                out("ZDIAG marktest");
+                diag_lab_marktest();
             } else if (ch == 'r') {
                 /* Plain soft reset (the same path a fatal-error reboot takes). */
                 out("ZDIAG reboot");

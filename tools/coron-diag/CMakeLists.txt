@@ -19,9 +19,15 @@ if(CONFIG_CORON_DIAG_LAB)
   # the include directories are scoped to that one file so nothing else sees the controller's
   # internal header names.
   # Lab image only (leader, 2026-10-09: the --wrap ban was about production fixes; allowed here):
-  # every call of the controller's prepare-latency check goes through __wrap_lll_preempt_calc in
-  # diag_lab.c, which calls the real one and records its inputs and result.
-  zephyr_ld_options(-Wl,--wrap=lll_preempt_calc)
+  # the controller's scheduling functions go through __wrap_* in diag_lab_ctlr.c, which call the
+  # real ones and record their inputs and results (v3: the prepare pipeline, the preempt timeout,
+  # abort decisions, ticker updates; v2 had only the prepare-latency check). Every wrapped symbol
+  # is defined in one controller file and called from another, so the link-time wrap catches it.
+  zephyr_ld_options(-Wl,--wrap=lll_preempt_calc -Wl,--wrap=lll_prepare_resolve
+    -Wl,--wrap=ull_prepare_enqueue -Wl,--wrap=ull_prepare_dequeue
+    -Wl,--wrap=ticker_start -Wl,--wrap=ticker_stop -Wl,--wrap=ticker_update
+    -Wl,--wrap=lll_conn_central_is_abort_cb -Wl,--wrap=lll_conn_peripheral_is_abort_cb
+    -Wl,--wrap=lll_conn_abort_cb)
   set(_ctlr ${ZEPHYR_BASE}/subsys/bluetooth/controller)
   # TARGET_DIRECTORY app: source properties are directory-scoped, and 'app' lives in zmk/app
   set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/src/diag_lab_ctlr.c TARGET_DIRECTORY app PROPERTIES

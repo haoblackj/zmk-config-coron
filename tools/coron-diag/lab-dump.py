@@ -46,6 +46,64 @@ def kv(line):
     return {m.group(1): m.group(2) for m in re.finditer(r'(\w+)=(\S+)', line)}
 
 
+def s24(v):
+    """signed 24-bit tick difference"""
+    v &= 0xffffff
+    return v - 0x1000000 if v & 0x800000 else v
+
+
+CONN_BASE = 5  # TICKER_ID_CONN_BASE (printed by liveprepstat "conn=id-5")
+
+
+def tid(i):
+    if i == 0:
+        return 'PREEMPT'
+    if i >= CONN_BASE and i < CONN_BASE + 8:
+        return f'conn{i - CONN_BASE}'
+    return f'id{i}'
+
+
+def ctl_text(body):
+    """one 'ctl' line body ('dt=.. <name> a= b= c= d=') -> words (enum lab_ctl_type, diag_lab.h)"""
+    m = re.match(r'dt=(-?\d+) (\S+) a=(\d+) b=([0-9a-f]+) c=(\d+) d=(\d+)', body)
+    if not m:
+        return body
+    dt, name, a, b, c, d = int(m.group(1)), m.group(2), int(m.group(3)), int(m.group(4), 16), int(m.group(5)), int(m.group(6))
+    h = lambda x: 'NULL' if x == 0xff else ('?' if x == 0xfe else f'conn{x}')
+    if name == 'prepcalc':
+        t = f'lateness check {tid(a)}: event at {c}, now {d} ({s24(d - c):+d} ticks) -> {"LATE overhead=" + str(b) if b else "ok"}'
+    elif name == 'prepare':
+        flags = ('resume ' if b & 1 else '') + ('dequeue ' if b & 2 else '') + (f'lazy={b >> 2} ' if b >> 2 else '')
+        ret = d - 0x100000000 if d & 0x80000000 else d
+        t = f'prepare {h(a)} {flags}ticks_at_expire={c} -> {"queued (-EINPROGRESS)" if ret == -115 else ("ran, ret=" + str(ret))}'
+    elif name == 'tstart':
+        t = f'ticker_start {tid(a)} user={b & 0xff} anchor={c} first={d} (expiry {(c + d) & 0xffffff}) -> {"ok" if (b >> 8) == 0 else ("busy" if (b >> 8) == 1 else "FAIL " + str(b >> 8))}'
+    elif name == 'tstop':
+        t = f'ticker_stop {tid(a)} user={b & 0xff} now={c} -> {"ok" if (b >> 8) == 0 else ("busy" if (b >> 8) == 1 else "FAIL " + str(b >> 8))}'
+    elif name == 'tstart-op':
+        t = f'preempt ticker start answered: status={b} now={c}'
+    elif name == 'tstop-op':
+        t = f'preempt ticker stop answered: status={b} now={c}'
+    elif name == 'preempt':
+        t = f'PREEMPT TICKER FIRED for {h(a)}: at_expire={c} now={d} lazy={b & 0xff} force={b >> 8}'
+    elif name == 'is-abort':
+        ret = c - 0x100000000 if c & 0x80000000 else c
+        t = f'is_abort? curr={h(a)} ({"peripheral" if b >> 8 & 1 else "central"}{", FORCED" if b >> 9 & 1 else ""}) next={h(b & 0xff)} -> {"keep running (0)" if ret == 0 else ("abort (-ECANCELED)" if ret == -125 else ("busy" if ret == -16 else ("resume (-EAGAIN)" if ret == -11 else str(ret))))} now={d}'
+    elif name == 'abort':
+        t = f'abort {h(a)}: {"cancel queued prepare ticks_at_expire=" + str(c) if b else "abort the running event now=" + str(c)}'
+    elif name == 'enqueue':
+        t = f'enqueue {h(a)} {"resume " if b else ""}ticks_at_expire={c}{"" if d else " PIPELINE FULL"}'
+    elif name == 'dequeue':
+        t = f'dequeue (run the pipeline) caller={a} now={c}'
+    elif name == 'tupdate':
+        t = f'ticker_update {tid(a)} lazy={b & 0x7fff}{" FORCE" if b & 0x8000 else ""} drift+={c} drift-={d}'
+    elif name == 'MARK':
+        t = f'*** late prepare recorded: {tid(a)} late={c} ticks'
+    else:
+        t = body
+    return f'{dt:8d}  {t}'
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('dump')
@@ -67,6 +125,10 @@ def main():
                 d = kv(l)
                 pc = int(d.get('pc', '0'), 16)
                 print(l, res(pc) if pc else '')
+        print('  -- live controller steps (dt us relative to the dump):')
+        for l in lines:
+            if l.startswith('ZDIAG lab livectl '):
+                print('   ', ctl_text(l[len('ZDIAG lab livectl '):]))
 
     crashes = sorted({m.group(1) for m in re.finditer(r'^ZDIAG lab (crash\d+) ', text, re.M)})
     for c in crashes:
@@ -98,10 +160,13 @@ def main():
         for l in lines:
             if l.startswith(f'ZDIAG lab {c}prep '):
                 print('   ', l[len(f'ZDIAG lab {c}prep '):])
-        # merged timeline: ISR trace + masked samples, by dt
+        # merged timeline: ISR trace + masked samples + controller steps, by dt
         events = []
         for l in lines:
-            if l.startswith(f'ZDIAG lab {c}isr'):
+            if l.startswith(f'ZDIAG lab {c}ctl '):
+                txt = ctl_text(l[len(f'ZDIAG lab {c}ctl '):])
+                events.append((int(txt.split()[0]), 'CTL ' + txt[10:]))
+            elif l.startswith(f'ZDIAG lab {c}isr'):
                 for item in l[len(f'ZDIAG lab {c}isr'):].split():
                     m = re.match(r'(-?\d+):(.*)', item)
                     if not m:

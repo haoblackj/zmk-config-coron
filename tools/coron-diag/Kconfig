@@ -26,17 +26,18 @@ config CORON_DIAG_ENTRY
 	  a SoC early hook or SoftDevice/MPSL is ever enabled.
 
 config CORON_DIAG_LAB
-	bool "Lab, once: lateness probe + activity timeline + ISR trace + masked-region sampler + printk capture + crash records (4 kept)"
+	bool "Lab, once: lateness probe + activity timeline + ISR trace + controller scheduling trace + printk capture + records (3 kept)"
 	depends on CORON_DIAG_ENTRY && !CORON_DIAG_LAT
 	select BT_CTLR_ASSERT_HANDLER
 	select THREAD_NAME
 	help
 	  Lab image only (2026-10-09, leader: measure once, take everything). See src/diag_lab.c and
-	  diag_lab_ctlr.c. Records live in a 44 KB RAM block at 0x2002d000 (above DIAGREC, 32 KB
-	  below the bootloader's stack top) that survives the fatal reboot; the console dump prints
-	  them ('ZDIAG lab ...'), 'c' clears the crash records, 'A' self-tests the crash path.
-	  TIMER3 and TIMER4 are taken. Needs CONFIG_TRACING_USER (+ISR, +THREAD) and
-	  CONFIG_ZERO_LATENCY_IRQS from the conf (prod-entry-lab.conf).
+	  diag_lab_ctlr.c (the controller's scheduling functions wrapped at link time). Records live
+	  in a 44 KB RAM block at 0x2002d000 (above DIAGREC, 32 KB below the bootloader's stack top)
+	  that survives a reboot; the console dump prints them ('ZDIAG lab ...'), 'c' clears them,
+	  'A' self-tests the assert path, 'M' the late-prepare path. TIMER4 is taken (TIMER3 too when
+	  CONFIG_ZERO_LATENCY_IRQS is on: the masked-region sampler). Needs CONFIG_TRACING_USER
+	  (+ISR, +THREAD) from the conf (prod-entry-lab.conf).
 
 config CORON_DIAG_LAT
 	bool "Lab: interrupt-latency probe (TIMER4, 1 kHz, the LLL's IRQ level) and link-layer assert capture"

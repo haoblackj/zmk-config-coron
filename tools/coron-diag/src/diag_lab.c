@@ -1,11 +1,19 @@
 /*
- * LAB ONLY (CONFIG_CORON_DIAG_LAB, 2026-10-09, v2 after the Codex review). One recording image that
- * takes everything the chip can tell about a link-layer crash, so the measurement is done ONCE
- * (leader: no repeated loops, no flash wear, nothing kept inside the chip in production).
+ * LAB ONLY (CONFIG_CORON_DIAG_LAB, 2026-10-09, v3). One recording image that takes everything the
+ * chip can tell about a late link-layer prepare, so the measurement is done ONCE (leader: no repeated
+ * loops, no flash wear, nothing kept inside the chip in production).
+ *
+ * v3 (after the two crash records of 18:29/18:30): the lateness itself was explained (the split
+ * central's prepare ran only after the PC's connection event ended, i.e. the preempt timeout did
+ * not fire), so this version records the controller's scheduling steps (diag_lab_ctlr.c, --wrap)
+ * and runs with the PRODUCTION interrupt layout (no zero-latency IRQs: v2's ZLI made the radio
+ * interrupts unmaskable, which production does not have) and the production assert setting (off:
+ * a late prepare skips the event; the wrapper takes a record of the rings at that moment instead
+ * of a reboot).
  *
  * Records live in one RAM block at 0x2002d000 (LABREC, 44 KB: above the 4 KB DIAGREC region, below
  * the bootloader's stack top 0x20040000 by 32 KB; not in devicetree; the app's RAM ends at
- * 0x2002c000 so nothing in the image initialises it). Crash records sit at the bottom of the block
+ * 0x2002c000 so nothing in the image initialises it). Records sit at the bottom of the block
  * (farthest from the bootloader's stack); the live rings above them are rebuilt every boot.
  *
  *  1. Lateness probe (TIMER4, free-running 1 MHz, compare advanced by 1000 us each tick, ISR at the
@@ -16,28 +24,26 @@
  *  2. Activity timeline: every tick stores {IABR[0], IABR[1] low byte (USBD = IRQ 39 = bit 7),
  *     thread PC, lateness, thread index} in a 256-entry ring.
  *  3. ISR trace (CONFIG_TRACING_USER + TRACING_ISR + TRACING_THREAD): every ISR entry/exit and
- *     every thread switch, with a microsecond timestamp, in a 512-entry ring. This is what tells a
- *     same-priority ISR tail apart from an irq_lock region, and gives the previous radio event's
- *     ISR timing.
- *  4. Masked-region sampler (TIMER3, 100 us, zero-latency IRQ = hardware priority above BASEPRI):
- *     each sample that finds interrupts masked (BASEPRI/PRIMASK) or any ISR active records
- *     {time, interrupted PC, mask state, IPSR of the interrupted context, IABR} in a 384-entry
- *     ring. A 275 us masked region gets 2-3 samples with the PC inside the culprit. Cost: ~1 us
- *     every 100 us, and up to ~1 us added latency to the LLL per sample.
- *  5. printk capture: at APPLICATION 99 (after the UART console installed its own hook at init
+ *     every thread switch, with a microsecond timestamp, in a 512-entry ring.
+ *  4. Controller scheduling trace: prepares arriving, the pipeline, the preempt timeout's
+ *     start/stop/answer/fire, abort decisions and aborts, lateness checks, ticker updates
+ *     (diag_lab_ctlr.c), 256-entry ring.
+ *  5. Masked-region sampler (TIMER3, 100 us, zero-latency IRQ): only when CONFIG_ZERO_LATENCY_IRQS
+ *     is on (v2); off in v3 so the interrupt layout equals production.
+ *  6. printk capture: at APPLICATION 99 (after the UART console installed its own hook at init
  *     priority 60), the hook is replaced by a tee: characters go to a 2 KB ring AND to the previous
- *     hook (the UART), so the Bluetooth assert text ("Actual EVENT_OVERHEAD_START_US = <n>") is
- *     captured without being lost from the console.
- *  6. Crash capture: CONFIG_BT_CTLR_ASSERT_HANDLER routes every LL_ASSERT to
- *     bt_ctlr_assert_handle(file, line). It fills one crash record in place (file/line, uptime,
- *     interrupted context, thread-name table, the controller's per-connection state (diag_lab_ctlr.c),
- *     NVMC state, tails of all rings and the console module's connection events), seals it with a
- *     checksum, then k_oops() so the watchdog module records and reboots as before. Four records
- *     are kept; after four, further crashes only bump a dropped counter (the first record is never
- *     lost). 'c' on the console clears them. Console 'A' = self-test through the same path.
+ *     hook (the UART), so controller messages are captured without being lost from the console.
+ *  7. Records (3 kept, then a dropped counter): (a) every LL_ASSERT (CONFIG_BT_CTLR_ASSERT_HANDLER ->
+ *     bt_ctlr_assert_handle) fills one in place and k_oops()es as before; (b) a late prepare seen
+ *     by the lll_preempt_calc wrapper marks the time and a work item fills one a few ms later (the
+ *     tails are long enough; dt in the printout is relative to the mark, not the fill); (c) console
+ *     'A' = the assert path, 'M' = the mark path, both self-tests. Each record: file/line or ticker
+ *     id, uptime, interrupted context, thread names, the controller's per-connection state (incl.
+ *     forced, supervision/connect countdown, prepare offset, slot), NVMC, tails of all rings and the
+ *     console module's connection events, sealed with a checksum. 'c' clears them.
  *
- * The console dump prints the live counters/rings and every stored crash record ('ZDIAG lab ...').
- * PCs are resolved with addr2line against THIS image's ELF.
+ * The console dump prints the live counters/rings and every stored record ('ZDIAG lab ...').
+ * PCs are resolved with addr2line against THIS image's ELF (tools/coron-diag/lab-dump.py).
  */
 
 #include <string.h>
@@ -53,7 +59,7 @@
 
 #include "diag_lab.h"
 
-#define LAB_MAGIC 0x3242414cu /* 'LAB2' */
+#define LAB_MAGIC 0x3342414cu /* 'LAB3' */
 #define LAB_ADDR 0x2002d000u
 #define LAB_SIZE 0xb000u
 #define PERIOD_US 1000u
@@ -64,17 +70,29 @@
 #define ISR_RING 512
 #define MSK_RING 384
 #define PK_RING 2048
-#define CRASHES 4
+#define CTL_RING 256
+#define PREP_RING 64
+#define CRASHES 3
 #define NAME_LEN 12
 #define THR_MAX 16
 #define FILE_LEN 20
-/* tails copied into a crash record */
+/* tails copied into a record */
 #define LAT_TAIL 8
 #define ACT_TAIL 64
-#define ISR_TAIL 128
+#define ISR_TAIL 256
 #define MSK_TAIL 128
 #define PK_TAIL 384
 #define EV_TAIL 24
+#define CTL_TAIL 160
+#define PREP_TAIL 32
+#define PREP_STATS 8
+#define LIVE_CTL 48
+
+#if defined(CONFIG_ZERO_LATENCY_IRQS)
+#define HAVE_MSK 1
+#else
+#define HAVE_MSK 0
+#endif
 
 struct lat_ev {
     uint32_t up_ms;
@@ -138,18 +156,30 @@ struct prep_stat {
     uint32_t last_late;
     uint32_t nonzero;   /* calls that returned an overhead */
 };
-#define PREP_RING 64
-#define PREP_TAIL 16
-#define PREP_STATS 8
+
+/* one controller scheduling step (enum lab_ctl_type, diag_lab.h) */
+struct ctl_ev {
+    uint32_t t_us;
+    uint8_t type;
+    uint8_t a;
+    uint16_t b;
+    uint32_t c;
+    uint32_t d;
+};
+
+enum rec_kind { KIND_ASSERT = 0, KIND_MARK = 1 };
 
 struct crash_rec {
     uint32_t magic;
-    uint32_t seq;        /* breadcrumb seq of the boot that crashed */
-    uint32_t idx;        /* 0-based crash index */
-    uint32_t line;
-    char file[FILE_LEN];
+    uint32_t seq;        /* breadcrumb seq of the boot that recorded */
+    uint32_t idx;        /* 0-based record index */
+    uint32_t kind;       /* enum rec_kind */
+    uint32_t line;       /* assert line, or the ticker id of the late prepare */
+    char file[FILE_LEN]; /* assert file tail, or "late" */
     uint32_t up_ms;
-    uint32_t t_us;
+    uint32_t t_us;       /* the moment of the assert / the late check: dt = 0 in the printout */
+    uint32_t cap_t_us;   /* when the rings were copied (= t_us for an assert) */
+    uint32_t late_ticks; /* mark: ticks_now - ticks_at_event at the check */
     uint32_t ipsr;
     uint32_t iabr0;
     uint32_t iabr1;
@@ -170,8 +200,10 @@ struct crash_rec {
     struct act_ev act[ACT_TAIL];
     uint32_t isr_n;
     struct isr_ev isr[ISR_TAIL];
+#if HAVE_MSK
     uint32_t msk_n;
     struct msk_ev msk[MSK_TAIL];
+#endif
     uint32_t pk_n;
     char pk[PK_TAIL];
     uint32_t ev_n;
@@ -179,6 +211,8 @@ struct crash_rec {
     uint32_t prep_n;
     struct prep_ev prep[PREP_TAIL];
     struct prep_stat pstat[PREP_STATS];
+    uint32_t ctl_n;
+    struct ctl_ev ctl[CTL_TAIL];
     uint32_t sum; /* FNV-1a over the record with sum = 0 */
 };
 
@@ -186,8 +220,8 @@ struct labrec {
     /* kept across boots */
     uint32_t magic;
     uint32_t magic_inv;
-    uint32_t crash_n;   /* crash records committed (<= CRASHES) */
-    uint32_t dropped;   /* crashes after the 4 slots were full */
+    uint32_t crash_n;   /* records committed (<= CRASHES) */
+    uint32_t dropped;   /* records after the slots were full */
     struct crash_rec crash[CRASHES];
     /* live, rebuilt every boot (everything from here on) */
     uint32_t live_start;
@@ -204,9 +238,11 @@ struct labrec {
     struct act_ev act[ACT_RING];
     uint32_t isr_head;
     struct isr_ev isr[ISR_RING];
+#if HAVE_MSK
     uint32_t msk_head;
     uint32_t msk_samples;
     struct msk_ev msk[MSK_RING];
+#endif
     uint32_t thr_n;
     char thr_name[THR_MAX][NAME_LEN];
     struct k_thread *thr_ptr[THR_MAX];
@@ -215,6 +251,13 @@ struct labrec {
     uint32_t prep_head;
     struct prep_ev prep[PREP_RING];
     struct prep_stat pstat[PREP_STATS];
+    uint32_t ctl_head;
+    struct ctl_ev ctl[CTL_RING];
+    uint32_t marks;     /* late prepares seen (records taken or dropped) */
+    uint32_t mark_busy; /* a mark is waiting for its record */
+    uint32_t mark_t_us;
+    uint32_t mark_id;
+    uint32_t mark_late;
 };
 BUILD_ASSERT(sizeof(struct labrec) <= LAB_SIZE, "labrec must fit in the LABREC block");
 BUILD_ASSERT(DT_REG_ADDR(DT_NODELABEL(diagrec)) == 0x2002c000 && DT_REG_SIZE(DT_NODELABEL(diagrec)) == 0x1000,
@@ -242,8 +285,8 @@ static uint32_t fnv1a_step(uint32_t h, const void *p, size_t n) {
     return h;
 }
 
-/* checksum of a crash record in place (no copy: the record is ~6 KB and the console thread's stack
- * is 2 KB; v2's copy on the stack faulted the device on every dump), skipping the sum field */
+/* checksum of a record in place (no copy: the record is ~8 KB and the console thread's stack
+ * is 2 KB; v1's copy on the stack faulted the device on every dump), skipping the sum field */
 static uint32_t rec_sum(const struct crash_rec *c) {
     uint32_t h = 0x811c9dc5u;
 
@@ -255,6 +298,8 @@ static inline uint32_t now_us(void) {
     NRF_TIMER4->TASKS_CAPTURE[3] = 1;
     return NRF_TIMER4->CC[3];
 }
+
+uint32_t diag_lab_now_us(void) { return now_us(); }
 
 static uint8_t thr_index(void) {
     struct k_thread *t = k_current_get();
@@ -300,6 +345,7 @@ static void thread_frame(uint32_t *pc, uint32_t *lr, uint32_t *xpsr) {
     }
 }
 
+#if HAVE_MSK
 /* Handler-mode frame: scan upward from the current MSP for the hardware-stacked frame of the
  * interrupted handler (xPSR with the Thumb bit and the expected IPSR, a Thumb return address). */
 static uint32_t handler_frame_pc(uint32_t want_ipsr) {
@@ -320,6 +366,7 @@ static uint32_t handler_frame_pc(uint32_t want_ipsr) {
     }
     return 0;
 }
+#endif
 
 static void fill_lat(struct lat_ev *ev, uint32_t lat) {
     struct labrec *r = REC;
@@ -391,8 +438,9 @@ ISR_DIRECT_DECLARE(lab_isr) {
     return 0;
 }
 
-/* ---- 10 kHz masked-region sampler (TIMER3, zero-latency IRQ) ---------------------------------- */
+/* ---- 10 kHz masked-region sampler (TIMER3, zero-latency IRQ; v2 only) ------------------------- */
 
+#if HAVE_MSK
 ISR_DIRECT_DECLARE(msk_isr) {
     struct labrec *r = REC;
     uint32_t iabr0, iabr1, basepri, primask;
@@ -412,8 +460,6 @@ ISR_DIRECT_DECLARE(msk_isr) {
         struct msk_ev m;
         uint32_t ipsr = 0;
 
-        /* which ISR was interrupted: the active one with the highest hardware priority; approximate
-         * by the lowest-numbered LLL-level ISR present (RADIO=1, TIMER0=8, RTC0=11, SWI4=20, SWI5=21) */
         if (iabr0 != 0u) {
             ipsr = (uint32_t)__builtin_ctz(iabr0) + 16u;
         } else if ((iabr1 & 0xffffu) != 0u) {
@@ -437,6 +483,7 @@ ISR_DIRECT_DECLARE(msk_isr) {
     }
     return 0;
 }
+#endif
 
 /* ---- ISR / thread trace (Zephyr user tracing hooks) ------------------------------------------- */
 
@@ -477,45 +524,55 @@ void sys_trace_thread_switched_in_user(void) {
     trace_put(thr_index(), 2);
 }
 
-/* ---- the controller's prepare-latency check, wrapped (-Wl,--wrap=lll_preempt_calc) ----------- */
+/* ---- controller scheduling trace and the prepare-latency check (fed by diag_lab_ctlr.c) ------- */
 
-struct ull_hdr;
-uint32_t __real_lll_preempt_calc(struct ull_hdr *ull, uint8_t ticker_id, uint32_t ticks_at_event);
-uint32_t ticker_ticks_now_get(void);
-
-uint32_t __wrap_lll_preempt_calc(struct ull_hdr *ull, uint8_t ticker_id, uint32_t ticks_at_event) {
+void diag_lab_ctl_put(uint8_t type, uint8_t a, uint16_t b, uint32_t c, uint32_t d) {
     struct labrec *r = REC;
-    uint32_t now = ticker_ticks_now_get();
-    uint32_t res = __real_lll_preempt_calc(ull, ticker_id, ticks_at_event);
+    struct ctl_ev e;
 
-    if (r->magic == LAB_MAGIC) {
-        struct prep_ev e;
-        uint32_t late = (now - ticks_at_event) & 0x00ffffffu; /* RTC is 24-bit */
-        struct prep_stat *s = NULL;
-
-        if (late & 0x00800000u) {
-            late = 0; /* the event is still in the future */
-        }
-        e.t_us = now_us();
-        e.ticks_at_event = ticks_at_event;
-        e.ticks_now = now;
-        e.result = res;
-        e.ticker_id = ticker_id;
-        e.pad[0] = e.pad[1] = e.pad[2] = 0;
-        r->prep[r->prep_head % PREP_RING] = e;
-        r->prep_head++;
-        for (uint32_t i = 0; i < PREP_STATS; i++) {
-            if (r->pstat[i].used && r->pstat[i].ticker_id == ticker_id) { s = &r->pstat[i]; break; }
-            if (!r->pstat[i].used) { s = &r->pstat[i]; s->used = 1; s->ticker_id = ticker_id; break; }
-        }
-        if (s != NULL) {
-            s->count++;
-            s->last_late = late;
-            if (late > s->max_late) { s->max_late = late; }
-            if (res != 0u) { s->nonzero++; }
-        }
+    if (r->magic != LAB_MAGIC) {
+        return;
     }
-    return res;
+    e.t_us = now_us();
+    e.type = type;
+    e.a = a;
+    e.b = b;
+    e.c = c;
+    e.d = d;
+    r->ctl[r->ctl_head % CTL_RING] = e;
+    r->ctl_head++;
+}
+
+void diag_lab_prep_put(uint8_t ticker_id, uint32_t ticks_at_event, uint32_t ticks_now, uint32_t result) {
+    struct labrec *r = REC;
+    struct prep_ev e;
+    uint32_t late = (ticks_now - ticks_at_event) & 0x00ffffffu; /* RTC is 24-bit */
+    struct prep_stat *s = NULL;
+
+    if (r->magic != LAB_MAGIC) {
+        return;
+    }
+    if (late & 0x00800000u) {
+        late = 0; /* the event is still in the future */
+    }
+    e.t_us = now_us();
+    e.ticks_at_event = ticks_at_event;
+    e.ticks_now = ticks_now;
+    e.result = result;
+    e.ticker_id = ticker_id;
+    e.pad[0] = e.pad[1] = e.pad[2] = 0;
+    r->prep[r->prep_head % PREP_RING] = e;
+    r->prep_head++;
+    for (uint32_t i = 0; i < PREP_STATS; i++) {
+        if (r->pstat[i].used && r->pstat[i].ticker_id == ticker_id) { s = &r->pstat[i]; break; }
+        if (!r->pstat[i].used) { s = &r->pstat[i]; s->used = 1; s->ticker_id = ticker_id; break; }
+    }
+    if (s != NULL) {
+        s->count++;
+        s->last_late = late;
+        if (late > s->max_late) { s->max_late = late; }
+        if (result != 0u) { s->nonzero++; }
+    }
 }
 
 /* ---- printk tee ------------------------------------------------------------------------------- */
@@ -542,7 +599,7 @@ static int lab_init(void) {
         r->magic = LAB_MAGIC;
         r->magic_inv = ~LAB_MAGIC;
     } else {
-        /* clear only the live part; the crash records and their counters stay */
+        /* clear only the live part; the records and their counters stay */
         memset(&r->live_start, 0, sizeof(*r) - offsetof(struct labrec, live_start));
     }
     r->base_ms = k_uptime_get_32();
@@ -564,6 +621,7 @@ static int lab_init(void) {
     irq_enable(TIMER4_IRQn);
     NRF_TIMER4->TASKS_START = 1;
 
+#if HAVE_MSK
     /* TIMER3: 100 us sampler as a zero-latency IRQ (above BASEPRI: it sees masked regions) */
     NRF_TIMER3->TASKS_STOP = 1;
     NRF_TIMER3->MODE = TIMER_MODE_MODE_Timer;
@@ -578,6 +636,7 @@ static int lab_init(void) {
     NVIC_ClearPendingIRQ(TIMER3_IRQn);
     irq_enable(TIMER3_IRQn);
     NRF_TIMER3->TASKS_START = 1;
+#endif
     return 0;
 }
 SYS_INIT(lab_init, POST_KERNEL, 0);
@@ -615,7 +674,7 @@ static int lab_late_init(void) {
 }
 SYS_INIT(lab_late_init, APPLICATION, 99);
 
-/* ---- crash capture ---------------------------------------------------------------------------- */
+/* ---- records ---------------------------------------------------------------------------------- */
 
 static void copy_tail_u8(void *dst, const void *ring, uint32_t esz, uint32_t ring_n, uint32_t head,
                          uint32_t tail_n, uint32_t *out_n) {
@@ -628,7 +687,8 @@ static void copy_tail_u8(void *dst, const void *ring, uint32_t esz, uint32_t rin
     *out_n = cnt;
 }
 
-void bt_ctlr_assert_handle(char *file, uint32_t line) {
+/* fill the next free record from the rings; returns NULL when the slots are full (dropped++) */
+static struct crash_rec *take_record(uint32_t kind, const char *file, uint32_t line, uint32_t t_us) {
     struct labrec *r = REC;
     struct crash_rec *c;
     size_t len = file ? strlen(file) : 0;
@@ -639,20 +699,22 @@ void bt_ctlr_assert_handle(char *file, uint32_t line) {
             r->dropped++;
             __DSB();
         }
-        k_oops();
+        return NULL;
     }
     c = &r->crash[r->crash_n];
     memset(c, 0, sizeof(*c));
     c->magic = LAB_MAGIC;
     c->seq = diag_entry_seq();
     c->idx = r->crash_n;
+    c->kind = kind;
     c->line = line;
     if (len > 0) {
         const char *tail = (len > FILE_LEN - 1) ? file + len - (FILE_LEN - 1) : file;
         strncpy(c->file, tail, FILE_LEN - 1);
     }
     c->up_ms = r->base_ms + r->ticks;
-    c->t_us = now_us();
+    c->t_us = t_us;
+    c->cap_t_us = now_us();
     c->ipsr = __get_IPSR();
     c->iabr0 = NVIC->IABR[0];
     c->iabr1 = NVIC->IABR[1];
@@ -671,22 +733,94 @@ void bt_ctlr_assert_handle(char *file, uint32_t line) {
     copy_tail_u8(c->lat, r->lat, sizeof(struct lat_ev), LAT_RING, r->n_lat, LAT_TAIL, &c->lat_n);
     copy_tail_u8(c->act, r->act, sizeof(struct act_ev), ACT_RING, r->act_head, ACT_TAIL, &c->act_n);
     copy_tail_u8(c->isr, r->isr, sizeof(struct isr_ev), ISR_RING, r->isr_head, ISR_TAIL, &c->isr_n);
+#if HAVE_MSK
     copy_tail_u8(c->msk, r->msk, sizeof(struct msk_ev), MSK_RING, r->msk_head, MSK_TAIL, &c->msk_n);
+#endif
     copy_tail_u8(c->pk, r->pk, 1, PK_RING, r->pk_head, PK_TAIL, &c->pk_n);
     c->ev_n = diag_min_events_tail(c->ev, EV_TAIL);
     copy_tail_u8(c->prep, r->prep, sizeof(struct prep_ev), PREP_RING, r->prep_head, PREP_TAIL, &c->prep_n);
     memcpy(c->pstat, r->pstat, sizeof(c->pstat));
+    copy_tail_u8(c->ctl, r->ctl, sizeof(struct ctl_ev), CTL_RING, r->ctl_head, CTL_TAIL, &c->ctl_n);
+    return c;
+}
+
+static void commit_record(struct crash_rec *c) {
+    struct labrec *r = REC;
+
     c->sum = rec_sum(c);
     __DSB();
     r->crash_n++;
     __DSB();
+}
+
+void bt_ctlr_assert_handle(char *file, uint32_t line) {
+    struct crash_rec *c = take_record(KIND_ASSERT, file, line, now_us());
+
+    if (c != NULL) {
+        commit_record(c);
+    }
     k_oops();
+}
+
+/* a late prepare: the wrapper runs in the LLL's ISR, so only mark here and fill the record from
+ * the system work queue (an 8 KB copy inside the radio ISR would itself delay the controller) */
+static void mark_work_fn(struct k_work *w) {
+    struct labrec *r = REC;
+    struct crash_rec *c;
+
+    ARG_UNUSED(w);
+    c = take_record(KIND_MARK, "late", r->mark_id, r->mark_t_us);
+    if (c != NULL) {
+        c->late_ticks = r->mark_late;
+        commit_record(c);
+    }
+    r->mark_busy = 0;
+    __DSB();
+}
+static K_WORK_DEFINE(mark_work, mark_work_fn);
+
+void diag_lab_mark(uint8_t ticker_id, uint32_t late_ticks) {
+    struct labrec *r = REC;
+
+    if (r->magic != LAB_MAGIC) {
+        return;
+    }
+    r->marks++;
+    diag_lab_ctl_put(CT_MARK, ticker_id, 0, late_ticks, 0);
+    if (r->mark_busy) {
+        return; /* one at a time; the counter keeps the rest */
+    }
+    r->mark_busy = 1;
+    r->mark_t_us = now_us();
+    r->mark_id = ticker_id;
+    r->mark_late = late_ticks;
+    __DSB();
+    k_work_submit(&mark_work);
 }
 
 /* ---- console output --------------------------------------------------------------------------- */
 
 static const char *thr_of(const char names[][NAME_LEN], uint32_t n, uint8_t i) {
     return (i < THR_MAX && i < n) ? names[i] : "?";
+}
+
+static const char *ctl_name(uint8_t t) {
+    switch (t) {
+    case CT_PREPCALC: return "prepcalc";
+    case CT_PREP: return "prepare";
+    case CT_TSTART: return "tstart";
+    case CT_TSTOP: return "tstop";
+    case CT_TSTART_OP: return "tstart-op";
+    case CT_TSTOP_OP: return "tstop-op";
+    case CT_PREEMPT: return "preempt";
+    case CT_ISABORT: return "is-abort";
+    case CT_ABORT: return "abort";
+    case CT_ENQ: return "enqueue";
+    case CT_DEQ: return "dequeue";
+    case CT_TUPD: return "tupdate";
+    case CT_MARK: return "MARK";
+    default: return "?";
+    }
 }
 
 static void print_lat(void (*out)(const char *fmt, ...), const char *tag, const struct lat_ev *ev) {
@@ -743,6 +877,7 @@ static void print_isr(void (*out)(const char *fmt, ...), const char *tag, const 
     }
 }
 
+#if HAVE_MSK
 static void print_msk(void (*out)(const char *fmt, ...), const char *tag, const struct msk_ev *m, uint32_t n,
                       uint32_t t_ref) {
     for (uint32_t i = 0; i < n; i++) {
@@ -750,6 +885,7 @@ static void print_msk(void (*out)(const char *fmt, ...), const char *tag, const 
             m[i].pc, m[i].basepri, m[i].primask, m[i].ipsr, m[i].iabr0, m[i].iabr1l);
     }
 }
+#endif
 
 static void print_text(void (*out)(const char *fmt, ...), const char *tag, const char *s, uint32_t n) {
     char line[121];
@@ -787,23 +923,32 @@ static void print_prep(void (*out)(const char *fmt, ...), const char *tag, const
     }
 }
 
+static void print_ctl(void (*out)(const char *fmt, ...), const char *tag, const struct ctl_ev *e, uint32_t n,
+                      uint32_t t_ref) {
+    for (uint32_t i = 0; i < n; i++) {
+        out("ZDIAG lab %s dt=%d %s a=%u b=%x c=%u d=%u", tag, (int32_t)(e[i].t_us - t_ref), ctl_name(e[i].type),
+            e[i].a, e[i].b, e[i].c, e[i].d);
+    }
+}
+
 static void print_crash(void (*out)(const char *fmt, ...), const struct crash_rec *c) {
     char tag[16], t2[24];
     uint32_t sum = rec_sum(c);
 
     snprintk(tag, sizeof(tag), "crash%u", c->idx);
-    out("ZDIAG lab %s seq=%u line=%u file=%s up=%u t=%u ipsr=%u iabr=%x/%x pc=%x lr=%x xpsr=%x thr=%s sum=%s",
-        tag, c->seq, c->line, c->file, c->up_ms, c->t_us, c->ipsr, c->iabr0, c->iabr1, c->pc, c->lr, c->xpsr,
-        c->thr, (sum == c->sum) ? "ok" : "BAD");
+    out("ZDIAG lab %s seq=%u kind=%s line=%u file=%s up=%u t=%u cap=%u late=%u ipsr=%u iabr=%x/%x pc=%x lr=%x xpsr=%x thr=%s sum=%s",
+        tag, c->seq, (c->kind == KIND_MARK) ? "late" : "assert", c->line, c->file, c->up_ms, c->t_us, c->cap_t_us,
+        c->late_ticks, c->ipsr, c->iabr0, c->iabr1, c->pc, c->lr, c->xpsr, c->thr, (sum == c->sum) ? "ok" : "BAD");
     out("ZDIAG lab %sstat max=%u over=%u/%u/%u/%u skipped=%u nlat=%u ticker=%u rtc0=%u nvmc=%x/%x", tag,
         c->max_us, c->over[0], c->over[1], c->over[2], c->over[3], c->skipped, c->n_lat, c->ctlr.ticker_now,
         c->ctlr.rtc0_counter, c->ctlr.nvmc_config, c->ctlr.nvmc_ready);
     for (uint32_t h = 0; h < LAB_CONN_MAX; h++) {
         const struct lab_conn_snap *s = &c->ctlr.conn[h];
 
-        out("ZDIAG lab %sconn h=%u valid=%u role=%u interval=%u latency=%u lat_prep=%u lazy_prep=%u lat_ev=%u evcnt=%u",
-            tag, h, s->valid, s->role, s->interval, s->latency, s->latency_prepare, s->lazy_prepare,
-            s->latency_event, s->event_counter);
+        out("ZDIAG lab %sconn h=%u valid=%u connected=%u role=%u interval=%u latency=%u lat_prep=%u lazy_prep=%u lat_ev=%u evcnt=%u forced=%u sv_exp=%u conn_exp=%u sv_to=%u prep2start=%x slot=%u",
+            tag, h, s->valid, s->connected, s->role, s->interval, s->latency, s->latency_prepare, s->lazy_prepare,
+            s->latency_event, s->event_counter, s->forced, s->supervision_expire, s->connect_expire,
+            s->supervision_timeout, s->ticks_prepare_to_start, s->ticks_slot);
     }
     for (uint32_t i = 0; i < MIN(c->thr_n, (uint32_t)THR_MAX); i++) {
         out("ZDIAG lab %sthr%u=%s", tag, i, c->thr_name[i]);
@@ -818,12 +963,16 @@ static void print_crash(void (*out)(const char *fmt, ...), const struct crash_re
     }
     snprintk(t2, sizeof(t2), "%sprep", tag);
     print_prep(out, t2, c->pstat, c->prep, MIN(c->prep_n, (uint32_t)PREP_TAIL), c->t_us);
+    snprintk(t2, sizeof(t2), "%sctl", tag);
+    print_ctl(out, t2, c->ctl, MIN(c->ctl_n, (uint32_t)CTL_TAIL), c->t_us);
     snprintk(t2, sizeof(t2), "%sact", tag);
     print_act(out, t2, c->thr_name, c->thr_n, c->act, MIN(c->act_n, (uint32_t)ACT_TAIL));
     snprintk(t2, sizeof(t2), "%sisr", tag);
     print_isr(out, t2, c->thr_name, c->thr_n, c->isr, MIN(c->isr_n, (uint32_t)ISR_TAIL), c->t_us);
+#if HAVE_MSK
     snprintk(t2, sizeof(t2), "%smsk", tag);
     print_msk(out, t2, c->msk, MIN(c->msk_n, (uint32_t)MSK_TAIL), c->t_us);
+#endif
     snprintk(t2, sizeof(t2), "%spk", tag);
     print_text(out, t2, c->pk, MIN(c->pk_n, (uint32_t)PK_TAIL));
 }
@@ -835,9 +984,9 @@ void diag_lab_print(void (*out)(const char *fmt, ...)) {
         out("ZDIAG lab invalid");
         return;
     }
-    out("ZDIAG lab live ticks=%u skipped=%u max=%u@%u over=%u/%u/%u/%u nlat=%u msk=%u/%u isr=%u thr=%u crashes=%u dropped=%u",
+    out("ZDIAG lab live v3 ticks=%u skipped=%u max=%u@%u over=%u/%u/%u/%u nlat=%u isr=%u ctl=%u thr=%u marks=%u crashes=%u dropped=%u",
         r->ticks, r->skipped, r->max_us, r->max_at_ms, r->over[0], r->over[1], r->over[2], r->over[3], r->n_lat,
-        r->msk_head, r->msk_samples, r->isr_head, r->thr_n, r->crash_n, r->dropped);
+        r->isr_head, r->ctl_head, r->thr_n, r->marks, r->crash_n, r->dropped);
     for (uint32_t i = 0; i < r->thr_n && i < THR_MAX; i++) {
         out("ZDIAG lab thr%u=%s", i, r->thr_name[i]);
     }
@@ -850,12 +999,20 @@ void diag_lab_print(void (*out)(const char *fmt, ...)) {
         }
     }
     {
-        /* live prepare stats and the last 16 checks (the margin every radio event has right now) */
+        /* live prepare stats and the last checks (the margin every radio event has right now) */
         struct prep_ev tail[PREP_TAIL];
         uint32_t n;
 
         copy_tail_u8(tail, r->prep, sizeof(struct prep_ev), PREP_RING, r->prep_head, PREP_TAIL, &n);
         print_prep(out, "liveprep", r->pstat, tail, n, now_us());
+    }
+    {
+        /* the last controller scheduling steps, newest last; dt relative to now */
+        struct ctl_ev tail[LIVE_CTL];
+        uint32_t n;
+
+        copy_tail_u8(tail, r->ctl, sizeof(struct ctl_ev), CTL_RING, r->ctl_head, LIVE_CTL, &n);
+        print_ctl(out, "livectl", tail, n, now_us());
     }
     for (uint32_t k = 0; k < MIN(r->crash_n, (uint32_t)CRASHES); k++) {
         if (r->crash[k].magic == LAB_MAGIC) {
@@ -867,6 +1024,11 @@ void diag_lab_print(void (*out)(const char *fmt, ...)) {
 
 void diag_lab_selftest(void) {
     selftest_armed = true;
+}
+
+/* console 'M': the mark path (a record without a reboot), ticker id 0xee, late 4242 */
+void diag_lab_marktest(void) {
+    diag_lab_mark(0xee, 4242);
 }
 
 void diag_lab_clear(void) {
