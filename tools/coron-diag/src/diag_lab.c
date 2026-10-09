@@ -119,6 +119,29 @@ struct ev_out {
     uint16_t b;
 };
 
+/* one call of lll_preempt_calc (the controller's prepare-latency check), via --wrap */
+struct prep_ev {
+    uint32_t t_us;
+    uint32_t ticks_at_event; /* the radio event's planned time (RTC ticks, 30.52 us) */
+    uint32_t ticks_now;      /* ticker time when the check ran */
+    uint32_t result;         /* 0 = in time; else the overhead the controller computed (ticks) */
+    uint8_t ticker_id;       /* ticker_id - TICKER_ID_CONN_BASE = connection handle */
+    uint8_t pad[3];
+};
+
+struct prep_stat {
+    uint8_t ticker_id;
+    uint8_t used;
+    uint16_t pad;
+    uint32_t count;
+    uint32_t max_late;  /* max of (ticks_now - ticks_at_event), RTC ticks, signed-clamped at 0 */
+    uint32_t last_late;
+    uint32_t nonzero;   /* calls that returned an overhead */
+};
+#define PREP_RING 64
+#define PREP_TAIL 16
+#define PREP_STATS 8
+
 struct crash_rec {
     uint32_t magic;
     uint32_t seq;        /* breadcrumb seq of the boot that crashed */
@@ -153,6 +176,9 @@ struct crash_rec {
     char pk[PK_TAIL];
     uint32_t ev_n;
     struct ev_out ev[EV_TAIL];
+    uint32_t prep_n;
+    struct prep_ev prep[PREP_TAIL];
+    struct prep_stat pstat[PREP_STATS];
     uint32_t sum; /* FNV-1a over the record with sum = 0 */
 };
 
@@ -186,6 +212,9 @@ struct labrec {
     struct k_thread *thr_ptr[THR_MAX];
     uint32_t pk_head;
     char pk[PK_RING];
+    uint32_t prep_head;
+    struct prep_ev prep[PREP_RING];
+    struct prep_stat pstat[PREP_STATS];
 };
 BUILD_ASSERT(sizeof(struct labrec) <= LAB_SIZE, "labrec must fit in the LABREC block");
 BUILD_ASSERT(DT_REG_ADDR(DT_NODELABEL(diagrec)) == 0x2002c000 && DT_REG_SIZE(DT_NODELABEL(diagrec)) == 0x1000,
@@ -440,6 +469,47 @@ void sys_trace_thread_switched_in_user(void) {
     trace_put(thr_index(), 2);
 }
 
+/* ---- the controller's prepare-latency check, wrapped (-Wl,--wrap=lll_preempt_calc) ----------- */
+
+struct ull_hdr;
+uint32_t __real_lll_preempt_calc(struct ull_hdr *ull, uint8_t ticker_id, uint32_t ticks_at_event);
+uint32_t ticker_ticks_now_get(void);
+
+uint32_t __wrap_lll_preempt_calc(struct ull_hdr *ull, uint8_t ticker_id, uint32_t ticks_at_event) {
+    struct labrec *r = REC;
+    uint32_t now = ticker_ticks_now_get();
+    uint32_t res = __real_lll_preempt_calc(ull, ticker_id, ticks_at_event);
+
+    if (r->magic == LAB_MAGIC) {
+        struct prep_ev e;
+        uint32_t late = (now - ticks_at_event) & 0x00ffffffu; /* RTC is 24-bit */
+        struct prep_stat *s = NULL;
+
+        if (late & 0x00800000u) {
+            late = 0; /* the event is still in the future */
+        }
+        e.t_us = now_us();
+        e.ticks_at_event = ticks_at_event;
+        e.ticks_now = now;
+        e.result = res;
+        e.ticker_id = ticker_id;
+        e.pad[0] = e.pad[1] = e.pad[2] = 0;
+        r->prep[r->prep_head % PREP_RING] = e;
+        r->prep_head++;
+        for (uint32_t i = 0; i < PREP_STATS; i++) {
+            if (r->pstat[i].used && r->pstat[i].ticker_id == ticker_id) { s = &r->pstat[i]; break; }
+            if (!r->pstat[i].used) { s = &r->pstat[i]; s->used = 1; s->ticker_id = ticker_id; break; }
+        }
+        if (s != NULL) {
+            s->count++;
+            s->last_late = late;
+            if (late > s->max_late) { s->max_late = late; }
+            if (res != 0u) { s->nonzero++; }
+        }
+    }
+    return res;
+}
+
 /* ---- printk tee ------------------------------------------------------------------------------- */
 
 static int lab_printk_char(int c) {
@@ -596,6 +666,8 @@ void bt_ctlr_assert_handle(char *file, uint32_t line) {
     copy_tail_u8(c->msk, r->msk, sizeof(struct msk_ev), MSK_RING, r->msk_head, MSK_TAIL, &c->msk_n);
     copy_tail_u8(c->pk, r->pk, 1, PK_RING, r->pk_head, PK_TAIL, &c->pk_n);
     c->ev_n = diag_min_events_tail(c->ev, EV_TAIL);
+    copy_tail_u8(c->prep, r->prep, sizeof(struct prep_ev), PREP_RING, r->prep_head, PREP_TAIL, &c->prep_n);
+    memcpy(c->pstat, r->pstat, sizeof(c->pstat));
     c->sum = 0;
     c->sum = fnv1a(c, sizeof(*c));
     __DSB();
@@ -692,6 +764,22 @@ static void print_text(void (*out)(const char *fmt, ...), const char *tag, const
     if (k > 0) { out("ZDIAG lab %s |%s", tag, line); }
 }
 
+static void print_prep(void (*out)(const char *fmt, ...), const char *tag, const struct prep_stat *st,
+                       const struct prep_ev *e, uint32_t n, uint32_t t_ref) {
+    for (uint32_t i = 0; i < PREP_STATS; i++) {
+        if (st[i].used) {
+            out("ZDIAG lab %sstat id=%u n=%u max_late=%u last_late=%u over=%u (ticks of 30.52us; conn=id-%u)", tag,
+                st[i].ticker_id, st[i].count, st[i].max_late, st[i].last_late, st[i].nonzero,
+                diag_lab_ticker_conn_base());
+        }
+    }
+    for (uint32_t i = 0; i < n; i++) {
+        out("ZDIAG lab %s dt=%d id=%u at=%u now=%u late=%d result=%u", tag, (int32_t)(e[i].t_us - t_ref),
+            e[i].ticker_id, e[i].ticks_at_event, e[i].ticks_now,
+            (int32_t)((e[i].ticks_now - e[i].ticks_at_event) << 8) >> 8, e[i].result);
+    }
+}
+
 static void print_crash(void (*out)(const char *fmt, ...), const struct crash_rec *c) {
     char tag[16], t2[24];
     struct crash_rec tmp;
@@ -725,6 +813,8 @@ static void print_crash(void (*out)(const char *fmt, ...), const struct crash_re
         out("ZDIAG lab %sev ms=%u type=%s a=%u b=%u", tag, c->ev[i].ms, diag_min_ev_name(c->ev[i].type),
             c->ev[i].a, c->ev[i].b);
     }
+    snprintk(t2, sizeof(t2), "%sprep", tag);
+    print_prep(out, t2, c->pstat, c->prep, MIN(c->prep_n, (uint32_t)PREP_TAIL), c->t_us);
     snprintk(t2, sizeof(t2), "%sact", tag);
     print_act(out, t2, c->thr_name, c->thr_n, c->act, MIN(c->act_n, (uint32_t)ACT_TAIL));
     snprintk(t2, sizeof(t2), "%sisr", tag);
@@ -755,6 +845,14 @@ void diag_lab_print(void (*out)(const char *fmt, ...)) {
         for (uint32_t i = 0; i < cnt; i++) {
             print_lat(out, "livelat", &r->lat[(first + i) % LAT_RING]);
         }
+    }
+    {
+        /* live prepare stats and the last 16 checks (the margin every radio event has right now) */
+        struct prep_ev tail[PREP_TAIL];
+        uint32_t n;
+
+        copy_tail_u8(tail, r->prep, sizeof(struct prep_ev), PREP_RING, r->prep_head, PREP_TAIL, &n);
+        print_prep(out, "liveprep", r->pstat, tail, n, now_us());
     }
     for (uint32_t k = 0; k < MIN(r->crash_n, (uint32_t)CRASHES); k++) {
         if (r->crash[k].magic == LAB_MAGIC) {

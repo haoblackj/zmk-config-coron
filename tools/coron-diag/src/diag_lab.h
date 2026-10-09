@@ -25,3 +25,5 @@ struct lab_ctlr_snap {
 };
 
 void diag_lab_ctlr_snapshot(struct lab_ctlr_snap *s);
+/* TICKER_ID_CONN_BASE of this build: a prepare's ticker_id minus this is the connection handle */
+uint32_t diag_lab_ticker_conn_base(void);

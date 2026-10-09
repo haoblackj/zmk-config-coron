@@ -39,6 +39,8 @@
 
 extern struct lll_conn *ull_conn_lll_get(uint16_t handle);
 
+uint32_t diag_lab_ticker_conn_base(void) { return TICKER_ID_CONN_BASE; }
+
 void diag_lab_ctlr_snapshot(struct lab_ctlr_snap *s) {
     memset(s, 0, sizeof(*s));
     s->ticker_now = ticker_ticks_now_get();

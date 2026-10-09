@@ -18,6 +18,10 @@ if(CONFIG_CORON_DIAG_LAB)
   # diag_lab_ctlr.c reads the controller's lll_conn through its own headers (no Zephyr change);
   # the include directories are scoped to that one file so nothing else sees the controller's
   # internal header names.
+  # Lab image only (leader, 2026-10-09: the --wrap ban was about production fixes; allowed here):
+  # every call of the controller's prepare-latency check goes through __wrap_lll_preempt_calc in
+  # diag_lab.c, which calls the real one and records its inputs and result.
+  zephyr_ld_options(-Wl,--wrap=lll_preempt_calc)
   set(_ctlr ${ZEPHYR_BASE}/subsys/bluetooth/controller)
   # TARGET_DIRECTORY app: source properties are directory-scoped, and 'app' lives in zmk/app
   set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/src/diag_lab_ctlr.c TARGET_DIRECTORY app PROPERTIES
