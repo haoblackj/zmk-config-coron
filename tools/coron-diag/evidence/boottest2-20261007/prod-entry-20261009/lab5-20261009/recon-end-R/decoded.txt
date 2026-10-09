@@ -1,0 +1,1593 @@
+ZDIAG begin version=prof1 up_ms=1613091 boot=1 reset=0x2
+ZDIAG crumb pv=1 pseq=386 pst=10 prst=0x4 pint=0x0 piser1=0x0 seq=387 st=10
+ZDIAG lab live v5 ticks=1613615 skipped=0 max=100@2400 over=1/0/0/0 nlat=1 isr=5110564 ctl=666103 thr=14 marks=15 crashes=3 dropped=11 prestate=1 flips=10 stale_runs=1240
+ZDIAG lab livelat up=2400 lat=100 iabr=8000000/0 pc=6b92c lr=6b21f thr=idle arch_cpu_idle (cpu_idle.c:103)
+ZDIAG lab liveprepstat id=2 n=576 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5) 
+ZDIAG lab liveprepstat id=4 n=14 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5) 
+ZDIAG lab liveprepstat id=6 n=205139 max_late=92 last_late=0 over=4 (ticks of 30.52us; conn=id-5) 
+ZDIAG lab liveprepstat id=5 n=10010 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5) 
+  -- live controller steps (dt us relative to the dump):
+     -106845  lateness check conn1: event at 2530985, now 2530938 (-47 ticks) -> ok
+     -106842  prepare conn1 ticks_at_expire=2530936 -> ran, ret=0
+     -104832  dequeue (run the pipeline) caller=0 now=2531004
+      -99338  lateness check conn1: event at 2531231, now 2531184 (-47 ticks) -> ok
+      -99335  prepare conn1 ticks_at_expire=2531182 -> ran, ret=0
+      -97333  dequeue (run the pipeline) caller=0 now=2531250
+      -91831  lateness check conn1: event at 2531477, now 2531430 (-47 ticks) -> ok
+      -91828  prepare conn1 ticks_at_expire=2531428 -> ran, ret=0
+      -89833  dequeue (run the pipeline) caller=0 now=2531495
+      -84324  lateness check conn1: event at 2531723, now 2531676 (-47 ticks) -> ok
+      -84321  prepare conn1 ticks_at_expire=2531674 -> ran, ret=0
+      -82334  dequeue (run the pipeline) caller=0 now=2531741
+      -76848  lateness check conn1: event at 2531968, now 2531921 (-47 ticks) -> ok
+      -76844  prepare conn1 ticks_at_expire=2531919 -> ran, ret=0
+      -74834  dequeue (run the pipeline) caller=0 now=2531987
+      -69341  lateness check conn1: event at 2532214, now 2532167 (-47 ticks) -> ok
+      -69337  prepare conn1 ticks_at_expire=2532165 -> ran, ret=0
+      -67334  dequeue (run the pipeline) caller=0 now=2532233
+      -61834  lateness check conn1: event at 2532460, now 2532413 (-47 ticks) -> ok
+      -61830  prepare conn1 ticks_at_expire=2532411 -> ran, ret=0
+      -59834  dequeue (run the pipeline) caller=0 now=2532479
+      -54338  lateness check conn1: event at 2532706, now 2532658 (-48 ticks) -> ok
+      -54335  prepare conn1 ticks_at_expire=2532657 -> ran, ret=0
+      -52334  dequeue (run the pipeline) caller=0 now=2532724
+      -46850  lateness check conn1: event at 2532951, now 2532904 (-47 ticks) -> ok
+      -46847  prepare conn1 ticks_at_expire=2532902 -> ran, ret=0
+      -44846  dequeue (run the pipeline) caller=0 now=2532970
+      -39343  lateness check conn1: event at 2533197, now 2533150 (-47 ticks) -> ok
+      -39340  prepare conn1 ticks_at_expire=2533148 -> ran, ret=0
+      -37335  dequeue (run the pipeline) caller=0 now=2533216
+      -31836  lateness check conn1: event at 2533443, now 2533396 (-47 ticks) -> ok
+      -31833  prepare conn1 ticks_at_expire=2533394 -> ran, ret=0
+      -29836  dequeue (run the pipeline) caller=0 now=2533462
+      -26862  lateness check conn0: event at 2533606, now 2533559 (-47 ticks) -> ok
+      -26859  prepare conn0 lazy=10 ticks_at_expire=2533557 -> ran, ret=0
+      -24719  dequeue (run the pipeline) caller=0 now=2533629
+      -24665  ticker_update conn0 lazy=0 drift+=5 drift-=2
+      -24330  lateness check conn1: event at 2533689, now 2533642 (-47 ticks) -> ok
+      -24326  prepare conn1 ticks_at_expire=2533640 -> ran, ret=0
+      -22347  dequeue (run the pipeline) caller=0 now=2533707
+      -16864  lateness check conn1: event at 2533934, now 2533886 (-48 ticks) -> ok
+      -16861  prepare conn1 ticks_at_expire=2533885 -> ran, ret=0
+      -14837  dequeue (run the pipeline) caller=0 now=2533953
+       -9346  lateness check conn1: event at 2534180, now 2534133 (-47 ticks) -> ok
+       -9342  prepare conn1 ticks_at_expire=2534131 -> ran, ret=0
+       -7337  dequeue (run the pipeline) caller=0 now=2534199
+       -1839  lateness check conn1: event at 2534426, now 2534379 (-47 ticks) -> ok
+       -1835  prepare conn1 ticks_at_expire=2534377 -> ran, ret=0
+  -- live preempt history (sparse ring, reaches further back):
+    -110893766  prepare ? ticks_at_expire=15686387 -> queued (-EINPROGRESS)
+    -110893012  prepare ? dequeue ticks_at_expire=15686387 -> ran, ret=0
+    -110782852  ticker_start conn0 user=1 anchor=15689932 first=107 (expiry 15690039) -> busy (job pending)
+    -110780092  enqueue conn1 ticks_at_expire=15690112
+    -110780087  prepare conn1 ticks_at_expire=15690112 -> queued (-EINPROGRESS)
+    -110777307  lateness check conn1: event at 15690161, now 15690204 (+43 ticks) -> LATE overhead=46
+    -110777303  *** late prepare recorded: conn1 late=43 ticks
+    -110777287  prepare conn1 dequeue ticks_at_expire=15690112 -> ran, ret=0
+    -109860131  ticker_start conn1 user=1 anchor=15720258 first=1 (expiry 15720259) -> busy (job pending)
+    -61863346  ticker_stop conn0 user=1 now=515868 -> ok
+    -61854617  enqueue conn1 ticks_at_expire=516153
+    -61854606  ticker_stop PREEMPT user=0 now=516155 -> busy (job pending)
+    -61854597  ticker_start PREEMPT user=0 anchor=516153 first=49 (expiry 516202) -> busy (job pending)
+    -61854594  prepare conn1 ticks_at_expire=516153 -> queued (-EINPROGRESS)
+    -61854531  preempt ticker stop answered: status=1 now=516157
+    -61854514  preempt ticker start answered: status=0 now=516158
+    -61853931  prepare conn1 dequeue ticks_at_expire=516153 -> ran, ret=0
+    -61853929  *** preempt timeout HEALTHY again (started for queued prepares): dequeued prepare ticks_at_expire=516153, stale runs so far=1240
+    -61853926  *** record taken: healthy again
+    -61853150  PREEMPT TICKER FIRED for conn1: at_expire=516202 now=516202 lazy=0 force=1
+    -61440290  enqueue ? ticks_at_expire=529730
+    -61440278  ticker_start PREEMPT user=0 anchor=529730 first=49 (expiry 529779) -> busy (job pending)
+    -61440275  prepare ? ticks_at_expire=529730 -> queued (-EINPROGRESS)
+    -61440218  preempt ticker start answered: status=0 now=529734
+    -61440069  prepare ? dequeue ticks_at_expire=529730 -> ran, ret=0
+    -61438831  PREEMPT TICKER FIRED for ?: at_expire=529779 now=529779 lazy=0 force=1
+    -61277150  ticker_start conn1 user=1 anchor=535076 first=1 (expiry 535077) -> busy (job pending)
+    -60443414  ticker_start conn1 user=1 anchor=562397 first=1 (expiry 562398) -> busy (job pending)
+    -60062242  ticker_start conn0 user=1 anchor=574748 first=444 (expiry 575192) -> busy (job pending)
+    -59868410  enqueue conn1 ticks_at_expire=581240
+    -59868398  ticker_start PREEMPT user=0 anchor=581240 first=49 (expiry 581289) -> busy (job pending)
+    -59868395  prepare conn1 ticks_at_expire=581240 -> queued (-EINPROGRESS)
+    -59868334  preempt ticker start answered: status=0 now=581243
+    -59867648  prepare conn1 dequeue ticks_at_expire=581240 -> ran, ret=0
+    -59866936  PREEMPT TICKER FIRED for conn1: at_expire=581289 now=581289 lazy=0 force=1
+    -59780526  enqueue conn0 ticks_at_expire=584120
+    -59780514  ticker_start PREEMPT user=0 anchor=584120 first=49 (expiry 584169) -> busy (job pending)
+    -59780511  prepare conn0 ticks_at_expire=584120 -> queued (-EINPROGRESS)
+    -59780461  preempt ticker start answered: status=0 now=584123
+    -59780092  prepare conn0 dequeue ticks_at_expire=584120 -> ran, ret=0
+    -59779050  PREEMPT TICKER FIRED for conn0: at_expire=584169 now=584169 lazy=0 force=1
+    -59235945  ticker_start conn1 user=1 anchor=601965 first=1 (expiry 601966) -> busy (job pending)
+     -648405  enqueue conn1 ticks_at_expire=2521843
+     -648393  ticker_start PREEMPT user=0 anchor=2521843 first=49 (expiry 2521892) -> busy (job pending)
+     -648390  prepare conn1 ticks_at_expire=2521843 -> queued (-EINPROGRESS)
+     -648306  prepare conn1 dequeue ticks_at_expire=2521843 -> ran, ret=0
+     -648275  preempt ticker start answered: status=0 now=2521848
+     -646920  PREEMPT TICKER FIRED for conn1: at_expire=2521892 now=2521892 lazy=0 force=1
+
+===== crash0 =====
+ZDIAG lab crash0 seq=387 kind=late line=241 file=late up=51707 t=51413536 cap=51414900 late=0 ipsr=0 iabr=0/0 pc=0 lr=0 xpsr=0 thr=sysworkq sum=ok
+  interrupted thread pc:    lr: 
+  active ISRs at crash: -   crashing context ipsr=0 (thread)
+  crash0stat max=100 over=1/0/0/0 skipped=0 nlat=1 ticker=1664345 rtc0=1664345 nvmc=0/1
+  crash0conn h=0 valid=1 connected=0 role=1 interval=12 latency=10 lat_prep=0 lazy_prep=0 lat_ev=0 evcnt=0 forced=0 sv_exp=0 conn_exp=6 sv_to=400 prep2start=31 slot=39
+  crash0conn h=1 valid=1 connected=1 role=0 interval=6 latency=30 lat_prep=0 lazy_prep=0 lat_ev=0 evcnt=6338 forced=0 sv_exp=519 conn_exp=0 sv_to=400 prep2start=31 slot=39
+  crash0prepstat id=2 n=44 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5)
+  crash0prepstat id=4 n=14 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5)
+  crash0prepstat id=6 n=6329 max_late=1 last_late=0 over=0 (ticks of 30.52us; conn=id-5)
+  crash0prepstat id=5 n=298 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5)
+  -- connection events (ms since boot):
+    ms=2076 type=split-conn a=6 b=30
+    ms=3216 type=split-param a=23 b=7
+    ms=5235 type=host-conn a=12 b=10
+    ms=6062 type=split-param a=6 b=30
+    ms=51708 type=host-disc a=22 b=0
+  -- printk tail:
+  -- latency events (>=100 us) before the crash:
+    up=2400 lat=100 iabr=8000000/0 pc=6b92c lr=6b21f thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+  -- prepare checks before the crash (dt us relative to the crash; late in RTC ticks, 30.52 us):
+    dt=-204540 id=6 at=1657644 now=1657597 late=-47 result=0
+    dt=-197033 id=6 at=1657890 now=1657843 late=-47 result=0
+    dt=-189556 id=6 at=1658135 now=1658088 late=-47 result=0
+    dt=-182049 id=6 at=1658381 now=1658334 late=-47 result=0
+    dt=-174542 id=6 at=1658627 now=1658580 late=-47 result=0
+    dt=-167035 id=6 at=1658873 now=1658826 late=-47 result=0
+    dt=-159559 id=6 at=1659118 now=1659071 late=-47 result=0
+    dt=-152052 id=6 at=1659364 now=1659317 late=-47 result=0
+    dt=-144545 id=6 at=1659610 now=1659563 late=-47 result=0
+    dt=-137038 id=6 at=1659856 now=1659809 late=-47 result=0
+    dt=-129561 id=6 at=1660101 now=1660054 late=-47 result=0
+    dt=-122054 id=6 at=1660347 now=1660300 late=-47 result=0
+    dt=-114547 id=6 at=1660593 now=1660546 late=-47 result=0
+    dt=-107040 id=6 at=1660839 now=1660792 late=-47 result=0
+    dt=-99564 id=6 at=1661084 now=1661037 late=-47 result=0
+    dt=-94342 id=5 at=1661255 now=1661208 late=-47 result=0
+    dt=-92057 id=6 at=1661330 now=1661283 late=-47 result=0
+    dt=-84550 id=6 at=1661576 now=1661529 late=-47 result=0
+    dt=-77043 id=6 at=1661822 now=1661775 late=-47 result=0
+    dt=-69536 id=6 at=1662068 now=1662021 late=-47 result=0
+    dt=-62059 id=6 at=1662313 now=1662266 late=-47 result=0
+    dt=-54552 id=6 at=1662559 now=1662512 late=-47 result=0
+    dt=-47045 id=6 at=1662805 now=1662758 late=-47 result=0
+    dt=-39538 id=6 at=1663051 now=1663004 late=-47 result=0
+    dt=-32062 id=6 at=1663296 now=1663249 late=-47 result=0
+    dt=-24566 id=6 at=1663542 now=1663494 late=-48 result=0
+    dt=-19331 id=5 at=1663713 now=1663666 late=-47 result=0
+    dt=-16957 id=6 at=1663788 now=1663744 late=-44 result=0
+    dt=-9541 id=6 at=1664034 now=1663987 late=-47 result=0
+    dt=-4260 id=5 at=1664207 now=1664160 late=-47 result=0
+    dt=-2059 id=6 at=1664279 now=1664232 late=-47 result=0
+    dt=-13 id=2 at=1664336 now=1664299 late=-37 result=0
+  -- preempt history (sparse ring: queued prepares, the preempt timeout, aborts; dt us):
+    -50664432  ticker_start id3 user=0 anchor=4105 first=983 (expiry 5088) -> busy (job pending)
+    -50632965  ticker_stop id3 user=0 now=5089 -> busy (job pending)
+    -50604437  ticker_start id3 user=0 anchor=6071 first=983 (expiry 7054) -> busy (job pending)
+    -50572970  ticker_stop id3 user=0 now=7055 -> busy (job pending)
+    -50544442  ticker_start id3 user=0 anchor=8037 first=983 (expiry 9020) -> busy (job pending)
+    -50512975  ticker_stop id3 user=0 now=9021 -> busy (job pending)
+    -50424452  ticker_start id3 user=0 anchor=11969 first=983 (expiry 12952) -> busy (job pending)
+    -50392985  ticker_stop id3 user=0 now=12953 -> busy (job pending)
+    -50304420  ticker_start id3 user=0 anchor=15902 first=983 (expiry 16885) -> busy (job pending)
+    -50272953  ticker_stop id3 user=0 now=16886 -> busy (job pending)
+    -50244425  ticker_start id3 user=0 anchor=17868 first=983 (expiry 18851) -> busy (job pending)
+    -50212958  ticker_stop id3 user=0 now=18852 -> busy (job pending)
+    -50184430  ticker_start id3 user=0 anchor=19834 first=983 (expiry 20817) -> busy (job pending)
+    -50152963  ticker_stop id3 user=0 now=20818 -> busy (job pending)
+    -50124447  ticker_start id3 user=0 anchor=21800 first=983 (expiry 22783) -> busy (job pending)
+    -50092968  ticker_stop id3 user=0 now=22784 -> busy (job pending)
+    -50004449  ticker_start id3 user=0 anchor=25732 first=983 (expiry 26715) -> busy (job pending)
+    -49972978  ticker_stop id3 user=0 now=26716 -> busy (job pending)
+    -49884449  ticker_start id3 user=0 anchor=29664 first=983 (expiry 30647) -> busy (job pending)
+    -49852988  ticker_stop id3 user=0 now=30648 -> busy (job pending)
+    -49824452  ticker_start id3 user=0 anchor=31630 first=983 (expiry 32613) -> busy (job pending)
+    -49792993  ticker_stop id3 user=0 now=32614 -> busy (job pending)
+    -49764456  ticker_start id3 user=0 anchor=33596 first=983 (expiry 34579) -> busy (job pending)
+    -49740036  ticker_stop id4 user=3 now=34350 -> ok
+    -49740004  ticker_stop id3 user=0 now=34351 -> busy (job pending)
+    -49679150  enqueue ? ticks_at_expire=36344
+    -49679139  ticker_start PREEMPT user=0 anchor=36344 first=49 (expiry 36393) -> busy (job pending)
+    -49679135  prepare ? ticks_at_expire=36344 -> queued (-EINPROGRESS)
+    -49679096  preempt ticker start answered: status=0 now=36347
+    -49677669  PREEMPT TICKER FIRED for ?: at_expire=36393 now=36393 lazy=0 force=1
+    -49630766  ticker_stop id3 user=0 now=37930 -> busy (job pending)
+    -49630711  ticker_stop id3 user=1 now=37932 -> busy (job pending)
+    -49511334  enqueue conn1 ticks_at_expire=41843
+    -49511322  ticker_start PREEMPT user=0 anchor=41843 first=49 (expiry 41892) -> busy (job pending)
+    -49511318  prepare conn1 ticks_at_expire=41843 -> queued (-EINPROGRESS)
+    -49511257  preempt ticker start answered: status=0 now=41847
+    -49510622  prepare conn1 dequeue ticks_at_expire=41843 -> ran, ret=0
+    -49509860  PREEMPT TICKER FIRED for conn1: at_expire=41892 now=41892 lazy=0 force=1
+    -49307005  enqueue ? ticks_at_expire=48539
+    -49306993  ticker_start PREEMPT user=0 anchor=48539 first=49 (expiry 48588) -> busy (job pending)
+    -49306989  prepare ? ticks_at_expire=48539 -> queued (-EINPROGRESS)
+    -49306915  preempt ticker start answered: status=0 now=48543
+    -49306446  prepare ? dequeue ticks_at_expire=48539 -> ran, ret=0
+    -49305513  PREEMPT TICKER FIRED for ?: at_expire=48588 now=48589 lazy=0 force=1
+    -48491343  ticker_start conn1 user=1 anchor=75267 first=1 (expiry 75268) -> busy (job pending)
+    -46793438  enqueue ? ticks_at_expire=130907
+    -46793426  ticker_start PREEMPT user=0 anchor=130907 first=49 (expiry 130956) -> busy (job pending)
+    -46793423  prepare ? ticks_at_expire=130907 -> queued (-EINPROGRESS)
+    -46793366  preempt ticker start answered: status=0 now=130910
+    -46793069  prepare ? dequeue ticks_at_expire=130907 -> ran, ret=0
+    -46791956  PREEMPT TICKER FIRED for ?: at_expire=130956 now=130956 lazy=0 force=1
+    -46477228  enqueue ? ticks_at_expire=141269
+    -46477216  ticker_start PREEMPT user=0 anchor=141269 first=49 (expiry 141318) -> busy (job pending)
+    -46477213  prepare ? ticks_at_expire=141269 -> queued (-EINPROGRESS)
+    -46477156  preempt ticker start answered: status=0 now=141272
+    -46476815  prepare ? dequeue ticks_at_expire=141269 -> ran, ret=0
+    -46475746  PREEMPT TICKER FIRED for ?: at_expire=141318 now=141318 lazy=0 force=1
+    -46473949  ticker_start conn0 user=1 anchor=141268 first=494 (expiry 141762) -> busy (job pending)
+    -46277673  enqueue conn1 ticks_at_expire=147808
+    -46277661  ticker_start PREEMPT user=0 anchor=147808 first=49 (expiry 147857) -> busy (job pending)
+    -46277658  prepare conn1 ticks_at_expire=147808 -> queued (-EINPROGRESS)
+    -46277616  preempt ticker start answered: status=0 now=147811
+    -46276170  prepare conn1 dequeue ticks_at_expire=147808 -> ran, ret=0
+    -46276147  PREEMPT TICKER FIRED for conn1: at_expire=147857 now=147859 lazy=0 force=1
+    -45645179  ticker_start conn1 user=1 anchor=168534 first=1 (expiry 168535) -> busy (job pending)
+    -30768641  *** late prepare recorded: id238 late=4242 ticks
+    -7186800  enqueue conn1 ticks_at_expire=1428792
+    -7186788  ticker_start PREEMPT user=0 anchor=1428792 first=49 (expiry 1428841) -> busy (job pending)
+    -7186785  prepare conn1 ticks_at_expire=1428792 -> queued (-EINPROGRESS)
+    -7186697  prepare conn1 dequeue ticks_at_expire=1428792 -> ran, ret=0
+    -7186671  preempt ticker start answered: status=0 now=1428797
+    -7185312  PREEMPT TICKER FIRED for conn1: at_expire=1428841 now=1428841 lazy=0 force=1
+    -4216894  enqueue conn1 ticks_at_expire=1526113
+    -4216882  ticker_start PREEMPT user=0 anchor=1526113 first=49 (expiry 1526162) -> busy (job pending)
+    -4216879  prepare conn1 ticks_at_expire=1526113 -> queued (-EINPROGRESS)
+    -4216837  preempt ticker start answered: status=0 now=1526116
+    -4216711  prepare conn1 dequeue ticks_at_expire=1526113 -> ran, ret=0
+    -4215436  PREEMPT TICKER FIRED for conn1: at_expire=1526162 now=1526162 lazy=0 force=1
+    -1247036  enqueue conn1 ticks_at_expire=1623434
+    -1247024  ticker_start PREEMPT user=0 anchor=1623434 first=49 (expiry 1623483) -> busy (job pending)
+    -1247020  prepare conn1 ticks_at_expire=1623434 -> queued (-EINPROGRESS)
+    -1246947  preempt ticker start answered: status=0 now=1623438
+    -1246718  prepare conn1 dequeue ticks_at_expire=1623434 -> ran, ret=0
+    -1245559  PREEMPT TICKER FIRED for conn1: at_expire=1623483 now=1623483 lazy=0 force=1
+      -17076  enqueue conn1 ticks_at_expire=1663739
+      -17064  ticker_start PREEMPT user=0 anchor=1663739 first=49 (expiry 1663788) -> busy (job pending)
+      -17061  prepare conn1 ticks_at_expire=1663739 -> queued (-EINPROGRESS)
+      -16950  prepare conn1 dequeue ticks_at_expire=1663739 -> ran, ret=0
+      -16934  preempt ticker start answered: status=0 now=1663745
+      -15600  PREEMPT TICKER FIRED for conn1: at_expire=1663788 now=1663788 lazy=0 force=1
+       -2138  ticker_stop conn0 user=1 now=1664229 -> ok
+        -370  enqueue ? ticks_at_expire=1664287
+        -364  prepare ? ticks_at_expire=1664287 -> queued (-EINPROGRESS)
+          -7  prepare ? dequeue ticks_at_expire=1664287 -> ran, ret=0
+          -4  *** preempt timeout STALE (no longer started for queued prepares): dequeued prepare ticks_at_expire=1664287, stale runs so far=1
+          -2  *** record taken: became STALE
+  -- the ticker list when the record was filled (ticks_current=1664287): conn1 in 189 ticks, id2 in 3428 ticks
+  -- timeline before the crash (dt in us, 0 = the crash):
+     -255033  CTL dequeue (run the pipeline) caller=0 now=1655942
+     -249547  CTL lateness check conn1: event at 1656169, now 1656122 (-47 ticks) -> ok
+     -249544  CTL prepare conn1 ticks_at_expire=1656120 -> ran, ret=0
+     -247533  CTL dequeue (run the pipeline) caller=0 now=1656188
+     -242041  CTL lateness check conn1: event at 1656415, now 1656368 (-47 ticks) -> ok
+     -242037  CTL prepare conn1 ticks_at_expire=1656366 -> ran, ret=0
+     -240033  CTL dequeue (run the pipeline) caller=0 now=1656434
+     -234533  CTL lateness check conn1: event at 1656661, now 1656614 (-47 ticks) -> ok
+     -234530  CTL prepare conn1 ticks_at_expire=1656612 -> ran, ret=0
+     -232534  CTL dequeue (run the pipeline) caller=0 now=1656680
+     -227026  CTL lateness check conn1: event at 1656907, now 1656860 (-47 ticks) -> ok
+     -227023  CTL prepare conn1 ticks_at_expire=1656858 -> ran, ret=0
+     -225034  CTL dequeue (run the pipeline) caller=0 now=1656925
+     -219551  CTL lateness check conn1: event at 1657152, now 1657105 (-47 ticks) -> ok
+     -219547  CTL prepare conn1 ticks_at_expire=1657103 -> ran, ret=0
+     -217535  CTL dequeue (run the pipeline) caller=0 now=1657171
+     -212044  CTL lateness check conn1: event at 1657398, now 1657351 (-47 ticks) -> ok
+     -212040  CTL prepare conn1 ticks_at_expire=1657349 -> ran, ret=0
+     -210035  CTL dequeue (run the pipeline) caller=0 now=1657417
+     -204537  CTL lateness check conn1: event at 1657644, now 1657597 (-47 ticks) -> ok
+     -204533  CTL prepare conn1 ticks_at_expire=1657595 -> ran, ret=0
+     -202535  CTL dequeue (run the pipeline) caller=0 now=1657663
+     -197030  CTL lateness check conn1: event at 1657890, now 1657843 (-47 ticks) -> ok
+     -197026  CTL prepare conn1 ticks_at_expire=1657841 -> ran, ret=0
+     -195035  CTL dequeue (run the pipeline) caller=0 now=1657908
+     -189553  CTL lateness check conn1: event at 1658135, now 1658088 (-47 ticks) -> ok
+     -189549  CTL prepare conn1 ticks_at_expire=1658086 -> ran, ret=0
+     -187536  CTL dequeue (run the pipeline) caller=0 now=1658154
+     -182046  CTL lateness check conn1: event at 1658381, now 1658334 (-47 ticks) -> ok
+     -182043  CTL prepare conn1 ticks_at_expire=1658332 -> ran, ret=0
+     -180036  CTL dequeue (run the pipeline) caller=0 now=1658400
+     -174539  CTL lateness check conn1: event at 1658627, now 1658580 (-47 ticks) -> ok
+     -174536  CTL prepare conn1 ticks_at_expire=1658578 -> ran, ret=0
+     -172537  CTL dequeue (run the pipeline) caller=0 now=1658646
+     -167032  CTL lateness check conn1: event at 1658873, now 1658826 (-47 ticks) -> ok
+     -167029  CTL prepare conn1 ticks_at_expire=1658824 -> ran, ret=0
+     -165037  CTL dequeue (run the pipeline) caller=0 now=1658891
+     -159556  CTL lateness check conn1: event at 1659118, now 1659071 (-47 ticks) -> ok
+     -159552  CTL prepare conn1 ticks_at_expire=1659069 -> ran, ret=0
+     -157537  CTL dequeue (run the pipeline) caller=0 now=1659137
+     -152049  CTL lateness check conn1: event at 1659364, now 1659317 (-47 ticks) -> ok
+     -152045  CTL prepare conn1 ticks_at_expire=1659315 -> ran, ret=0
+     -150038  CTL dequeue (run the pipeline) caller=0 now=1659383
+     -144542  CTL lateness check conn1: event at 1659610, now 1659563 (-47 ticks) -> ok
+     -144538  CTL prepare conn1 ticks_at_expire=1659561 -> ran, ret=0
+     -142537  CTL dequeue (run the pipeline) caller=0 now=1659629
+     -137035  CTL lateness check conn1: event at 1659856, now 1659809 (-47 ticks) -> ok
+     -137031  CTL prepare conn1 ticks_at_expire=1659807 -> ran, ret=0
+     -135049  CTL dequeue (run the pipeline) caller=0 now=1659874
+     -129558  CTL lateness check conn1: event at 1660101, now 1660054 (-47 ticks) -> ok
+     -129554  CTL prepare conn1 ticks_at_expire=1660052 -> ran, ret=0
+     -127538  CTL dequeue (run the pipeline) caller=0 now=1660120
+     -122051  CTL lateness check conn1: event at 1660347, now 1660300 (-47 ticks) -> ok
+     -122048  CTL prepare conn1 ticks_at_expire=1660298 -> ran, ret=0
+     -120038  CTL dequeue (run the pipeline) caller=0 now=1660366
+     -114544  CTL lateness check conn1: event at 1660593, now 1660546 (-47 ticks) -> ok
+     -114541  CTL prepare conn1 ticks_at_expire=1660544 -> ran, ret=0
+     -112522  CTL dequeue (run the pipeline) caller=0 now=1660612
+     -107037  CTL lateness check conn1: event at 1660839, now 1660792 (-47 ticks) -> ok
+     -107033  CTL prepare conn1 ticks_at_expire=1660790 -> ran, ret=0
+     -105040  CTL dequeue (run the pipeline) caller=0 now=1660857
+      -99560  CTL lateness check conn1: event at 1661084, now 1661037 (-47 ticks) -> ok
+      -99557  CTL prepare conn1 ticks_at_expire=1661035 -> ran, ret=0
+      -97540  CTL dequeue (run the pipeline) caller=0 now=1661103
+      -94339  CTL lateness check conn0: event at 1661255, now 1661208 (-47 ticks) -> ok
+      -94335  CTL prepare conn0 lazy=10 ticks_at_expire=1661206 -> ran, ret=0
+      -92207  CTL dequeue (run the pipeline) caller=0 now=1661278
+      -92154  CTL ticker_update conn0 lazy=0 drift+=3 drift-=0
+      -92053  CTL lateness check conn1: event at 1661330, now 1661283 (-47 ticks) -> ok
+      -92050  CTL prepare conn1 ticks_at_expire=1661281 -> ran, ret=0
+      -90040  CTL dequeue (run the pipeline) caller=0 now=1661349
+      -84546  CTL lateness check conn1: event at 1661576, now 1661529 (-47 ticks) -> ok
+      -84543  CTL prepare conn1 ticks_at_expire=1661527 -> ran, ret=0
+      -82540  CTL dequeue (run the pipeline) caller=0 now=1661595
+      -77039  CTL lateness check conn1: event at 1661822, now 1661775 (-47 ticks) -> ok
+      -77036  CTL prepare conn1 ticks_at_expire=1661773 -> ran, ret=0
+      -75040  CTL dequeue (run the pipeline) caller=0 now=1661840
+      -69532  CTL lateness check conn1: event at 1662068, now 1662021 (-47 ticks) -> ok
+      -69529  CTL prepare conn1 ticks_at_expire=1662019 -> ran, ret=0
+      -67541  CTL dequeue (run the pipeline) caller=0 now=1662086
+      -62056  CTL lateness check conn1: event at 1662313, now 1662266 (-47 ticks) -> ok
+      -62053  CTL prepare conn1 ticks_at_expire=1662264 -> ran, ret=0
+      -60041  CTL dequeue (run the pipeline) caller=0 now=1662332
+      -54549  CTL lateness check conn1: event at 1662559, now 1662512 (-47 ticks) -> ok
+      -54546  CTL prepare conn1 ticks_at_expire=1662510 -> ran, ret=0
+      -52541  CTL dequeue (run the pipeline) caller=0 now=1662578
+      -47042  CTL lateness check conn1: event at 1662805, now 1662758 (-47 ticks) -> ok
+      -47039  CTL prepare conn1 ticks_at_expire=1662756 -> ran, ret=0
+      -45042  CTL dequeue (run the pipeline) caller=0 now=1662824
+      -39535  CTL lateness check conn1: event at 1663051, now 1663004 (-47 ticks) -> ok
+      -39531  CTL prepare conn1 ticks_at_expire=1663002 -> ran, ret=0
+      -37542  CTL dequeue (run the pipeline) caller=0 now=1663069
+      -32058  CTL lateness check conn1: event at 1663296, now 1663249 (-47 ticks) -> ok
+      -32055  CTL prepare conn1 ticks_at_expire=1663247 -> ran, ret=0
+      -30175  RTC0 enter
+      -30169  RTC0 exit
+      -30158  RTC0 enter
+      -30131  RTC0 exit
+      -30129  RTC0 enter
+      -30122  RTC0 exit
+      -30120  CTL ticker_update conn0 lazy=1 drift+=0 drift-=0
+      -30080  RADIO enter
+      -30071  RADIO exit
+      -30068  RADIO enter
+      -30054  CTL dequeue (run the pipeline) caller=0 now=1663315
+      -30048  RADIO exit
+      -30046  RTC0 enter
+      -30026  RTC0 exit
+      -30012  thread -> sysworkq
+      -29997  thread -> sysworkq
+      -29976  thread -> diag_min_ti
+      -29738  thread -> idle
+      -28857  RTC1 enter
+      -28828  RTC1 exit
+      -28818  thread -> usbworkq
+      -28790  thread -> usbworkq
+      -28781  USBD enter
+      -28771  USBD exit
+      -28762  USBD enter
+      -28753  USBD exit
+      -28744  thread -> usbworkq
+      -28724  thread -> idle
+      -28246  USBD enter
+      -28220  USBD exit
+      -28209  thread -> usbd_workq
+      -28184  thread -> usbd_workq
+      -28165  thread -> idle
+      -24676  RTC1 enter
+      -24651  RTC1 exit
+      -24638  thread -> diag_min_ti
+      -24627  RTC0 enter
+      -24606  SWI4 enter
+      -24562  CTL lateness check conn1: event at 1663542, now 1663494 (-48 ticks) -> ok
+      -24559  CTL prepare conn1 ticks_at_expire=1663493 -> ran, ret=0
+      -24554  SWI4 exit
+      -24552  SWI4 enter
+      -24547  SWI4 exit
+      -24503  RTC0 exit
+      -24501  RTC0 enter
+      -24492  RTC0 exit
+      -24458  thread -> idle
+      -22755  RADIO enter
+      -22735  RADIO exit
+      -22569  RADIO enter
+      -22560  RADIO exit
+      -22558  RADIO enter
+      -22543  CTL dequeue (run the pipeline) caller=0 now=1663561
+      -22537  RADIO exit
+      -22526  RTC0 enter
+      -22507  RTC0 exit
+      -19397  RTC0 enter
+      -19373  SWI4 enter
+      -19327  CTL lateness check conn0: event at 1663713, now 1663666 (-47 ticks) -> ok
+      -19323  CTL prepare conn0 lazy=4 ticks_at_expire=1663664 -> ran, ret=0
+      -19319  SWI4 exit
+      -19316  SWI4 enter
+      -19311  SWI4 exit
+      -19275  RTC0 exit
+      -19273  RTC0 enter
+      -19263  RTC0 exit
+      -17416  RADIO enter
+      -17390  RADIO exit
+      -17199  RADIO enter
+      -17179  RADIO exit
+      -17108  RTC0 enter
+      -17088  SWI4 enter
+      -17076  CTL enqueue conn1 ticks_at_expire=1663739
+      -17064  CTL ticker_start PREEMPT user=0 anchor=1663739 first=49 (expiry 1663788) -> busy (job pending)
+      -17061  CTL prepare conn1 ticks_at_expire=1663739 -> queued (-EINPROGRESS)
+      -17056  SWI4 exit
+      -17053  SWI4 enter
+      -17048  SWI4 exit
+      -17024  RADIO enter
+      -17015  RADIO exit
+      -17012  RADIO enter
+      -16997  CTL dequeue (run the pipeline) caller=0 now=1663743
+      -16954  CTL lateness check conn1: event at 1663788, now 1663744 (-44 ticks) -> ok
+      -16950  CTL prepare conn1 dequeue ticks_at_expire=1663739 -> ran, ret=0
+      -16942  RADIO exit
+      -16934  CTL preempt ticker start answered: status=0 now=1663745
+      -16920  RTC0 exit
+      -16918  RTC0 enter
+      -16871  CTL ticker_update conn0 lazy=1 drift+=4 drift-=2
+      -16850  RTC0 exit
+      -15613  RTC0 enter
+      -15600  CTL PREEMPT TICKER FIRED for conn1: at_expire=1663788 now=1663788 lazy=0 force=1
+      -15594  SWI4 enter
+      -15586  SWI4 exit
+      -15584  SWI4 enter
+      -15579  SWI4 exit
+      -15551  RTC0 exit
+      -15549  RTC0 enter
+      -15539  RTC0 exit
+      -15255  RADIO enter
+      -15235  RADIO exit
+      -15069  RADIO enter
+      -15060  RADIO exit
+      -15058  RADIO enter
+      -15043  CTL dequeue (run the pipeline) caller=0 now=1663807
+      -15037  RADIO exit
+      -15035  RTC0 enter
+      -15016  RTC0 exit
+       -9601  RTC0 enter
+       -9581  SWI4 enter
+       -9537  CTL lateness check conn1: event at 1664034, now 1663987 (-47 ticks) -> ok
+       -9534  CTL prepare conn1 ticks_at_expire=1663985 -> ran, ret=0
+       -9529  SWI4 exit
+       -9527  SWI4 enter
+       -9522  SWI4 exit
+       -9479  RTC0 exit
+       -9477  RTC0 enter
+       -9467  RTC0 exit
+       -7755  RADIO enter
+       -7735  RADIO exit
+       -7569  RADIO enter
+       -7560  RADIO exit
+       -7558  RADIO enter
+       -7543  CTL dequeue (run the pipeline) caller=0 now=1664052
+       -7537  RADIO exit
+       -7526  RTC0 enter
+       -7507  RTC0 exit
+       -4322  RTC0 enter
+       -4302  SWI4 enter
+       -4256  CTL lateness check conn0: event at 1664207, now 1664160 (-47 ticks) -> ok
+       -4252  CTL prepare conn0 ticks_at_expire=1664158 -> ran, ret=0
+       -4248  SWI4 exit
+       -4245  SWI4 enter
+       -4240  SWI4 exit
+       -4206  RTC0 exit
+       -4203  RTC0 enter
+       -4194  RTC0 exit
+       -2417  RADIO enter
+       -2389  RADIO exit
+       -2387  RTC0 enter
+       -2358  RTC0 exit
+       -2346  thread -> BT
+       -2325  thread -> idle
+       -2224  RADIO enter
+       -2208  CTL dequeue (run the pipeline) caller=0 now=1664227
+       -2202  RADIO exit
+       -2200  RTC0 enter
+       -2167  SWI4 enter
+       -2157  SWI4 exit
+       -2155  SWI4 enter
+       -2150  SWI4 exit
+       -2138  CTL ticker_stop conn0 user=1 now=1664229 -> ok
+       -2122  RTC0 exit
+       -2119  RTC0 enter
+       -2100  SWI4 enter
+       -2056  CTL lateness check conn1: event at 1664279, now 1664232 (-47 ticks) -> ok
+       -2053  CTL prepare conn1 ticks_at_expire=1664230 -> ran, ret=0
+       -2048  SWI4 exit
+       -2046  SWI4 enter
+       -2040  SWI4 exit
+       -2008  RTC0 exit
+       -2005  RTC0 enter
+       -1992  RTC0 exit
+       -1980  thread -> BT
+       -1931  thread -> BT
+       -1873  thread -> BT
+       -1835  thread -> BT
+       -1819  thread -> sysworkq
+       -1803  thread -> sysworkq
+       -1788  thread -> sysworkq
+       -1767  thread -> BT
+       -1738  thread -> BT
+       -1722  thread -> sysworkq
+       -1091  thread -> sysworkq
+       -1010  thread -> sysworkq
+        -994  thread -> sysworkq
+        -637  RTC0 enter
+        -611  RTC0 exit
+        -609  RTC0 enter
+        -602  RTC0 exit
+        -522  thread -> sysworkq
+        -446  thread -> sysworkq
+        -397  RTC0 enter
+        -382  SWI4 enter
+        -370  CTL enqueue ? ticks_at_expire=1664287
+        -364  CTL prepare ? ticks_at_expire=1664287 -> queued (-EINPROGRESS)
+        -359  SWI4 exit
+        -357  SWI4 enter
+        -352  SWI4 exit
+        -338  CTL ticker_update id2 lazy=0 drift+=152 drift-=0
+        -304  RTC0 exit
+        -302  RTC0 enter
+        -276  RTC0 exit
+        -274  RTC0 enter
+        -267  RADIO enter
+        -247  RADIO exit
+        -245  RTC0 exit
+        -226  RTC0 enter
+        -218  RTC0 exit
+        -159  thread -> sysworkq
+        -138  thread -> sysworkq
+        -135  RNG enter
+        -131  RNG exit
+        -116  thread -> sysworkq
+        -101  thread -> sysworkq
+         -81  RADIO enter
+         -72  RADIO exit
+         -69  RADIO enter
+         -56  CTL dequeue (run the pipeline) caller=0 now=1664298
+         -10  CTL lateness check id2: event at 1664336, now 1664299 (-37 ticks) -> ok
+          -7  CTL prepare ? dequeue ticks_at_expire=1664287 -> ran, ret=0
+          -4  CTL *** preempt timeout STALE (no longer started for queued prepares): dequeued prepare ticks_at_expire=1664287, stale runs so far=1
+          -2  CTL *** record taken: became STALE
+          15  RADIO exit
+          18  RTC0 enter
+          37  RTC0 exit
+          40  RNG enter
+          43  RNG exit
+          46  thread -> idle
+          56  thread -> sysworkq
+          95  RNG enter
+          99  RNG exit
+         227  RNG enter
+         230  RNG exit
+         297  RNG enter
+         302  RNG exit
+  -- activity (1 ms ticks, run-length):
+    t=-64..-57 isr=0/0 thr=idle pc=6b92c..6b92c maxlat=12 | - | arch_cpu_idle (cpu_idle.c:103)
+    t=-56..-56 isr=800/0 thr=idle pc=6b92c..6b92c maxlat=5 | RTC0 | arch_cpu_idle (cpu_idle.c:103)
+    t=-55..-42 isr=0/0 thr=idle pc=6b92c..6b92c maxlat=12 | - | arch_cpu_idle (cpu_idle.c:103)
+    t=-41..-41 isr=800/0 thr=idle pc=6b92c..6b92c maxlat=19 | RTC0 | arch_cpu_idle (cpu_idle.c:103)
+    t=-40..-27 isr=0/0 thr=idle pc=6b92c..6b92c maxlat=13 | - | arch_cpu_idle (cpu_idle.c:103)
+    t=-26..-26 isr=800/0 thr=diag_min_ti pc=42950..42950 maxlat=1 | RTC0 | bt_conn_unref (conn.c:1533)
+    t=-25..-12 isr=0/0 thr=idle pc=6b92c..6b92c maxlat=12 | - | arch_cpu_idle (cpu_idle.c:103)
+    t=-11..-11 isr=800/0 thr=idle pc=6b92c..6b92c maxlat=16 | RTC0 | arch_cpu_idle (cpu_idle.c:103)
+    t=-10..-4 isr=0/0 thr=idle pc=6b92c..6b92c maxlat=12 | - | arch_cpu_idle (cpu_idle.c:103)
+    t=-3..-1 isr=0/0 thr=sysworkq pc=474ec..745b0 maxlat=1 | - | bt_keys_find_addr (keys.c:296 (discriminator 1))
+
+===== crash1 =====
+ZDIAG lab crash1 seq=387 kind=late line=6 file=late up=186361 t=186066962 cap=186068378 late=64 ipsr=0 iabr=0/0 pc=0 lr=0 xpsr=0 thr=sysworkq sum=ok
+  interrupted thread pc:    lr: 
+  active ISRs at crash: -   crashing context ipsr=0 (thread)
+  crash1stat max=100 over=1/0/0/0 skipped=0 nlat=1 ticker=6076855 rtc0=6076855 nvmc=0/1
+  crash1conn h=0 valid=1 connected=1 role=1 interval=12 latency=10 lat_prep=0 lazy_prep=0 lat_ev=0 evcnt=1 forced=0 sv_exp=0 conn_exp=0 sv_to=400 prep2start=31 slot=39
+  crash1conn h=1 valid=1 connected=1 role=0 interval=23 latency=7 lat_prep=0 lazy_prep=0 lat_ev=0 evcnt=23499 forced=0 sv_exp=0 conn_exp=0 sv_to=400 prep2start=31 slot=39
+  crash1prepstat id=2 n=120 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5)
+  crash1prepstat id=4 n=14 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5)
+  crash1prepstat id=6 n=22684 max_late=64 last_late=64 over=1 (ticks of 30.52us; conn=id-5)
+  crash1prepstat id=5 n=1120 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5)
+  -- connection events (ms since boot):
+    ms=2076 type=split-conn a=6 b=30
+    ms=3216 type=split-param a=23 b=7
+    ms=5235 type=host-conn a=12 b=10
+    ms=6062 type=split-param a=6 b=30
+    ms=51708 type=host-disc a=22 b=0
+    ms=52330 type=split-param a=23 b=7
+    ms=55084 type=host-conn a=12 b=10
+    ms=55981 type=split-param a=6 b=30
+    ms=94159 type=host-disc a=22 b=0
+    ms=94666 type=split-param a=23 b=7
+    ms=95099 type=host-conn a=12 b=10
+    ms=96017 type=split-param a=6 b=30
+    ms=136385 type=host-disc a=22 b=0
+    ms=136982 type=split-param a=23 b=7
+    ms=138077 type=host-conn a=12 b=10
+    ms=139023 type=split-param a=6 b=30
+    ms=184672 type=host-disc a=22 b=0
+    ms=185358 type=split-param a=23 b=7
+    ms=186353 type=host-conn a=12 b=10
+  -- printk tail:
+  -- latency events (>=100 us) before the crash:
+    up=2400 lat=100 iabr=8000000/0 pc=6b92c lr=6b21f thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+  -- prepare checks before the crash (dt us relative to the crash; late in RTC ticks, 30.52 us):
+    dt=-693369 id=6 at=6054134 now=6054087 late=-47 result=0
+    dt=-664624 id=6 at=6055076 now=6055029 late=-47 result=0
+    dt=-655418 id=2 at=6055378 now=6055331 late=-47 result=0
+    dt=-635878 id=6 at=6056018 now=6055971 late=-47 result=0
+    dt=-607131 id=6 at=6056960 now=6056913 late=-47 result=0
+    dt=-578385 id=6 at=6057902 now=6057855 late=-47 result=0
+    dt=-549638 id=6 at=6058844 now=6058797 late=-47 result=0
+    dt=-547451 id=2 at=6058905 now=6058869 late=-36 result=0
+    dt=-520881 id=6 at=6059786 now=6059739 late=-47 result=0
+    dt=-492145 id=6 at=6060728 now=6060681 late=-47 result=0
+    dt=-463369 id=6 at=6061671 now=6061624 late=-47 result=0
+    dt=-445588 id=2 at=6062254 now=6062207 late=-47 result=0
+    dt=-434622 id=6 at=6062613 now=6062566 late=-47 result=0
+    dt=-405878 id=6 at=6063555 now=6063508 late=-47 result=0
+    dt=-377129 id=6 at=6064497 now=6064450 late=-47 result=0
+    dt=-348383 id=6 at=6065439 now=6065392 late=-47 result=0
+    dt=-339901 id=2 at=6065717 now=6065670 late=-47 result=0
+    dt=-319637 id=6 at=6066381 now=6066334 late=-47 result=0
+    dt=-290881 id=6 at=6067323 now=6067276 late=-47 result=0
+    dt=-262144 id=6 at=6068265 now=6068218 late=-47 result=0
+    dt=-232370 id=2 at=6069241 now=6069194 late=-47 result=0
+    dt=-204651 id=6 at=6070149 now=6070102 late=-47 result=0
+    dt=-175768 id=6 at=6071092 now=6071048 late=-44 result=0
+    dt=-147131 id=6 at=6072034 now=6071987 late=-47 result=0
+    dt=-129439 id=2 at=6072614 now=6072567 late=-47 result=0
+    dt=-118384 id=6 at=6072976 now=6072929 late=-47 result=0
+    dt=-89638 id=6 at=6073918 now=6073871 late=-47 result=0
+    dt=-60884 id=6 at=6074860 now=6074813 late=-47 result=0
+    dt=-32145 id=6 at=6075802 now=6075755 late=-47 result=0
+    dt=-19946 id=2 at=6076202 now=6076155 late=-47 result=0
+    dt=-6142 id=5 at=6076654 now=6076607 late=-47 result=0
+    dt=-8 id=6 at=6076744 now=6076808 late=64 result=67
+  -- preempt history (sparse ring: queued prepares, the preempt timeout, aborts; dt us):
+    -180929596  prepare conn1 dequeue ticks_at_expire=147808 -> ran, ret=0
+    -180929573  PREEMPT TICKER FIRED for conn1: at_expire=147857 now=147859 lazy=0 force=1
+    -180298605  ticker_start conn1 user=1 anchor=168534 first=1 (expiry 168535) -> busy (job pending)
+    -165422067  *** late prepare recorded: id238 late=4242 ticks
+    -141840226  enqueue conn1 ticks_at_expire=1428792
+    -141840214  ticker_start PREEMPT user=0 anchor=1428792 first=49 (expiry 1428841) -> busy (job pending)
+    -141840211  prepare conn1 ticks_at_expire=1428792 -> queued (-EINPROGRESS)
+    -141840123  prepare conn1 dequeue ticks_at_expire=1428792 -> ran, ret=0
+    -141840097  preempt ticker start answered: status=0 now=1428797
+    -141838738  PREEMPT TICKER FIRED for conn1: at_expire=1428841 now=1428841 lazy=0 force=1
+    -138870320  enqueue conn1 ticks_at_expire=1526113
+    -138870308  ticker_start PREEMPT user=0 anchor=1526113 first=49 (expiry 1526162) -> busy (job pending)
+    -138870305  prepare conn1 ticks_at_expire=1526113 -> queued (-EINPROGRESS)
+    -138870263  preempt ticker start answered: status=0 now=1526116
+    -138870137  prepare conn1 dequeue ticks_at_expire=1526113 -> ran, ret=0
+    -138868862  PREEMPT TICKER FIRED for conn1: at_expire=1526162 now=1526162 lazy=0 force=1
+    -135900462  enqueue conn1 ticks_at_expire=1623434
+    -135900450  ticker_start PREEMPT user=0 anchor=1623434 first=49 (expiry 1623483) -> busy (job pending)
+    -135900446  prepare conn1 ticks_at_expire=1623434 -> queued (-EINPROGRESS)
+    -135900373  preempt ticker start answered: status=0 now=1623438
+    -135900144  prepare conn1 dequeue ticks_at_expire=1623434 -> ran, ret=0
+    -135898985  PREEMPT TICKER FIRED for conn1: at_expire=1623483 now=1623483 lazy=0 force=1
+    -134670502  enqueue conn1 ticks_at_expire=1663739
+    -134670490  ticker_start PREEMPT user=0 anchor=1663739 first=49 (expiry 1663788) -> busy (job pending)
+    -134670487  prepare conn1 ticks_at_expire=1663739 -> queued (-EINPROGRESS)
+    -134670376  prepare conn1 dequeue ticks_at_expire=1663739 -> ran, ret=0
+    -134670360  preempt ticker start answered: status=0 now=1663745
+    -134669026  PREEMPT TICKER FIRED for conn1: at_expire=1663788 now=1663788 lazy=0 force=1
+    -134655564  ticker_stop conn0 user=1 now=1664229 -> ok
+    -134653796  enqueue ? ticks_at_expire=1664287
+    -134653790  prepare ? ticks_at_expire=1664287 -> queued (-EINPROGRESS)
+    -134653433  prepare ? dequeue ticks_at_expire=1664287 -> ran, ret=0
+    -134653430  *** preempt timeout STALE (no longer started for queued prepares): dequeued prepare ticks_at_expire=1664287, stale runs so far=1
+    -134653428  *** record taken: became STALE
+    -134549175  enqueue ? ticks_at_expire=1667715
+    -134549169  prepare ? ticks_at_expire=1667715 -> queued (-EINPROGRESS)
+    -134548430  prepare ? dequeue ticks_at_expire=1667715 -> ran, ret=0
+    -134340527  enqueue conn1 ticks_at_expire=1674552
+    -134340522  prepare conn1 ticks_at_expire=1674552 -> queued (-EINPROGRESS)
+    -134340017  prepare conn1 dequeue ticks_at_expire=1674552 -> ran, ret=0
+    -134033031  ticker_start conn1 user=1 anchor=1684628 first=1 (expiry 1684629) -> busy (job pending)
+    -134032873  enqueue conn1 ticks_at_expire=1684629
+    -134032867  prepare conn1 ticks_at_expire=1684629 -> queued (-EINPROGRESS)
+    -134032607  prepare conn1 dequeue ticks_at_expire=1684629 -> ran, ret=0
+    -133199295  ticker_start conn1 user=1 anchor=1711949 first=1 (expiry 1711950) -> busy (job pending)
+    -131279799  ticker_start conn0 user=1 anchor=1774729 first=425 (expiry 1775154) -> busy (job pending)
+    -130381879  ticker_start conn1 user=1 anchor=1804274 first=1 (expiry 1804275) -> busy (job pending)
+    -92205799  ticker_stop conn0 user=1 now=3055282 -> ok
+    -92200962  enqueue conn1 ticks_at_expire=3055439
+    -92200956  prepare conn1 lazy=1 ticks_at_expire=3055439 -> queued (-EINPROGRESS)
+    -92200215  prepare conn1 dequeue lazy=1 ticks_at_expire=3055439 -> ran, ret=0
+    -92102196  enqueue ? ticks_at_expire=3058676
+    -92102191  prepare ? ticks_at_expire=3058676 -> queued (-EINPROGRESS)
+    -92101390  prepare ? dequeue ticks_at_expire=3058676 -> ran, ret=0
+    -91997190  enqueue ? ticks_at_expire=3062117
+    -91997184  prepare ? ticks_at_expire=3062117 -> queued (-EINPROGRESS)
+    -91996394  prepare ? dequeue ticks_at_expire=3062117 -> ran, ret=0
+    -91698474  ticker_start conn1 user=1 anchor=3071905 first=1 (expiry 3071906) -> busy (job pending)
+    -91267458  ticker_start conn0 user=1 anchor=3085902 first=186 (expiry 3086088) -> busy (job pending)
+    -91265685  enqueue conn0 ticks_at_expire=3086088
+    -91265679  prepare conn0 ticks_at_expire=3086088 -> queued (-EINPROGRESS)
+    -91265156  prepare conn0 dequeue ticks_at_expire=3086088 -> ran, ret=0
+    -91065977  enqueue conn1 ticks_at_expire=3092632
+    -91065972  prepare conn1 ticks_at_expire=3092632 -> queued (-EINPROGRESS)
+    -91065695  prepare conn1 dequeue ticks_at_expire=3092632 -> ran, ret=0
+    -90864738  ticker_start conn1 user=1 anchor=3099226 first=1 (expiry 3099227) -> busy (job pending)
+    -90347243  ticker_start conn1 user=1 anchor=3116184 first=1 (expiry 3116185) -> busy (job pending)
+    -49981033  ticker_stop conn0 user=1 now=4438961 -> ok
+    -49976416  enqueue conn1 ticks_at_expire=4439111
+    -49976411  prepare conn1 lazy=1 ticks_at_expire=4439111 -> queued (-EINPROGRESS)
+    -49975456  prepare conn1 dequeue lazy=1 ticks_at_expire=4439111 -> ran, ret=0
+    -49877193  enqueue ? ticks_at_expire=4442363
+    -49877188  prepare ? ticks_at_expire=4442363 -> queued (-EINPROGRESS)
+    -49876846  prepare ? dequeue ticks_at_expire=4442363 -> ran, ret=0
+    -49383927  ticker_start conn1 user=1 anchor=4458526 first=1 (expiry 4458527) -> busy (job pending)
+    -48550201  ticker_start conn1 user=1 anchor=4485847 first=1 (expiry 4485848) -> busy (job pending)
+    -48290384  ticker_start conn0 user=1 anchor=4494253 first=85 (expiry 4494338) -> busy (job pending)
+    -48061466  enqueue conn1 ticks_at_expire=4501863
+    -48061460  prepare conn1 ticks_at_expire=4501863 -> queued (-EINPROGRESS)
+    -48060739  prepare conn1 dequeue ticks_at_expire=4501863 -> ran, ret=0
+    -47342732  ticker_start conn1 user=1 anchor=4525415 first=1 (expiry 4525416) -> busy (job pending)
+    -1696300  ticker_stop conn0 user=1 now=6021222 -> ok
+    -1285239  enqueue ? ticks_at_expire=6034691
+    -1285234  prepare ? ticks_at_expire=6034691 -> queued (-EINPROGRESS)
+    -1285081  prepare ? dequeue ticks_at_expire=6034691 -> ran, ret=0
+    -1009656  ticker_start conn1 user=1 anchor=6043721 first=1 (expiry 6043722) -> busy (job pending)
+     -547791  enqueue ? ticks_at_expire=6058856
+     -547786  prepare ? ticks_at_expire=6058856 -> queued (-EINPROGRESS)
+     -547444  prepare ? dequeue ticks_at_expire=6058856 -> ran, ret=0
+     -175911  ticker_start conn1 user=1 anchor=6071042 first=1 (expiry 6071043) -> busy (job pending)
+      -16683  ticker_start conn0 user=1 anchor=6076152 first=453 (expiry 6076605) -> busy (job pending)
+       -3428  enqueue conn1 ticks_at_expire=6076695
+       -3423  prepare conn1 ticks_at_expire=6076695 -> queued (-EINPROGRESS)
+          -5  lateness check conn1: event at 6076744, now 6076808 (+64 ticks) -> LATE overhead=67
+          -2  *** late prepare recorded: conn1 late=64 ticks
+          15  prepare conn1 dequeue ticks_at_expire=6076695 -> ran, ret=0
+  -- the ticker list when the record was filled (ticks_current=6076695): conn0 in 491 ticks, conn1 in 943 ticks
+  -- timeline before the crash (dt in us, 0 = the crash):
+     -808352  CTL lateness check conn1: event at 6050366, now 6050319 (-47 ticks) -> ok
+     -808348  CTL prepare conn1 ticks_at_expire=6050317 -> ran, ret=0
+     -806361  CTL dequeue (run the pipeline) caller=0 now=6050384
+     -779606  CTL lateness check conn1: event at 6051308, now 6051261 (-47 ticks) -> ok
+     -779602  CTL prepare conn1 ticks_at_expire=6051259 -> ran, ret=0
+     -777092  CTL dequeue (run the pipeline) caller=0 now=6051343
+     -760666  CTL lateness check id2: event at 6051929, now 6051882 (-47 ticks) -> ok
+     -760662  CTL prepare ? ticks_at_expire=6051880 -> ran, ret=0
+     -760636  CTL ticker_update id2 lazy=0 drift+=173 drift-=0
+     -756834  CTL dequeue (run the pipeline) caller=0 now=6052007
+     -750859  CTL lateness check conn1: event at 6052250, now 6052203 (-47 ticks) -> ok
+     -750856  CTL prepare conn1 ticks_at_expire=6052201 -> ran, ret=0
+     -748865  CTL dequeue (run the pipeline) caller=0 now=6052268
+     -722113  CTL lateness check conn1: event at 6053192, now 6053145 (-47 ticks) -> ok
+     -722109  CTL prepare conn1 ticks_at_expire=6053143 -> ran, ret=0
+     -720115  CTL dequeue (run the pipeline) caller=0 now=6053211
+     -693366  CTL lateness check conn1: event at 6054134, now 6054087 (-47 ticks) -> ok
+     -693363  CTL prepare conn1 ticks_at_expire=6054085 -> ran, ret=0
+     -691367  CTL dequeue (run the pipeline) caller=0 now=6054153
+     -664620  CTL lateness check conn1: event at 6055076, now 6055029 (-47 ticks) -> ok
+     -664617  CTL prepare conn1 ticks_at_expire=6055027 -> ran, ret=0
+     -662618  CTL dequeue (run the pipeline) caller=0 now=6055095
+     -655415  CTL lateness check id2: event at 6055378, now 6055331 (-47 ticks) -> ok
+     -655411  CTL prepare ? ticks_at_expire=6055329 -> ran, ret=0
+     -655385  CTL ticker_update id2 lazy=0 drift+=251 drift-=0
+     -651585  CTL dequeue (run the pipeline) caller=0 now=6055456
+     -635875  CTL lateness check conn1: event at 6056018, now 6055971 (-47 ticks) -> ok
+     -635871  CTL prepare conn1 ticks_at_expire=6055969 -> ran, ret=0
+     -633869  CTL dequeue (run the pipeline) caller=0 now=6056037
+     -607128  CTL lateness check conn1: event at 6056960, now 6056913 (-47 ticks) -> ok
+     -607124  CTL prepare conn1 ticks_at_expire=6056911 -> ran, ret=0
+     -605120  CTL dequeue (run the pipeline) caller=0 now=6056979
+     -578381  CTL lateness check conn1: event at 6057902, now 6057855 (-47 ticks) -> ok
+     -578378  CTL prepare conn1 ticks_at_expire=6057853 -> ran, ret=0
+     -576371  CTL dequeue (run the pipeline) caller=0 now=6057921
+     -549635  CTL lateness check conn1: event at 6058844, now 6058797 (-47 ticks) -> ok
+     -549632  CTL prepare conn1 ticks_at_expire=6058795 -> ran, ret=0
+     -547791  CTL enqueue ? ticks_at_expire=6058856
+     -547786  CTL prepare ? ticks_at_expire=6058856 -> queued (-EINPROGRESS)
+     -547759  CTL ticker_update id2 lazy=0 drift+=73 drift-=0
+     -547489  CTL dequeue (run the pipeline) caller=0 now=6058867
+     -547448  CTL lateness check id2: event at 6058905, now 6058869 (-36 ticks) -> ok
+     -547444  CTL prepare ? dequeue ticks_at_expire=6058856 -> ran, ret=0
+     -543954  CTL dequeue (run the pipeline) caller=0 now=6058983
+     -520878  CTL lateness check conn1: event at 6059786, now 6059739 (-47 ticks) -> ok
+     -520874  CTL prepare conn1 ticks_at_expire=6059737 -> ran, ret=0
+     -518789  CTL dequeue (run the pipeline) caller=0 now=6059808
+     -492141  CTL lateness check conn1: event at 6060728, now 6060681 (-47 ticks) -> ok
+     -492138  CTL prepare conn1 ticks_at_expire=6060679 -> ran, ret=0
+     -490125  CTL dequeue (run the pipeline) caller=0 now=6060747
+     -463365  CTL lateness check conn1: event at 6061671, now 6061624 (-47 ticks) -> ok
+     -463362  CTL prepare conn1 ticks_at_expire=6061622 -> ran, ret=0
+     -461377  CTL dequeue (run the pipeline) caller=0 now=6061689
+     -445585  CTL lateness check id2: event at 6062254, now 6062207 (-47 ticks) -> ok
+     -445581  CTL prepare ? ticks_at_expire=6062205 -> ran, ret=0
+     -445555  CTL ticker_update id2 lazy=0 drift+=187 drift-=0
+     -441828  CTL dequeue (run the pipeline) caller=0 now=6062330
+     -434618  CTL lateness check conn1: event at 6062613, now 6062566 (-47 ticks) -> ok
+     -434615  CTL prepare conn1 ticks_at_expire=6062564 -> ran, ret=0
+     -432627  CTL dequeue (run the pipeline) caller=0 now=6062631
+     -405875  CTL lateness check conn1: event at 6063555, now 6063508 (-47 ticks) -> ok
+     -405872  CTL prepare conn1 ticks_at_expire=6063506 -> ran, ret=0
+     -403879  CTL dequeue (run the pipeline) caller=0 now=6063573
+     -377126  CTL lateness check conn1: event at 6064497, now 6064450 (-47 ticks) -> ok
+     -377123  CTL prepare conn1 ticks_at_expire=6064448 -> ran, ret=0
+     -375130  CTL dequeue (run the pipeline) caller=0 now=6064515
+     -348380  CTL lateness check conn1: event at 6065439, now 6065392 (-47 ticks) -> ok
+     -348376  CTL prepare conn1 ticks_at_expire=6065390 -> ran, ret=0
+     -346381  CTL dequeue (run the pipeline) caller=0 now=6065458
+     -339899  CTL lateness check id2: event at 6065717, now 6065670 (-47 ticks) -> ok
+     -339895  CTL prepare ? ticks_at_expire=6065668 -> ran, ret=0
+     -339869  CTL ticker_update id2 lazy=0 drift+=248 drift-=0
+     -336077  CTL dequeue (run the pipeline) caller=0 now=6065795
+     -319633  CTL lateness check conn1: event at 6066381, now 6066334 (-47 ticks) -> ok
+     -319630  CTL prepare conn1 ticks_at_expire=6066332 -> ran, ret=0
+     -317632  CTL dequeue (run the pipeline) caller=0 now=6066400
+     -290878  CTL lateness check conn1: event at 6067323, now 6067276 (-47 ticks) -> ok
+     -290875  CTL prepare conn1 ticks_at_expire=6067274 -> ran, ret=0
+     -288867  CTL dequeue (run the pipeline) caller=0 now=6067342
+     -262141  CTL lateness check conn1: event at 6068265, now 6068218 (-47 ticks) -> ok
+     -262137  CTL prepare conn1 ticks_at_expire=6068216 -> ran, ret=0
+     -260135  CTL dequeue (run the pipeline) caller=0 now=6068284
+     -232368  CTL lateness check id2: event at 6069241, now 6069194 (-47 ticks) -> ok
+     -232364  CTL prepare ? ticks_at_expire=6069192 -> ran, ret=0
+     -232338  CTL ticker_update id2 lazy=0 drift+=97 drift-=0
+     -228536  CTL dequeue (run the pipeline) caller=0 now=6069319
+     -204648  CTL lateness check conn1: event at 6070149, now 6070102 (-47 ticks) -> ok
+     -204645  CTL prepare conn1 lazy=1 ticks_at_expire=6070100 -> ran, ret=0
+     -202637  CTL dequeue (run the pipeline) caller=0 now=6070168
+     -202588  CTL ticker_update conn1 lazy=1 drift+=0 drift-=0
+     -175911  CTL ticker_start conn1 user=1 anchor=6071042 first=1 (expiry 6071043) -> busy (job pending)
+     -175765  CTL lateness check conn1: event at 6071092, now 6071048 (-44 ticks) -> ok
+     -175761  CTL prepare conn1 ticks_at_expire=6071043 -> ran, ret=0
+     -173868  CTL dequeue (run the pipeline) caller=0 now=6071111
+     -147128  CTL lateness check conn1: event at 6072034, now 6071987 (-47 ticks) -> ok
+     -147124  CTL prepare conn1 ticks_at_expire=6071985 -> ran, ret=0
+     -145119  CTL dequeue (run the pipeline) caller=0 now=6072053
+     -129436  CTL lateness check id2: event at 6072614, now 6072567 (-47 ticks) -> ok
+     -129432  CTL prepare ? ticks_at_expire=6072565 -> ran, ret=0
+     -129406  CTL ticker_update id2 lazy=0 drift+=312 drift-=0
+     -125606  CTL dequeue (run the pipeline) caller=0 now=6072692
+     -118381  CTL lateness check conn1: event at 6072976, now 6072929 (-47 ticks) -> ok
+     -118378  CTL prepare conn1 ticks_at_expire=6072927 -> ran, ret=0
+     -116370  CTL dequeue (run the pipeline) caller=0 now=6072995
+      -89635  CTL lateness check conn1: event at 6073918, now 6073871 (-47 ticks) -> ok
+      -89631  CTL prepare conn1 ticks_at_expire=6073869 -> ran, ret=0
+      -87638  RADIO exit
+      -87636  RADIO enter
+      -87621  CTL dequeue (run the pipeline) caller=0 now=6073937
+      -87615  RADIO exit
+      -87613  RTC0 enter
+      -87594  RTC0 exit
+      -60944  RTC0 enter
+      -60924  SWI4 enter
+      -60880  CTL lateness check conn1: event at 6074860, now 6074813 (-47 ticks) -> ok
+      -60877  CTL prepare conn1 ticks_at_expire=6074811 -> ran, ret=0
+      -60872  SWI4 exit
+      -60870  SWI4 enter
+      -60864  SWI4 exit
+      -60830  RTC0 exit
+      -60828  RTC0 enter
+      -60818  RTC0 exit
+      -59085  RADIO enter
+      -59065  RADIO exit
+      -58889  RADIO enter
+      -58873  RADIO exit
+      -58871  RADIO enter
+      -58856  CTL dequeue (run the pipeline) caller=0 now=6074880
+      -58850  RADIO exit
+      -58848  RTC0 enter
+      -58829  RTC0 exit
+      -53201  RTC1 enter
+      -53164  RTC1 exit
+      -53153  thread -> sysworkq
+      -53137  thread -> sysworkq
+      -53116  thread -> idle
+      -38431  RTC1 enter
+      -38401  RTC1 exit
+      -32206  RTC0 enter
+      -32185  SWI4 enter
+      -32142  CTL lateness check conn1: event at 6075802, now 6075755 (-47 ticks) -> ok
+      -32138  CTL prepare conn1 ticks_at_expire=6075753 -> ran, ret=0
+      -32134  SWI4 exit
+      -32131  SWI4 enter
+      -32126  SWI4 exit
+      -32092  RTC0 exit
+      -32089  RTC0 enter
+      -32080  RTC0 exit
+      -30335  RADIO enter
+      -30315  RADIO exit
+      -30139  RADIO enter
+      -30123  RADIO exit
+      -30121  RADIO enter
+      -30106  CTL dequeue (run the pipeline) caller=0 now=6075822
+      -30100  RADIO exit
+      -30098  RTC0 enter
+      -30079  RTC0 exit
+      -19999  RTC0 enter
+      -19985  SWI4 enter
+      -19944  CTL lateness check id2: event at 6076202, now 6076155 (-47 ticks) -> ok
+      -19940  CTL prepare ? ticks_at_expire=6076153 -> ran, ret=0
+      -19935  SWI4 exit
+      -19933  SWI4 enter
+      -19928  SWI4 exit
+      -19905  CTL ticker_update id2 lazy=0 drift+=211 drift-=0
+      -19872  RTC0 exit
+      -19870  RTC0 enter
+      -19844  RTC0 exit
+      -19842  RTC0 enter
+      -19835  RTC0 exit
+      -19627  RNG enter
+      -19623  RNG exit
+      -19501  RNG enter
+      -19498  RNG exit
+      -19379  RNG enter
+      -19376  RNG exit
+      -19274  RNG enter
+      -19271  RNG exit
+      -19160  RNG enter
+      -19154  RNG exit
+      -17895  RADIO enter
+      -17878  RADIO exit
+      -17689  RADIO enter
+      -17679  RADIO exit
+      -17677  RADIO enter
+      -17660  RADIO exit
+      -17314  RADIO enter
+      -17297  RADIO exit
+      -16807  RADIO enter
+      -16779  RADIO exit
+      -16777  RADIO enter
+      -16763  CTL dequeue (run the pipeline) caller=0 now=6076259
+      -16756  RADIO exit
+      -16753  SWI4 enter
+      -16745  SWI4 exit
+      -16743  RTC0 enter
+      -16683  CTL ticker_start conn0 user=1 anchor=6076152 first=453 (expiry 6076605) -> busy (job pending)
+      -16650  RTC0 exit
+      -16647  RTC0 enter
+      -16641  RTC0 exit
+      -16628  thread -> BT
+      -16583  thread -> BT
+      -16538  thread -> BT
+      -16028  thread -> BT
+      -15991  thread -> BT
+      -15975  thread -> sysworkq
+      -15925  RTC0 enter
+      -15917  RTC0 exit
+      -15839  RTC0 enter
+      -15832  RTC0 exit
+      -15795  RNG enter
+      -15787  RNG exit
+      -15758  thread -> BT
+      -15733  thread -> sysworkq
+      -15718  RNG enter
+      -15710  RNG exit
+      -15707  thread -> sysworkq
+      -15687  thread -> BT
+      -15660  thread -> idle
+      -15589  RNG enter
+      -15579  RNG exit
+      -15568  thread -> BT
+      -15541  thread -> idle
+      -15489  RNG enter
+      -15480  RNG exit
+      -15468  thread -> BT
+      -15441  thread -> idle
+      -15407  RNG enter
+      -15398  RNG exit
+      -15386  thread -> BT
+      -15359  thread -> idle
+      -15281  RNG enter
+      -15272  RNG exit
+      -15261  thread -> BT
+      -15234  thread -> idle
+      -15158  RNG enter
+      -15149  RNG exit
+      -15137  thread -> BT
+      -15110  thread -> idle
+      -15074  RNG enter
+      -15065  RNG exit
+      -15053  thread -> BT
+      -15026  thread -> idle
+      -14982  RNG enter
+      -14973  RNG exit
+      -14953  thread -> BT
+      -14880  RNG enter
+      -14874  RNG exit
+      -14802  RNG enter
+      -14796  RNG exit
+      -14723  RNG enter
+      -14718  RNG exit
+      -14636  thread -> BT
+      -14619  thread -> sysworkq
+      -14600  RNG enter
+      -14595  RNG exit
+      -14544  thread -> sysworkq
+      -14485  thread -> sysworkq
+      -14463  RNG enter
+      -14457  RNG exit
+      -14453  thread -> sysworkq
+      -14437  thread -> sysworkq
+      -14416  thread -> idle
+      -14363  RNG enter
+      -14358  RNG exit
+      -14266  RNG enter
+      -14261  RNG exit
+      -14154  RNG enter
+      -14149  RNG exit
+       -6206  RTC0 enter
+       -6180  SWI4 enter
+       -6138  CTL lateness check conn0: event at 6076654, now 6076607 (-47 ticks) -> ok
+       -6134  CTL prepare conn0 ticks_at_expire=6076605 -> ran, ret=0
+       -6130  SWI4 exit
+       -6128  SWI4 enter
+       -6122  SWI4 exit
+       -6084  RTC0 exit
+       -6082  RTC0 enter
+       -6072  RTC0 exit
+       -3460  RTC0 enter
+       -3440  SWI4 enter
+       -3428  CTL enqueue conn1 ticks_at_expire=6076695
+       -3423  CTL prepare conn1 ticks_at_expire=6076695 -> queued (-EINPROGRESS)
+       -3417  SWI4 exit
+       -3415  SWI4 enter
+       -3410  SWI4 exit
+       -3376  RTC0 exit
+       -3374  RTC0 enter
+       -3364  RTC0 exit
+       -1548  RADIO enter
+       -1527  RADIO exit
+       -1322  RADIO enter
+       -1306  RADIO exit
+       -1087  RADIO enter
+       -1067  RADIO exit
+        -789  RADIO enter
+        -773  RADIO exit
+        -554  RADIO enter
+        -530  RADIO exit
+        -527  RTC0 enter
+        -505  RTC0 exit
+        -493  thread -> BT
+        -472  thread -> idle
+        -280  RADIO enter
+        -264  RADIO exit
+         -74  RADIO enter
+         -66  RADIO exit
+         -63  RADIO enter
+         -49  CTL dequeue (run the pipeline) caller=0 now=6076807
+          -5  CTL lateness check conn1: event at 6076744, now 6076808 (+64 ticks) -> LATE overhead=67
+          -2  CTL *** late prepare recorded: conn1 late=64 ticks
+          15  CTL prepare conn1 dequeue ticks_at_expire=6076695 -> ran, ret=0
+          23  RADIO exit
+          25  RADIO enter
+          38  CTL dequeue (run the pipeline) caller=0 now=6076810
+          43  RADIO exit
+          54  RTC0 enter
+         106  CTL ticker_update conn0 lazy=0 drift+=92 drift-=2
+         116  RTC0 exit
+         127  thread -> sysworkq
+  -- activity (1 ms ticks, run-length):
+    t=-64..-23 isr=0/0 thr=idle pc=6b92c..6b92c maxlat=12 | - | arch_cpu_idle (cpu_idle.c:103)
+    t=-22..-22 isr=800/0 thr=idle pc=6b92c..6b92c maxlat=36 | RTC0 | arch_cpu_idle (cpu_idle.c:103)
+    t=-21..-19 isr=0/0 thr=idle pc=6b92c..6b92c maxlat=12 | - | arch_cpu_idle (cpu_idle.c:103)
+    t=-18..-18 isr=0/0 thr=sysworkq pc=4061e..4061e maxlat=1 | - | bt_hci_cmd_create (hci_core.c:329)
+    t=-17..-17 isr=0/0 thr=BT RX WQ pc=62450..62450 maxlat=1 | - | arch_swap (kernel_arch_func.h:97)
+    t=-16..-2 isr=0/0 thr=idle pc=6b92c..6b92c maxlat=12 | - | arch_cpu_idle (cpu_idle.c:103)
+    t=-1..-1 isr=0/0 thr=sysworkq pc=745b0..745b0 maxlat=1 | - | memset (??:?)
+
+===== crash2 =====
+ZDIAG lab crash2 seq=387 kind=late line=242 file=late up=322967 t=322672601 cap=322674081 late=0 ipsr=0 iabr=0/0 pc=0 lr=0 xpsr=0 thr=sysworkq sum=ok
+  interrupted thread pc:    lr: 
+  active ISRs at crash: -   crashing context ipsr=0 (thread)
+  crash2stat max=100 over=1/0/0/0 skipped=0 nlat=1 ticker=10553339 rtc0=10553339 nvmc=0/1
+  crash2conn h=0 valid=1 connected=0 role=1 interval=12 latency=10 lat_prep=0 lazy_prep=0 lat_ev=0 evcnt=0 forced=0 sv_exp=0 conn_exp=6 sv_to=400 prep2start=31 slot=39
+  crash2conn h=1 valid=1 connected=1 role=0 interval=6 latency=30 lat_prep=0 lazy_prep=0 lat_ev=0 evcnt=41255 forced=0 sv_exp=505 conn_exp=0 sv_to=400 prep2start=31 slot=39
+  crash2prepstat id=2 n=152 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5)
+  crash2prepstat id=4 n=14 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5)
+  crash2prepstat id=6 n=40328 max_late=64 last_late=0 over=1 (ticks of 30.52us; conn=id-5)
+  crash2prepstat id=5 n=1982 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5)
+  -- connection events (ms since boot):
+    ms=52330 type=split-param a=23 b=7
+    ms=55084 type=host-conn a=12 b=10
+    ms=55981 type=split-param a=6 b=30
+    ms=94159 type=host-disc a=22 b=0
+    ms=94666 type=split-param a=23 b=7
+    ms=95099 type=host-conn a=12 b=10
+    ms=96017 type=split-param a=6 b=30
+    ms=136385 type=host-disc a=22 b=0
+    ms=136982 type=split-param a=23 b=7
+    ms=138077 type=host-conn a=12 b=10
+    ms=139023 type=split-param a=6 b=30
+    ms=184672 type=host-disc a=22 b=0
+    ms=185358 type=split-param a=23 b=7
+    ms=186353 type=host-conn a=12 b=10
+    ms=187170 type=split-param a=6 b=30
+    ms=230724 type=host-disc a=22 b=0
+    ms=231345 type=split-param a=23 b=7
+    ms=231672 type=host-conn a=12 b=10
+    ms=232696 type=split-param a=6 b=30
+    ms=277031 type=host-disc a=22 b=0
+    ms=277554 type=split-param a=23 b=7
+    ms=279138 type=host-conn a=12 b=10
+    ms=280055 type=split-param a=6 b=30
+    ms=322977 type=host-disc a=22 b=0
+  -- printk tail:
+  -- latency events (>=100 us) before the crash:
+    up=2400 lat=100 iabr=8000000/0 pc=6b92c lr=6b21f thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+  -- prepare checks before the crash (dt us relative to the crash; late in RTC ticks, 30.52 us):
+    dt=-204541 id=6 at=10546634 now=10546587 late=-47 result=0
+    dt=-197042 id=6 at=10546880 now=10546833 late=-47 result=0
+    dt=-189566 id=6 at=10547125 now=10547078 late=-47 result=0
+    dt=-182059 id=6 at=10547371 now=10547324 late=-47 result=0
+    dt=-174543 id=6 at=10547617 now=10547570 late=-47 result=0
+    dt=-167045 id=6 at=10547863 now=10547816 late=-47 result=0
+    dt=-159530 id=6 at=10548109 now=10548062 late=-47 result=0
+    dt=-152062 id=6 at=10548354 now=10548307 late=-47 result=0
+    dt=-144545 id=6 at=10548600 now=10548553 late=-47 result=0
+    dt=-137048 id=6 at=10548846 now=10548799 late=-47 result=0
+    dt=-129532 id=6 at=10549092 now=10549045 late=-47 result=0
+    dt=-122064 id=6 at=10549337 now=10549290 late=-47 result=0
+    dt=-114548 id=6 at=10549583 now=10549536 late=-47 result=0
+    dt=-109950 id=5 at=10549734 now=10549687 late=-47 result=0
+    dt=-107050 id=6 at=10549829 now=10549782 late=-47 result=0
+    dt=-99534 id=6 at=10550075 now=10550028 late=-47 result=0
+    dt=-92067 id=6 at=10550320 now=10550273 late=-47 result=0
+    dt=-84551 id=6 at=10550566 now=10550519 late=-47 result=0
+    dt=-77052 id=6 at=10550812 now=10550765 late=-47 result=0
+    dt=-69537 id=6 at=10551058 now=10551011 late=-47 result=0
+    dt=-62069 id=6 at=10551303 now=10551256 late=-47 result=0
+    dt=-54562 id=6 at=10551549 now=10551502 late=-47 result=0
+    dt=-47055 id=6 at=10551795 now=10551748 late=-47 result=0
+    dt=-39539 id=6 at=10552041 now=10551994 late=-47 result=0
+    dt=-32072 id=6 at=10552286 now=10552239 late=-47 result=0
+    dt=-24564 id=6 at=10552532 now=10552485 late=-47 result=0
+    dt=-19889 id=5 at=10552685 now=10552638 late=-47 result=0
+    dt=-17057 id=6 at=10552778 now=10552731 late=-47 result=0
+    dt=-9542 id=6 at=10553024 now=10552977 late=-47 result=0
+    dt=-4819 id=5 at=10553179 now=10553132 late=-47 result=0
+    dt=-2086 id=6 at=10553269 now=10553221 late=-48 result=0
+    dt=-13 id=2 at=10553309 now=10553289 late=-20 result=0
+  -- preempt history (sparse ring: queued prepares, the preempt timeout, aborts; dt us):
+    -62943301  prepare conn1 ticks_at_expire=8490676 -> queued (-EINPROGRESS)
+    -62942378  prepare conn1 dequeue ticks_at_expire=8490676 -> ran, ret=0
+    -62778305  enqueue conn1 ticks_at_expire=8496083
+    -62778300  prepare conn1 ticks_at_expire=8496083 -> queued (-EINPROGRESS)
+    -62777378  prepare conn1 dequeue ticks_at_expire=8496083 -> ran, ret=0
+    -62613304  enqueue conn1 ticks_at_expire=8501490
+    -62613298  prepare conn1 ticks_at_expire=8501490 -> queued (-EINPROGRESS)
+    -62612379  prepare conn1 dequeue ticks_at_expire=8501490 -> ran, ret=0
+    -62448332  enqueue conn1 ticks_at_expire=8506896
+    -62448327  prepare conn1 ticks_at_expire=8506896 -> queued (-EINPROGRESS)
+    -62447380  prepare conn1 dequeue ticks_at_expire=8506896 -> ran, ret=0
+    -62283331  enqueue conn1 ticks_at_expire=8512303
+    -62283325  prepare conn1 ticks_at_expire=8512303 -> queued (-EINPROGRESS)
+    -62282382  prepare conn1 dequeue ticks_at_expire=8512303 -> ran, ret=0
+    -62118329  enqueue conn1 ticks_at_expire=8517710
+    -62118324  prepare conn1 ticks_at_expire=8517710 -> queued (-EINPROGRESS)
+    -62117382  prepare conn1 dequeue ticks_at_expire=8517710 -> ran, ret=0
+    -61953328  enqueue conn1 ticks_at_expire=8523117
+    -61953322  prepare conn1 ticks_at_expire=8523117 -> queued (-EINPROGRESS)
+    -61952383  prepare conn1 dequeue ticks_at_expire=8523117 -> ran, ret=0
+    -61788356  enqueue conn1 ticks_at_expire=8528523
+    -61788351  prepare conn1 ticks_at_expire=8528523 -> queued (-EINPROGRESS)
+    -61787385  prepare conn1 dequeue ticks_at_expire=8528523 -> ran, ret=0
+    -61623355  enqueue conn1 ticks_at_expire=8533930
+    -61623350  prepare conn1 ticks_at_expire=8533930 -> queued (-EINPROGRESS)
+    -61622385  prepare conn1 dequeue ticks_at_expire=8533930 -> ran, ret=0
+    -61458353  enqueue conn1 ticks_at_expire=8539337
+    -61458348  prepare conn1 ticks_at_expire=8539337 -> queued (-EINPROGRESS)
+    -61457386  prepare conn1 dequeue ticks_at_expire=8539337 -> ran, ret=0
+    -61293382  enqueue conn1 ticks_at_expire=8544743
+    -61293377  prepare conn1 ticks_at_expire=8544743 -> queued (-EINPROGRESS)
+    -61292388  prepare conn1 dequeue ticks_at_expire=8544743 -> ran, ret=0
+    -61128381  enqueue conn1 ticks_at_expire=8550150
+    -61128375  prepare conn1 ticks_at_expire=8550150 -> queued (-EINPROGRESS)
+    -61126951  prepare conn1 dequeue ticks_at_expire=8550150 -> ran, ret=0
+    -60963379  enqueue conn1 ticks_at_expire=8555557
+    -60963374  prepare conn1 ticks_at_expire=8555557 -> queued (-EINPROGRESS)
+    -60962388  prepare conn1 dequeue ticks_at_expire=8555557 -> ran, ret=0
+    -60798377  enqueue conn1 ticks_at_expire=8560964
+    -60798372  prepare conn1 ticks_at_expire=8560964 -> queued (-EINPROGRESS)
+    -60797389  prepare conn1 dequeue ticks_at_expire=8560964 -> ran, ret=0
+    -60633406  enqueue conn1 ticks_at_expire=8566370
+    -60633401  prepare conn1 ticks_at_expire=8566370 -> queued (-EINPROGRESS)
+    -60632390  prepare conn1 dequeue ticks_at_expire=8566370 -> ran, ret=0
+    -60468405  enqueue conn1 ticks_at_expire=8571777
+    -60468399  prepare conn1 ticks_at_expire=8571777 -> queued (-EINPROGRESS)
+    -60467391  prepare conn1 dequeue ticks_at_expire=8571777 -> ran, ret=0
+    -60303403  enqueue conn1 ticks_at_expire=8577184
+    -60303398  prepare conn1 ticks_at_expire=8577184 -> queued (-EINPROGRESS)
+    -60302392  prepare conn1 dequeue ticks_at_expire=8577184 -> ran, ret=0
+    -60138432  enqueue conn1 ticks_at_expire=8582590
+    -60138427  prepare conn1 ticks_at_expire=8582590 -> queued (-EINPROGRESS)
+    -60137394  prepare conn1 dequeue ticks_at_expire=8582590 -> ran, ret=0
+    -59973430  enqueue conn1 ticks_at_expire=8587997
+    -59973425  prepare conn1 ticks_at_expire=8587997 -> queued (-EINPROGRESS)
+    -59972395  prepare conn1 dequeue ticks_at_expire=8587997 -> ran, ret=0
+    -59808429  enqueue conn1 ticks_at_expire=8593404
+    -59808423  prepare conn1 ticks_at_expire=8593404 -> queued (-EINPROGRESS)
+    -59807395  prepare conn1 dequeue ticks_at_expire=8593404 -> ran, ret=0
+    -59643427  enqueue conn1 ticks_at_expire=8598811
+    -59643422  prepare conn1 ticks_at_expire=8598811 -> queued (-EINPROGRESS)
+    -59642396  prepare conn1 dequeue ticks_at_expire=8598811 -> ran, ret=0
+    -59478456  enqueue conn1 ticks_at_expire=8604217
+    -59478451  prepare conn1 ticks_at_expire=8604217 -> queued (-EINPROGRESS)
+    -59477398  prepare conn1 dequeue ticks_at_expire=8604217 -> ran, ret=0
+    -59313454  enqueue conn1 ticks_at_expire=8609624
+    -59313449  prepare conn1 ticks_at_expire=8609624 -> queued (-EINPROGRESS)
+    -59312397  prepare conn1 dequeue ticks_at_expire=8609624 -> ran, ret=0
+    -59148453  enqueue conn1 ticks_at_expire=8615031
+    -59148447  prepare conn1 ticks_at_expire=8615031 -> queued (-EINPROGRESS)
+    -59147398  prepare conn1 dequeue ticks_at_expire=8615031 -> ran, ret=0
+    -45947448  ticker_stop conn0 user=1 now=9047621 -> ok
+    -45745090  enqueue ? ticks_at_expire=9054251
+    -45745085  prepare ? ticks_at_expire=9054251 -> queued (-EINPROGRESS)
+    -45744441  prepare ? dequeue ticks_at_expire=9054251 -> ran, ret=0
+    -45424006  ticker_start conn1 user=1 anchor=9064772 first=1 (expiry 9064773) -> busy (job pending)
+    -45107736  enqueue conn1 ticks_at_expire=9075136
+    -45107731  prepare conn1 ticks_at_expire=9075136 -> queued (-EINPROGRESS)
+    -45107147  prepare conn1 dequeue ticks_at_expire=9075136 -> ran, ret=0
+    -44590271  ticker_start conn1 user=1 anchor=9092093 first=1 (expiry 9092094) -> busy (job pending)
+    -43841431  ticker_start conn0 user=1 anchor=9116543 first=230 (expiry 9116773) -> busy (job pending)
+    -43639624  enqueue conn0 ticks_at_expire=9123245
+    -43639618  prepare conn0 ticks_at_expire=9123245 -> queued (-EINPROGRESS)
+    -43639471  prepare conn0 dequeue ticks_at_expire=9123245 -> ran, ret=0
+    -42922799  ticker_start conn1 user=1 anchor=9146735 first=1 (expiry 9146736) -> busy (job pending)
+       -2701  ticker_stop conn0 user=1 now=10553201 -> ok
+        -895  enqueue ? ticks_at_expire=10553260
+        -884  ticker_stop PREEMPT user=0 now=10553261 -> busy (job pending)
+        -875  ticker_start PREEMPT user=0 anchor=10553260 first=49 (expiry 10553309) -> busy (job pending)
+        -872  prepare ? ticks_at_expire=10553260 -> queued (-EINPROGRESS)
+        -826  preempt ticker stop answered: status=1 now=10553263
+        -810  preempt ticker start answered: status=0 now=10553263
+          -7  prepare ? dequeue ticks_at_expire=10553260 -> ran, ret=0
+          -5  *** preempt timeout HEALTHY again (started for queued prepares): dequeued prepare ticks_at_expire=10553260, stale runs so far=363
+          -2  *** record taken: healthy again
+         583  PREEMPT TICKER FIRED for ?: at_expire=10553309 now=10553309 lazy=0 force=1
+  -- the ticker list when the record was filled (ticks_current=10553309): conn1 in 157 ticks, id2 in 3551 ticks
+  -- timeline before the crash (dt in us, 0 = the crash):
+     -255050  CTL dequeue (run the pipeline) caller=0 now=10544932
+     -249557  CTL lateness check conn1: event at 10545159, now 10545112 (-47 ticks) -> ok
+     -249554  CTL prepare conn1 ticks_at_expire=10545110 -> ran, ret=0
+     -247550  CTL dequeue (run the pipeline) caller=0 now=10545178
+     -242050  CTL lateness check conn1: event at 10545405, now 10545358 (-47 ticks) -> ok
+     -242047  CTL prepare conn1 ticks_at_expire=10545356 -> ran, ret=0
+     -240040  CTL dequeue (run the pipeline) caller=0 now=10545424
+     -234534  CTL lateness check conn1: event at 10545651, now 10545604 (-47 ticks) -> ok
+     -234531  CTL prepare conn1 ticks_at_expire=10545602 -> ran, ret=0
+     -232541  CTL dequeue (run the pipeline) caller=0 now=10545670
+     -227036  CTL lateness check conn1: event at 10545897, now 10545850 (-47 ticks) -> ok
+     -227033  CTL prepare conn1 ticks_at_expire=10545848 -> ran, ret=0
+     -225041  CTL dequeue (run the pipeline) caller=0 now=10545915
+     -219560  CTL lateness check conn1: event at 10546142, now 10546095 (-47 ticks) -> ok
+     -219557  CTL prepare conn1 ticks_at_expire=10546093 -> ran, ret=0
+     -217524  CTL dequeue (run the pipeline) caller=0 now=10546162
+     -212053  CTL lateness check conn1: event at 10546388, now 10546341 (-47 ticks) -> ok
+     -212050  CTL prepare conn1 ticks_at_expire=10546339 -> ran, ret=0
+     -210040  CTL dequeue (run the pipeline) caller=0 now=10546407
+     -204538  CTL lateness check conn1: event at 10546634, now 10546587 (-47 ticks) -> ok
+     -204534  CTL prepare conn1 ticks_at_expire=10546585 -> ran, ret=0
+     -202552  CTL dequeue (run the pipeline) caller=0 now=10546652
+     -197039  CTL lateness check conn1: event at 10546880, now 10546833 (-47 ticks) -> ok
+     -197035  CTL prepare conn1 ticks_at_expire=10546831 -> ran, ret=0
+     -195042  CTL dequeue (run the pipeline) caller=0 now=10546898
+     -189563  CTL lateness check conn1: event at 10547125, now 10547078 (-47 ticks) -> ok
+     -189559  CTL prepare conn1 ticks_at_expire=10547076 -> ran, ret=0
+     -187553  CTL dequeue (run the pipeline) caller=0 now=10547144
+     -182056  CTL lateness check conn1: event at 10547371, now 10547324 (-47 ticks) -> ok
+     -182052  CTL prepare conn1 ticks_at_expire=10547322 -> ran, ret=0
+     -180042  CTL dequeue (run the pipeline) caller=0 now=10547390
+     -174540  CTL lateness check conn1: event at 10547617, now 10547570 (-47 ticks) -> ok
+     -174537  CTL prepare conn1 ticks_at_expire=10547568 -> ran, ret=0
+     -172553  CTL dequeue (run the pipeline) caller=0 now=10547635
+     -167042  CTL lateness check conn1: event at 10547863, now 10547816 (-47 ticks) -> ok
+     -167038  CTL prepare conn1 ticks_at_expire=10547814 -> ran, ret=0
+     -165042  CTL dequeue (run the pipeline) caller=0 now=10547882
+     -159526  CTL lateness check conn1: event at 10548109, now 10548062 (-47 ticks) -> ok
+     -159523  CTL prepare conn1 ticks_at_expire=10548060 -> ran, ret=0
+     -157554  CTL dequeue (run the pipeline) caller=0 now=10548127
+     -152058  CTL lateness check conn1: event at 10548354, now 10548307 (-47 ticks) -> ok
+     -152055  CTL prepare conn1 ticks_at_expire=10548305 -> ran, ret=0
+     -150043  CTL dequeue (run the pipeline) caller=0 now=10548373
+     -144542  CTL lateness check conn1: event at 10548600, now 10548553 (-47 ticks) -> ok
+     -144539  CTL prepare conn1 ticks_at_expire=10548551 -> ran, ret=0
+     -142554  CTL dequeue (run the pipeline) caller=0 now=10548618
+     -137044  CTL lateness check conn1: event at 10548846, now 10548799 (-47 ticks) -> ok
+     -137041  CTL prepare conn1 ticks_at_expire=10548797 -> ran, ret=0
+     -135044  CTL dequeue (run the pipeline) caller=0 now=10548865
+     -129528  CTL lateness check conn1: event at 10549092, now 10549045 (-47 ticks) -> ok
+     -129525  CTL prepare conn1 ticks_at_expire=10549043 -> ran, ret=0
+     -127555  CTL dequeue (run the pipeline) caller=0 now=10549110
+     -122061  CTL lateness check conn1: event at 10549337, now 10549290 (-47 ticks) -> ok
+     -122057  CTL prepare conn1 ticks_at_expire=10549288 -> ran, ret=0
+     -120045  CTL dequeue (run the pipeline) caller=0 now=10549356
+     -114545  CTL lateness check conn1: event at 10549583, now 10549536 (-47 ticks) -> ok
+     -114542  CTL prepare conn1 ticks_at_expire=10549534 -> ran, ret=0
+     -112555  CTL dequeue (run the pipeline) caller=0 now=10549601
+     -109946  CTL lateness check conn0: event at 10549734, now 10549687 (-47 ticks) -> ok
+     -109942  CTL prepare conn0 lazy=10 ticks_at_expire=10549685 -> ran, ret=0
+     -107771  CTL dequeue (run the pipeline) caller=0 now=10549758
+     -107717  CTL ticker_update conn0 lazy=0 drift+=6 drift-=2
+     -107047  CTL lateness check conn1: event at 10549829, now 10549782 (-47 ticks) -> ok
+     -107043  CTL prepare conn1 ticks_at_expire=10549780 -> ran, ret=0
+     -105045  CTL dequeue (run the pipeline) caller=0 now=10549848
+      -99531  CTL lateness check conn1: event at 10550075, now 10550028 (-47 ticks) -> ok
+      -99528  CTL prepare conn1 ticks_at_expire=10550026 -> ran, ret=0
+      -97555  CTL dequeue (run the pipeline) caller=0 now=10550093
+      -92063  CTL lateness check conn1: event at 10550320, now 10550273 (-47 ticks) -> ok
+      -92060  CTL prepare conn1 ticks_at_expire=10550271 -> ran, ret=0
+      -90046  CTL dequeue (run the pipeline) caller=0 now=10550339
+      -84548  CTL lateness check conn1: event at 10550566, now 10550519 (-47 ticks) -> ok
+      -84544  CTL prepare conn1 ticks_at_expire=10550517 -> ran, ret=0
+      -82555  CTL dequeue (run the pipeline) caller=0 now=10550585
+      -77049  CTL lateness check conn1: event at 10550812, now 10550765 (-47 ticks) -> ok
+      -77046  CTL prepare conn1 ticks_at_expire=10550763 -> ran, ret=0
+      -75047  CTL dequeue (run the pipeline) caller=0 now=10550831
+      -69533  CTL lateness check conn1: event at 10551058, now 10551011 (-47 ticks) -> ok
+      -69530  CTL prepare conn1 ticks_at_expire=10551009 -> ran, ret=0
+      -67555  CTL dequeue (run the pipeline) caller=0 now=10551076
+      -62066  CTL lateness check conn1: event at 10551303, now 10551256 (-47 ticks) -> ok
+      -62062  CTL prepare conn1 ticks_at_expire=10551254 -> ran, ret=0
+      -60047  CTL dequeue (run the pipeline) caller=0 now=10551322
+      -54559  CTL lateness check conn1: event at 10551549, now 10551502 (-47 ticks) -> ok
+      -54555  CTL prepare conn1 ticks_at_expire=10551500 -> ran, ret=0
+      -52555  CTL dequeue (run the pipeline) caller=0 now=10551568
+      -47052  CTL lateness check conn1: event at 10551795, now 10551748 (-47 ticks) -> ok
+      -47048  CTL prepare conn1 ticks_at_expire=10551746 -> ran, ret=0
+      -45047  CTL dequeue (run the pipeline) caller=0 now=10551814
+      -39536  CTL lateness check conn1: event at 10552041, now 10551994 (-47 ticks) -> ok
+      -39532  CTL prepare conn1 ticks_at_expire=10551992 -> ran, ret=0
+      -37555  CTL dequeue (run the pipeline) caller=0 now=10552059
+      -32068  CTL lateness check conn1: event at 10552286, now 10552239 (-47 ticks) -> ok
+      -32065  CTL prepare conn1 ticks_at_expire=10552237 -> ran, ret=0
+      -31312  CTL ticker_update conn0 lazy=1 drift+=0 drift-=0
+      -30118  RTC1 enter
+      -30089  RTC1 exit
+      -30085  RADIO enter
+      -30076  RADIO exit
+      -30074  RADIO enter
+      -30059  CTL dequeue (run the pipeline) caller=0 now=10552305
+      -30053  RADIO exit
+      -30051  RTC0 enter
+      -30031  RTC0 exit
+      -30022  thread -> usbworkq
+      -29994  thread -> usbworkq
+      -29985  USBD enter
+      -29975  USBD exit
+      -29965  USBD enter
+      -29957  USBD exit
+      -29948  thread -> usbworkq
+      -29928  thread -> idle
+      -29624  USBD enter
+      -29589  USBD exit
+      -29578  thread -> usbd_workq
+      -29553  thread -> usbd_workq
+      -29534  thread -> idle
+      -25937  RTC1 enter
+      -25912  RTC1 exit
+      -25899  thread -> diag_min_ti
+      -25856  thread -> idle
+      -24625  RTC0 enter
+      -24604  SWI4 enter
+      -24561  CTL lateness check conn1: event at 10552532, now 10552485 (-47 ticks) -> ok
+      -24557  CTL prepare conn1 ticks_at_expire=10552483 -> ran, ret=0
+      -24553  SWI4 exit
+      -24550  SWI4 enter
+      -24545  SWI4 exit
+      -24502  RTC0 exit
+      -24500  RTC0 enter
+      -24490  RTC0 exit
+      -22760  RADIO enter
+      -22740  RADIO exit
+      -22580  RADIO enter
+      -22571  RADIO exit
+      -22569  RADIO enter
+      -22555  CTL dequeue (run the pipeline) caller=0 now=10552551
+      -22549  RADIO exit
+      -22546  RTC0 enter
+      -22527  RTC0 exit
+      -19956  RTC0 enter
+      -19932  SWI4 enter
+      -19886  CTL lateness check conn0: event at 10552685, now 10552638 (-47 ticks) -> ok
+      -19882  CTL prepare conn0 lazy=5 ticks_at_expire=10552636 -> ran, ret=0
+      -19877  SWI4 exit
+      -19875  SWI4 enter
+      -19870  SWI4 exit
+      -19834  RTC0 exit
+      -19832  RTC0 enter
+      -19822  RTC0 exit
+      -17980  RADIO enter
+      -17954  RADIO exit
+      -17763  RADIO enter
+      -17743  RADIO exit
+      -17580  RADIO enter
+      -17571  RADIO exit
+      -17569  RADIO enter
+      -17553  CTL dequeue (run the pipeline) caller=0 now=10552715
+      -17547  RADIO exit
+      -17545  RTC0 enter
+      -17499  CTL ticker_update conn0 lazy=1 drift+=4 drift-=2
+      -17491  RTC0 exit
+      -17118  RTC0 enter
+      -17098  SWI4 enter
+      -17054  CTL lateness check conn1: event at 10552778, now 10552731 (-47 ticks) -> ok
+      -17050  CTL prepare conn1 ticks_at_expire=10552729 -> ran, ret=0
+      -17046  SWI4 exit
+      -17044  SWI4 enter
+      -17038  SWI4 exit
+      -17004  RTC0 exit
+      -17002  RTC0 enter
+      -16992  RTC0 exit
+      -15261  RADIO enter
+      -15241  RADIO exit
+      -15074  RADIO enter
+      -15066  RADIO exit
+      -15063  RADIO enter
+      -15049  CTL dequeue (run the pipeline) caller=0 now=10552797
+      -15043  RADIO exit
+      -15041  RTC0 enter
+      -15021  RTC0 exit
+       -9611  RTC0 enter
+       -9582  SWI4 enter
+       -9538  CTL lateness check conn1: event at 10553024, now 10552977 (-47 ticks) -> ok
+       -9535  CTL prepare conn1 ticks_at_expire=10552975 -> ran, ret=0
+       -9530  SWI4 exit
+       -9528  SWI4 enter
+       -9523  SWI4 exit
+       -9488  RTC0 exit
+       -9486  RTC0 enter
+       -9477  RTC0 exit
+       -7762  RADIO enter
+       -7742  RADIO exit
+       -7580  RADIO enter
+       -7571  RADIO exit
+       -7569  RADIO enter
+       -7555  CTL dequeue (run the pipeline) caller=0 now=10553042
+       -7549  RADIO exit
+       -7546  RTC0 enter
+       -7527  RTC0 exit
+       -4881  RTC0 enter
+       -4861  SWI4 enter
+       -4815  CTL lateness check conn0: event at 10553179, now 10553132 (-47 ticks) -> ok
+       -4811  CTL prepare conn0 ticks_at_expire=10553130 -> ran, ret=0
+       -4807  SWI4 exit
+       -4804  SWI4 enter
+       -4799  SWI4 exit
+       -4765  RTC0 exit
+       -4762  RTC0 enter
+       -4753  RTC0 exit
+       -2980  RADIO enter
+       -2953  RADIO exit
+       -2951  RTC0 enter
+       -2922  RTC0 exit
+       -2910  thread -> BT
+       -2888  thread -> idle
+       -2787  RADIO enter
+       -2771  CTL dequeue (run the pipeline) caller=0 now=10553199
+       -2765  RADIO exit
+       -2763  RTC0 enter
+       -2730  SWI4 enter
+       -2720  SWI4 exit
+       -2718  SWI4 enter
+       -2713  SWI4 exit
+       -2701  CTL ticker_stop conn0 user=1 now=10553201 -> ok
+       -2685  RTC0 exit
+       -2682  RTC0 enter
+       -2673  RTC0 exit
+       -2660  thread -> BT
+       -2611  thread -> BT
+       -2547  thread -> BT
+       -2509  thread -> BT
+       -2493  thread -> sysworkq
+       -2477  thread -> sysworkq
+       -2462  thread -> sysworkq
+       -2441  thread -> BT
+       -2412  thread -> BT
+       -2395  thread -> sysworkq
+       -2146  RTC0 enter
+       -2126  SWI4 enter
+       -2082  CTL lateness check conn1: event at 10553269, now 10553221 (-48 ticks) -> ok
+       -2079  CTL prepare conn1 ticks_at_expire=10553220 -> ran, ret=0
+       -2074  SWI4 exit
+       -2072  SWI4 enter
+       -2067  SWI4 exit
+       -2034  RTC0 exit
+       -2032  RTC0 enter
+       -2022  RTC0 exit
+       -1644  thread -> sysworkq
+       -1557  thread -> sysworkq
+       -1541  thread -> sysworkq
+       -1183  RTC0 enter
+       -1158  RTC0 exit
+       -1155  RTC0 enter
+       -1149  RTC0 exit
+       -1075  thread -> sysworkq
+        -999  thread -> sysworkq
+        -933  RTC0 enter
+        -925  RTC0 exit
+        -921  RTC0 enter
+        -907  SWI4 enter
+        -895  CTL enqueue ? ticks_at_expire=10553260
+        -884  CTL ticker_stop PREEMPT user=0 now=10553261 -> busy (job pending)
+        -875  CTL ticker_start PREEMPT user=0 anchor=10553260 first=49 (expiry 10553309) -> busy (job pending)
+        -872  CTL prepare ? ticks_at_expire=10553260 -> queued (-EINPROGRESS)
+        -866  SWI4 exit
+        -864  SWI4 enter
+        -859  SWI4 exit
+        -845  CTL ticker_update id2 lazy=0 drift+=324 drift-=0
+        -826  CTL preempt ticker stop answered: status=1 now=10553263
+        -810  CTL preempt ticker start answered: status=0 now=10553263
+        -798  RTC0 exit
+        -796  RTC0 enter
+        -768  RTC0 exit
+        -765  RTC0 enter
+        -748  RTC0 exit
+        -690  thread -> sysworkq
+        -669  thread -> sysworkq
+        -654  thread -> sysworkq
+        -639  thread -> sysworkq
+        -619  thread -> idle
+        -543  RNG enter
+        -540  RNG exit
+        -403  RNG enter
+        -400  RNG exit
+        -334  RNG enter
+        -331  RNG exit
+        -262  RADIO enter
+        -242  RADIO exit
+        -200  RNG enter
+        -196  RNG exit
+         -81  RADIO enter
+         -72  RADIO exit
+         -70  RADIO enter
+         -56  CTL dequeue (run the pipeline) caller=0 now=10553288
+         -11  CTL lateness check id2: event at 10553309, now 10553289 (-20 ticks) -> ok
+          -7  CTL prepare ? dequeue ticks_at_expire=10553260 -> ran, ret=0
+          -5  CTL *** preempt timeout HEALTHY again (started for queued prepares): dequeued prepare ticks_at_expire=10553260, stale runs so far=363
+          -2  CTL *** record taken: healthy again
+          15  RADIO exit
+          18  RTC0 enter
+          37  RTC0 exit
+          39  RNG enter
+          45  RNG exit
+          56  thread -> sysworkq
+         570  RTC0 enter
+         583  CTL PREEMPT TICKER FIRED for ?: at_expire=10553309 now=10553309 lazy=0 force=1
+         589  SWI4 enter
+         597  SWI4 exit
+         599  SWI4 enter
+         605  SWI4 exit
+         633  RTC0 exit
+         635  RTC0 enter
+         644  RTC0 exit
+        1179  RADIO enter
+        1196  RADIO exit
+        1384  RADIO enter
+        1395  RADIO exit
+        1397  RADIO enter
+        1414  RADIO exit
+  -- activity (1 ms ticks, run-length):
+    t=-64..-58 isr=0/0 thr=idle pc=6b92c..6b92c maxlat=12 | - | arch_cpu_idle (cpu_idle.c:103)
+    t=-57..-57 isr=800/0 thr=idle pc=6b92c..6b92c maxlat=60 | RTC0 | arch_cpu_idle (cpu_idle.c:103)
+    t=-56..-43 isr=0/0 thr=idle pc=6b92c..6b92c maxlat=12 | - | arch_cpu_idle (cpu_idle.c:103)
+    t=-42..-42 isr=800/0 thr=idle pc=6b92c..6b92c maxlat=1 | RTC0 | arch_cpu_idle (cpu_idle.c:103)
+    t=-41..-33 isr=0/0 thr=idle pc=6b92c..6b92c maxlat=13 | - | arch_cpu_idle (cpu_idle.c:103)
+    t=-32..-32 isr=0/80 thr=idle pc=6b92c..6b92c maxlat=1 | USBD | arch_cpu_idle (cpu_idle.c:103)
+    t=-31..-28 isr=0/0 thr=idle pc=6b92c..6b92c maxlat=12 | - | arch_cpu_idle (cpu_idle.c:103)
+    t=-27..-27 isr=800/0 thr=idle pc=6b92c..6b92c maxlat=58 | RTC0 | arch_cpu_idle (cpu_idle.c:103)
+    t=-26..-13 isr=0/0 thr=idle pc=6b92c..6b92c maxlat=12 | - | arch_cpu_idle (cpu_idle.c:103)
+    t=-12..-12 isr=800/0 thr=idle pc=6b92c..6b92c maxlat=1 | RTC0 | arch_cpu_idle (cpu_idle.c:103)
+    t=-11..-6 isr=0/0 thr=idle pc=6b92c..6b92c maxlat=12 | - | arch_cpu_idle (cpu_idle.c:103)
+    t=-5..-5 isr=0/0 thr=BT RX pc=4b84c..4b84c maxlat=1 | - | hci_evt_encode (hci.c:9177)
+    t=-4..-4 isr=0/0 thr=sysworkq pc=7456a..7456a maxlat=1 | - | __aeabi_memcpy4 (??:?)
+    t=-3..-3 isr=0/0 thr=idle pc=6b92c..6b92c maxlat=12 | - | arch_cpu_idle (cpu_idle.c:103)
+    t=-2..-1 isr=0/0 thr=sysworkq pc=745b0..745b0 maxlat=17 | - | memset (??:?)

@@ -59,7 +59,7 @@
 
 #include "diag_lab.h"
 
-#define LAB_MAGIC 0x3642414cu /* 'LAB6' */
+#define LAB_MAGIC 0x3742414cu /* 'LAB7' */
 #define LAB_ADDR 0x2002d000u
 #define LAB_SIZE 0xb000u
 #define PERIOD_US 1000u
@@ -269,6 +269,8 @@ struct labrec {
     uint32_t pre_state;  /* 0 unknown, 1 healthy, 2 stale */
     uint32_t flips;
     uint32_t stale_runs; /* dequeued prepares that ran without a preempt timeout having been started */
+    uint32_t zero_seen;
+    uint32_t zeros;      /* episodes of preempt_req == 0 while preempt_ack != 0 */
     uint32_t marks;     /* late prepares seen (records taken or dropped) */
     uint32_t mark_busy; /* a mark is waiting for its record */
     uint32_t mark_t_us;
@@ -283,6 +285,7 @@ BUILD_ASSERT(DT_REG_ADDR(DT_NODELABEL(diagrec)) == 0x2002c000 && DT_REG_SIZE(DT_
 
 uint32_t diag_entry_seq(void);
 uint32_t ticker_ticks_now_get(void);
+void diag_lab_dwt_print(void (*out)(const char *fmt, ...), uint32_t t_ref);
 uint32_t diag_min_events_tail(struct ev_out *dst, uint32_t max);
 const char *diag_min_ev_name(uint8_t type);
 
@@ -575,6 +578,30 @@ void diag_lab_ctl_put(uint8_t type, uint8_t a, uint16_t b, uint32_t c, uint32_t 
     }
     r->pre[r->pre_head % PRE_RING] = e;
     r->pre_head++;
+    /* v7: the moment preempt_req reads 0 while preempt_ack does not (the corruption v6 found),
+     * noticed at the first controller step after it: CT_ZERO with that step's time, once per
+     * episode (re-armed when the counters agree again) */
+    {
+        struct lab_preempt_vars v;
+
+        diag_lab_preempt_vars(&v);
+        if (v.valid) {
+            if (v.req == 0u && v.ack != 0u) {
+                if (!r->zero_seen) {
+                    struct ctl_ev z = { .t_us = e.t_us, .type = CT_ZERO, .a = type, .b = (uint16_t)v.ack, .c = c, .d = d };
+
+                    r->zero_seen = 1;
+                    r->zeros++;
+                    r->ctl[r->ctl_head % CTL_RING] = z;
+                    r->ctl_head++;
+                    r->pre[r->pre_head % PRE_RING] = z;
+                    r->pre_head++;
+                }
+            } else if (v.req == v.ack) {
+                r->zero_seen = 0;
+            }
+        }
+    }
     /* the preempt-timeout health state machine (see the labrec fields) */
     if (type == CT_ENQ) {
         r->pre_enq_pending = 1;
@@ -881,6 +908,7 @@ static const char *ctl_name(uint8_t t) {
     case CT_TUPD: return "tupdate";
     case CT_MARK: return "MARK";
     case CT_FLIP: return "FLIP";
+    case CT_ZERO: return "ZERO";
     default: return "?";
     }
 }
@@ -1060,7 +1088,7 @@ void diag_lab_print(void (*out)(const char *fmt, ...)) {
         out("ZDIAG lab invalid");
         return;
     }
-    out("ZDIAG lab live v6 ticks=%u skipped=%u max=%u@%u over=%u/%u/%u/%u nlat=%u isr=%u ctl=%u thr=%u marks=%u crashes=%u dropped=%u prestate=%u flips=%u stale_runs=%u",
+    out("ZDIAG lab live v7 ticks=%u skipped=%u max=%u@%u over=%u/%u/%u/%u nlat=%u isr=%u ctl=%u thr=%u marks=%u crashes=%u dropped=%u prestate=%u flips=%u stale_runs=%u",
         r->ticks, r->skipped, r->max_us, r->max_at_ms, r->over[0], r->over[1], r->over[2], r->over[3], r->n_lat,
         r->isr_head, r->ctl_head, r->thr_n, r->marks, r->crash_n, r->dropped, r->pre_state, r->flips, r->stale_runs);
     {
@@ -1099,6 +1127,7 @@ void diag_lab_print(void (*out)(const char *fmt, ...)) {
         copy_tail_u8(tail, r->pre, sizeof(struct ctl_ev), PRE_RING, r->pre_head, LIVE_PRE, &n);
         print_ctl(out, "livepre", tail, n, now_us());
     }
+    diag_lab_dwt_print(out, now_us());
     for (uint32_t k = 0; k < MIN(r->crash_n, (uint32_t)CRASHES); k++) {
         if (r->crash[k].magic == LAB_MAGIC) {
             print_crash(out, &r->crash[k]);

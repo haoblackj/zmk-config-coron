@@ -14,7 +14,8 @@ if(CONFIG_CORON_DIAG_LAT)
   target_sources(app PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src/diag_lat.c)
 endif()
 if(CONFIG_CORON_DIAG_LAB)
-  target_sources(app PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src/diag_lab.c ${CMAKE_CURRENT_LIST_DIR}/src/diag_lab_ctlr.c)
+  target_sources(app PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src/diag_lab.c ${CMAKE_CURRENT_LIST_DIR}/src/diag_lab_ctlr.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/diag_lab_dwt.c)
   # diag_lab_ctlr.c reads the controller's lll_conn through its own headers (no Zephyr change);
   # the include directories are scoped to that one file so nothing else sees the controller's
   # internal header names.

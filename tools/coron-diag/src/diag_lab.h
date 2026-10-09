@@ -85,6 +85,8 @@ enum lab_ctl_type {
     CT_MARK = 13,     /* a late prepare was seen (assert off): a = ticker_id, c = late ticks */
     CT_FLIP = 14,     /* the preempt timeout stopped (a = 0) or resumed (a = 1) being started for queued
                        * prepares: detected on the dequeued prepare that ran; c = ticks_at_expire of it */
+    CT_ZERO = 15,     /* preempt_req read 0 while preempt_ack != 0, first noticed at the step whose type
+                       * is a (b = ack, c/d = that step's c/d); the step itself follows in the ring */
 };
 
 void diag_lab_ctl_put(uint8_t type, uint8_t a, uint16_t b, uint32_t c, uint32_t d);

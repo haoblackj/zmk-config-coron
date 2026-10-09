@@ -23,7 +23,10 @@ addrs() { # prints name=0x.. for the seven symbols
         / b preempt_stop_req$/{print "STOP_REQ=0x"$1} / b preempt_stop_ack$/{print "STOP_ACK=0x"$1}
         / b ticks_at_preempt[.0-9]*$/{print "TICKS=0x"$1}' | sort
 }
-echo "pass 1"; build; A1=$(addrs); echo "$A1"
+# pass 1 carries placeholder addresses so that everything the defines bring in (the DWT hit ring
+# of diag_lab_dwt.c) is already laid out; only the constants differ in pass 2
+D0="-DLAB_ADDR_PREEMPT_REQ=0x20000000 -DLAB_ADDR_PREEMPT_ACK=0x20000001 -DLAB_ADDR_PREEMPT_START_REQ=0x20000002 -DLAB_ADDR_PREEMPT_START_ACK=0x20000003 -DLAB_ADDR_PREEMPT_STOP_REQ=0x20000004 -DLAB_ADDR_PREEMPT_STOP_ACK=0x20000005 -DLAB_ADDR_TICKS_AT_PREEMPT=0x20000008"
+echo "pass 1"; build $D0; A1=$(addrs); echo "$A1"
 [ "$(echo "$A1" | wc -l)" = 7 ] || { echo "pass 1: not all seven symbols found"; exit 1; }
 eval "$(echo "$A1" | sed 's/^/P1_/')"
 echo "pass 2"; build -DLAB_ADDR_PREEMPT_REQ=$P1_REQ -DLAB_ADDR_PREEMPT_ACK=$P1_ACK -DLAB_ADDR_PREEMPT_START_REQ=$P1_START_REQ -DLAB_ADDR_PREEMPT_START_ACK=$P1_START_ACK -DLAB_ADDR_PREEMPT_STOP_REQ=$P1_STOP_REQ -DLAB_ADDR_PREEMPT_STOP_ACK=$P1_STOP_ACK -DLAB_ADDR_TICKS_AT_PREEMPT=$P1_TICKS

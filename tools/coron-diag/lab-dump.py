@@ -99,6 +99,8 @@ def ctl_text(body):
         t = f'ticker_update {tid(a)} lazy={b & 0x7fff}{" FORCE" if b & 0x8000 else ""} drift+={c} drift-={d}'
     elif name == 'MARK':
         t = f'*** late prepare recorded: {tid(a)} late={c} ticks' if a < 0xf0 else f'*** record taken: {"became STALE" if a == 0xf1 else ("healthy again" if a == 0xf2 else "self-test")}'
+    elif name == 'ZERO':
+        t = f'*** preempt_req READ 0 (ack={b}) first noticed at step type {a} (c={c} d={d})'
     elif name == 'FLIP':
         t = f'*** preempt timeout {"HEALTHY again (started for queued prepares)" if a else "STALE (no longer started for queued prepares)"}: dequeued prepare ticks_at_expire={c}, stale runs so far={d}'
     else:
@@ -119,7 +121,7 @@ def main():
     lines = text.split('\n')
 
     for l in lines:
-        if l.startswith('ZDIAG begin') or l.startswith('ZDIAG crumb') or l.startswith('ZDIAG lab live '):
+        if l.startswith('ZDIAG begin') or l.startswith('ZDIAG crumb') or l.startswith('ZDIAG lab live ') or l.startswith('ZDIAG lab livepv '):
             print(l)
     if a.live:
         for l in lines:
@@ -131,6 +133,12 @@ def main():
         for l in lines:
             if l.startswith('ZDIAG lab livectl '):
                 print('   ', ctl_text(l[len('ZDIAG lab livectl '):]))
+        print('  -- DWT watchpoint hits on preempt_req (write sites; dt us relative to the dump):')
+        for l in lines:
+            if l.startswith('ZDIAG lab dwt ') or l.startswith('ZDIAG lab dwthit '):
+                d = kv(l)
+                pc = int(d.get('pc', '0'), 16); lr = int(d.get('lr', '0'), 16)
+                print('   ', l[len('ZDIAG lab '):], ('-> pc ' + res(pc) + ' / lr ' + res(lr)) if pc else '')
         print('  -- live preempt history (sparse ring, reaches further back):')
         for l in lines:
             if l.startswith('ZDIAG lab livepre '):
@@ -147,7 +155,7 @@ def main():
         print(f'  active ISRs at crash: {irq_names(int(d["iabr"].split("/")[0], 16), int(d["iabr"].split("/")[1], 16) & 0xffff)}'
               f'   crashing context ipsr={d["ipsr"]} ({IRQ.get(int(d["ipsr"]) - 16, "?") if int(d["ipsr"]) >= 16 else "thread"})')
         for l in lines:
-            if l.startswith(f'ZDIAG lab {c}stat') or l.startswith(f'ZDIAG lab {c}conn') or l.startswith(f'ZDIAG lab {c}prepstat'):
+            if l.startswith(f'ZDIAG lab {c}stat') or l.startswith(f'ZDIAG lab {c}conn') or l.startswith(f'ZDIAG lab {c}prepstat') or l.startswith(f'ZDIAG lab {c}pv '):
                 print(' ', l[len('ZDIAG lab '):])
         print('  -- connection events (ms since boot):')
         for l in lines:

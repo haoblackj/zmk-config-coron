@@ -16,7 +16,7 @@ if (-not (Test-Path -LiteralPath $LogDir)) { New-Item -ItemType Directory -Path 
 $script:Serial = $Serial
 $script:LogFile = Join-Path $LogDir ("halfcmd-" + (Get-Date).ToString('MMdd-HHmmss-fff') + '.log')
 $script:Scn = $null
-$script:DumpSeconds = 60   # the v3/v4 dump with 3 records is ~70 KB; 30 s cut it off (2026-10-09 19:41)
+$script:DumpSeconds = 120   # a dump with 3 records is ~100 KB and the console prints it slowly (2026-10-09 20:54)
 Log "HALFCMD serial=$Serial cmd=$Cmd"
 try {
     $t = Send-Cmd $Cmd $ReadSeconds

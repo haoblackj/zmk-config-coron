@@ -1,4 +1,4 @@
-# Reconnect stimulus for the one-shot lab measurement (2026-10-09, v2 after the Codex review): no
+﻿# Reconnect stimulus for the one-shot lab measurement (2026-10-09, v2 after the Codex review): no
 # flash writes at all. Every cycle sends 'x' on the right half's console (the firmware drops the PC
 # connection once; the PC reconnects within seconds), waits, then reads the console dump and
 # checks:
@@ -28,7 +28,7 @@ New-Item -ItemType Directory -Force -Path $RunDir | Out-Null
 $script:Serial = $Serial
 $script:LogFile = Join-Path $RunDir 'recon.log'
 $script:Scn = $null
-$script:DumpSeconds = 60   # the v3/v4 dump with 3 records is ~70 KB; 30 s cut it off (2026-10-09 19:41)
+$script:DumpSeconds = 120   # a dump with 3 records is ~100 KB and the console prints it slowly (2026-10-09 20:54)
 $summary = Join-Path $RunDir 'summary.log'
 function SLog([string]$m) {
     $line = (Get-Date).ToString('HH:mm:ss.fff') + ' ' + $m
@@ -93,6 +93,11 @@ for ($i = 1; $i -le $Cycles; $i++) {
         if ($StopOnRecord -ne 0) { $stop = "record crashes=$crashes->$($p.crashes)"; SLog ("cycle {0} STOP ({1}); the record is in this cycle's dump" -f $i, $stop); break }
         SLog ("cycle {0} record(s) taken: crashes={1}->{2} (continuing: -StopOnRecord is off)" -f $i, $crashes, $p.crashes)
         $crashes = $p.crashes
+        if ($p.crashes -ge 3) {
+            # the slots are full and this cycle's dump holds them; clear so the next dumps stay short
+            # (a dump with 3 records is ~100 KB and the console child has to read it before every send)
+            try { Send-Cmd 'c' 2 | Out-Null; SLog ("cycle {0} records cleared ('c'); they are in this cycle's dump" -f $i); $crashes = 0 } catch { SLog ("cycle {0} 'c' not written ({1}); STOP" -f $i, $_.Exception.Message); $stop = 'clear-failed'; break }
+        }
     }
     if ($p.st -ne 10) { $stop = "stage=$($p.st)"; SLog ("cycle {0} STOP ({1})" -f $i, $stop); break }
     if ($p.host -le $hostc) { $stop = 'no-reconnect'; SLog ("cycle {0} STOP ({1}): host_conn stayed {2}; nothing more is sent" -f $i, $stop, $p.host); break }
