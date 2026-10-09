@@ -41,10 +41,22 @@ selftest() { # serial logdir-prefix
     local d; d=$(dump_of "$W/$pre-after")
     if echo "$d" | grep -q 'ZDIAG lab crash0 .*line=4242 file=selftest.*sum=ok' && echo "$d" | grep -q 'crash0pk .*Actual EVENT_OVERHEAD_START_US = 4242'; then
         say "self-test on $ser: PASS (record survived the reboot, text captured, checksum ok)"
+    else
+        say "self-test on $ser: FAIL"; return 1
+    fi
+    # the record must also survive the bootloader's DFU pass (the 'b' + same-file path that
+    # stimulus 2 uses and that a crash at boot would be read through)
+    local uf2 md5
+    if [ "$ser" = "$RSER" ]; then uf2=coron_R-lab.uf2; md5=$RMD5; else uf2=coron_L-lab.uf2; md5=$LMD5; fi
+    say "self-test on $ser: same-file rewrite through the bootloader, then re-read"
+    flash_half "$ser" "$uf2" "$md5" "$pre-rewrite" || return 1
+    d=$(dump_of "$W/$pre-rewrite")
+    if echo "$d" | grep -q 'ZDIAG lab crash0 .*line=4242 file=selftest.*sum=ok'; then
+        say "self-test on $ser: PASS (record survived the bootloader pass too)"
         send_cmd "$ser" c "$pre-clear" >/dev/null
         return 0
     fi
-    say "self-test on $ser: FAIL"; return 1
+    say "self-test on $ser: FAIL (record lost or corrupted across the bootloader pass)"; return 1
 }
 stop_capture() { # label: watchdog store + both dumps + PnP export
     local lb=$1; mkdir -p "$S/lab-$lb"
