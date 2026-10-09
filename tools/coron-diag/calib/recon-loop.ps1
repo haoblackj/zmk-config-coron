@@ -11,16 +11,16 @@
 # At the baseline and at the end the LEFT half's dump is read too (its own crash records).
 # Every summary line carries PC wall time; every saved dump carries the device's up_ms.
 # v3 (lab image v3, assert off): a late prepare is a record WITHOUT a reboot ('marks' and the per-ticker
-# 'over' counters grow). -StopOnRecord:$false keeps cycling through those and stops only on a reboot
+# 'over' counters grow). -StopOnRecord 0 keeps cycling through those and stops only on a reboot
 # (seq advanced) or a stage change; every cycle logs marks and the split/PC lateness counters.
-# usage: recon-loop.ps1 -RunDir <dir> [-Cycles 200] [-WaitSec 30] [-Serial B17318CDBE9A61B1] [-LeftSerial 743A486E04021F9D] [-StopOnRecord:$false]
+# usage: recon-loop.ps1 -RunDir <dir> [-Cycles 200] [-WaitSec 30] [-Serial B17318CDBE9A61B1] [-LeftSerial 743A486E04021F9D] [-StopOnRecord 0]
 param(
     [Parameter(Mandatory = $true)][string]$RunDir,
     [int]$Cycles = 200,
     [int]$WaitSec = 30,
     [string]$Serial = 'B17318CDBE9A61B1',
     [string]$LeftSerial = '743A486E04021F9D',
-    [bool]$StopOnRecord = $true
+    [int]$StopOnRecord = 1   # int, not bool: 'powershell -File' passes every argument as a string
 )
 $ErrorActionPreference = 'Continue'
 . (Join-Path $PSScriptRoot 'calib-lib.ps1')
@@ -90,7 +90,7 @@ for ($i = 1; $i -le $Cycles; $i++) {
     if (-not $p.ok) { $stop = 'dump-incomplete'; SLog ("cycle {0} STOP ({1}); no further device operation" -f $i, $stop); break }
     if ($p.seq -ne $seq) { $stop = "reboot seq=$seq->$($p.seq) crashes=$crashes->$($p.crashes)"; SLog ("cycle {0} STOP ({1}); the record is in this cycle's dump" -f $i, $stop); break }
     if ($p.crashes -ne $crashes) {
-        if ($StopOnRecord) { $stop = "record crashes=$crashes->$($p.crashes)"; SLog ("cycle {0} STOP ({1}); the record is in this cycle's dump" -f $i, $stop); break }
+        if ($StopOnRecord -ne 0) { $stop = "record crashes=$crashes->$($p.crashes)"; SLog ("cycle {0} STOP ({1}); the record is in this cycle's dump" -f $i, $stop); break }
         SLog ("cycle {0} record(s) taken: crashes={1}->{2} (continuing: -StopOnRecord is off)" -f $i, $crashes, $p.crashes)
         $crashes = $p.crashes
     }

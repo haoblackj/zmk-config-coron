@@ -6,7 +6,7 @@
 #      captured, checksum ok; then the same-file rewrite through the bootloader keeps it), then 'M'
 #      (late-prepare path, no reboot -> a kind=late record with line=238 late=4242); clear
 #   3. the same for the left half
-#   4. stimulus: recon-loop.ps1 -StopOnRecord:$false, 50 PC reconnects; records are taken without
+#   4. stimulus: recon-loop.ps1 -StopOnRecord 0, 50 PC reconnects; records are taken without
 #      reboots, the loop stops only on a reboot/stage change
 #   5. capture: watchdog store, both dumps, Windows PnP log
 # usage: lab3-campaign.sh <step-from> (1..4); SKIP_LEFT=1 skips step 3; CYCLES=n (default 50)
@@ -106,7 +106,7 @@ if [ "$from" -le 3 ] && [ "${SKIP_LEFT:-0}" != 1 ]; then
 fi
 if [ "$from" -le 4 ]; then
     say "step 4: reconnect stimulus, $CYCLES cycles, records do not stop it"
-    (cd $W && powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$WW\\calib\\recon-loop.ps1" -RunDir "$WW\\lab3-recon" -Cycles $CYCLES -WaitSec 30 -StopOnRecord:\$false > $S/lab3-recon.out 2>&1); rc=$?
+    (cd $W && powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$WW\\calib\\recon-loop.ps1" -RunDir "$WW\\lab3-recon" -Cycles $CYCLES -WaitSec 30 -StopOnRecord 0 > $S/lab3-recon.out 2>&1); rc=$?
     tail -n 3 $W/lab3-recon/summary.log | cut -c1-240
     say "recon loop ended (rc=$rc): capture and END"; stop_capture recon-end; exit $rc
 fi
