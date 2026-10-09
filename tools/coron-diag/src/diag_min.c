@@ -238,6 +238,35 @@ static void diag_min_thread(void *p1, void *p2, void *p3) {
         }
         if (dtr && !dtr_was) {
             k_msleep(400);
+            /* A command that arrived while the port was being opened is honoured BEFORE the dump.
+             * Recovery path (2026-10-09 14:52): a lab image whose dump faulted on a stored record
+             * could not be told 'c' or 'b', because the dump always came first and never
+             * returned. Nobody sends a command within 400 ms of opening the port by accident. */
+            unsigned char pre;
+
+            if (uart_poll_in(out_dev, &pre) == 0 && (pre == 'c' || pre == 'b')) {
+                if (pre == 'c') {
+                    diag_boot_clear_ring();
+                    diag_lab_clear();
+                    out("ZDIAG ring cleared (before dump)");
+                } else {
+                    /* the same two paths as the 'b' command below */
+                    diag_boot_mark_reboot();
+#if IS_ENABLED(CONFIG_RETENTION_BOOT_MODE)
+                    int ret = bootmode_set(BOOT_MODE_TYPE_BOOTLOADER);
+
+                    out("ZDIAG bootloader rc=%d (before dump)", ret);
+                    k_msleep(100);
+                    if (ret >= 0) {
+                        sys_reboot(SYS_REBOOT_WARM);
+                    }
+#else
+                    out("ZDIAG bootloader (before dump)");
+                    k_msleep(100);
+                    sys_reboot(REBOOT_TO_UF2);
+#endif
+                }
+            }
             dump();
         }
         dtr_was = dtr;
