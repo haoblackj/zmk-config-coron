@@ -78,12 +78,13 @@ fi
 if [ "$from" -le 2 ]; then
     say "step 2: right self-test"; selftest "$RSER" lab-1009-selfR || exit 1
 fi
-if [ "$from" -le 3 ]; then
+if [ "$from" -le 3 ] && [ "${SKIP_LEFT:-0}" != 1 ]; then
     say "step 3: write the lab image to L ($LMD5) and self-test"
     flash_half "$LSER" coron_L-lab.uf2 "$LMD5" lab-1009-flashL || exit 1
     read_half "$LSER" lab-1009-L0 | grep -E 'crumb|lab live' || exit 1
     send_cmd "$LSER" c lab-1009-L0-clear >/dev/null
     selftest "$LSER" lab-1009-selfL || exit 1
+    if [ "${STOP_AFTER:-9}" -le 3 ]; then say "stopping after step 3 as asked"; exit 0; fi
 fi
 if [ "$from" -le 4 ]; then
     say "step 4: reconnect stimulus (no writes)"
