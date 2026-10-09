@@ -1,0 +1,623 @@
+ZDIAG begin version=prof1 up_ms=40115 boot=1 reset=0x2
+ZDIAG crumb pv=1 pseq=377 pst=10 prst=0x4 pint=0x0 piser1=0x0 seq=378 st=10
+ZDIAG lab live ticks=39939 skipped=0 max=164@3895 over=302/0/0/0 nlat=302 msk=10495/399396 isr=80104 thr=14 crashes=2 dropped=0
+
+===== crash0 =====
+ZDIAG lab crash0 seq=376 line=250 file=c/lll/lll_central.c up=78015 t=77727457 ipsr=17 iabr=2/0 pc=6b260 lr=6ab53 xpsr=41000000 thr=idle sum=ok
+  interrupted thread pc: arch_cpu_idle (cpu_idle.c:103)   lr: sys_trace_idle (tracing_user.c:146)
+  active ISRs at crash: RADIO   crashing context ipsr=17 (RADIO)
+  crash0stat max=177 over=514/0/0/0 skipped=0 nlat=514 ticker=2526725 rtc0=2526725 nvmc=0/1
+  crash0conn h=0 valid=1 role=1 interval=12 latency=10 lat_prep=0 lazy_prep=0 lat_ev=0 evcnt=14
+  crash0conn h=1 valid=1 role=0 interval=23 latency=7 lat_prep=0 lazy_prep=0 lat_ev=0 evcnt=9977
+  crash0prepstat id=2 n=38 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5)
+  crash0prepstat id=4 n=2 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5)
+  crash0prepstat id=6 n=9965 max_late=7 last_late=7 over=1 (ticks of 30.52us; conn=id-5)
+  crash0prepstat id=5 n=483 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5)
+  -- connection events (ms since boot):
+    ms=1094 type=split-conn a=6 b=30
+    ms=2241 type=split-param a=23 b=7
+    ms=2588 type=host-conn a=12 b=10
+    ms=3161 type=split-param a=6 b=30
+    ms=39063 type=host-disc a=22 b=0
+    ms=39581 type=split-param a=23 b=7
+    ms=40015 type=host-conn a=12 b=10
+    ms=40961 type=split-param a=6 b=30
+    ms=76849 type=host-disc a=22 b=0
+    ms=77471 type=split-param a=23 b=7
+    ms=77810 type=host-conn a=12 b=10
+  -- printk tail:
+    |ASSERTION FAIL [0] @ WEST_TOPDIR/zephyr/subsys/bluetooth/controller/ll_sw/nordic/lll/lll_central.c:250
+    |.prepare_cb: Actual EVENT_OVERHEAD_START_US = 305
+  -- latency events (>=100 us) before the crash:
+    up=72743 lat=114 iabr=8000000/0 pc=6b260 lr=6ab53 thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+    up=72773 lat=105 iabr=8000000/0 pc=6b260 lr=6ab53 thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+    up=72803 lat=100 iabr=8000000/0 pc=6b260 lr=6ab53 thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+    up=72848 lat=121 iabr=8000000/0 pc=6b260 lr=6ab53 thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+    up=72878 lat=118 iabr=8000000/0 pc=6b260 lr=6ab53 thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+    up=72908 lat=115 iabr=8000000/0 pc=6b260 lr=6ab53 thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+    up=72938 lat=113 iabr=8000000/0 pc=6b260 lr=6ab53 thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+    up=72968 lat=104 iabr=8000000/0 pc=6b260 lr=6ab53 thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+  -- prepare checks before the crash (dt us relative to the crash; late in RTC ticks, 30.52 us):
+    dt=-290828 id=6 at=2517241 now=2517194 late=-47 result=0
+    dt=-262082 id=6 at=2518183 now=2518136 late=-47 result=0
+    dt=-233336 id=6 at=2519125 now=2519078 late=-47 result=0
+    dt=-216706 id=2 at=2519670 now=2519623 late=-47 result=0
+    dt=-204586 id=6 at=2520067 now=2520020 late=-47 result=0
+    dt=-202331 id=5 at=2520141 now=2520094 late=-47 result=0
+    dt=-184597 id=5 at=2520722 now=2520675 late=-47 result=0
+    dt=-175843 id=6 at=2521009 now=2520962 late=-47 result=0
+    dt=-147089 id=6 at=2521951 now=2521904 late=-47 result=0
+    dt=-118351 id=6 at=2522893 now=2522846 late=-47 result=0
+    dt=-89595 id=6 at=2523835 now=2523788 late=-47 result=0
+    dt=-60855 id=6 at=2524777 now=2524730 late=-47 result=0
+    dt=-32102 id=6 at=2525719 now=2525672 late=-47 result=0
+    dt=-19686 id=5 at=2526126 now=2526079 late=-47 result=0
+    dt=-4626 id=5 at=2526619 now=2526572 late=-47 result=0
+    dt=-1680 id=6 at=2526662 now=2526669 late=7 result=10
+  -- timeline before the crash (dt in us, 0 = the crash):
+     -817453  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=3f73a _isr_wrapper (isr_wrapper.c:77)
+     -812153  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4db30 ull_conn_llcp (ull_conn.c:957)
+     -812053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47d14 mayfly_run (mayfly.c:252)
+     -809953  sample: masked bp=64 pm=0 in thread active=- pc=626ae z_reset_time_slice (timeslicing.c:70)
+     -804653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=54e20 rtc0_nrf5_isr (lll.c:160)
+     -804553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48f38 ticker_job_list_inquire (ticker.c:2605)
+     -797053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48d9c ticker_job_list_inquire (ticker.c:3056)
+     -789653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5804e mayfly_prio_is_equal (mayfly.c:103)
+     -789553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47c0e mayfly_run (mayfly.c:197)
+     -782153  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5122c llcp_lr_peek (ull_llcp_local.c:177)
+     -782053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=54dfc rtc0_nrf5_isr (lll.c:156)
+     -774653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47c2e mayfly_run (mayfly.c:208)
+     -774553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=575ae cntr_cnt_get (cntr.c:149)
+     -767153  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=33746 trace_put (diag_lab.c:453)
+     -767053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4813a ticker_job_list_insert (ticker.c:2888 (discriminator 1))
+     -759608  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -752153  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=52896 lp_cu_check_instant (ull_llcp_conn_upd.c:642)
+     -752053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47c50 mayfly_run (mayfly.c:260)
+     -744653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=483fa ticker_resolve_collision (ticker.c:843)
+     -744553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=58092 mayfly_pend (mayfly.c:126)
+     -742453  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48742 ticker_job_list_manage (ticker.c:1953)
+     -737153  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=581e8 hal_ticker_instance0_sched (ticker.c:89)
+     -737053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4905a ticker_job_list_inquire (ticker.c:3056)
+     -729610  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -722153  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4fb3c ull_tx_q_dequeue (ull_tx_queue.c:66)
+     -722053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47c68 mayfly_run (mayfly.c:268)
+     -714653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=50056 ull_cp_run (ull_llcp.c:546)
+     -714553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=3f09a z_arm_exc_exit (exc_exit.c:59)
+     -708553  sample: masked bp=64 pm=0 in thread active=- pc=6b260 arch_cpu_idle (cpu_idle.c:103)
+     -707153  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47bd4 mayfly_run (mayfly.c:185)
+     -707053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=49114 ticker_job_compare_update (ticker.c:3104)
+     -699613  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -692153  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47b40 mayfly_enqueue (mayfly.c:117)
+     -692053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47c7e mayfly_run (mayfly.c:192)
+     -684653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5121c llcp_lr_peek (ull_llcp_local.c:164)
+     -684553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47bd0 mayfly_run (mayfly.c:180)
+     -677153  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48240 ticker_worker (ticker.c:1271)
+     -677053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48b1a ticker_job (ticker.c:3355)
+     -669653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=3f73c _isr_wrapper (isr_wrapper.c:74)
+     -669553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48132 ticker_job_list_insert (ticker.c:2888 (discriminator 1))
+     -662108  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -662053  sample: masked bp=64 pm=0 in thread active=- pc=735f6 k_cpu_idle (kernel.h:6192)
+     -654653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=512fc lr_act_run (ull_llcp_local.c:483)
+     -654553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47c0a mayfly_run (mayfly.c:197)
+     -647153  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48420 ticker_resolve_collision (ticker.c:858)
+     -647053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=3f74a _isr_wrapper (isr_wrapper.c:84)
+     -639653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47b14 mayfly_enqueue (mayfly.c:77)
+     -639553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48caa ticker_job_list_inquire (ticker.c:3056)
+     -637053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=482ae ticker_worker (ticker.c:1343)
+     -636953  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=58064 mayfly_pend (mayfly.c:109)
+     -636453  sample: masked bp=0 pm=0 in RNG active=RNG,TIMER4 pc=0 
+     -633553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=49ac8 rx_demux_rx (ull.c:2811)
+     -632111  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -624653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4dd92 ull_conn_tx_lll_enqueue (ull_conn.c:1466)
+     -624553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47a44 memq_peek (memq.c:121)
+     -617153  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=53076 rr_execute_fsm (ull_llcp_remote.c:759)
+     -617053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=3371c trace_put (diag_lab.c:443)
+     -609653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47a44 memq_peek (memq.c:121)
+     -609553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=575ae cntr_cnt_get (cntr.c:149)
+     -602113  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -594653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47b52 mayfly_enqueue (mayfly.c:125)
+     -594553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=6ab44 sys_trace_isr_exit (tracing_user.c:139)
+     -587153  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5122c llcp_lr_peek (ull_llcp_local.c:177)
+     -587053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47be6 dequeue (mayfly.c:174)
+     -579653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=575a8 nrf_rtc_counter_get (nrf_rtc.h:405)
+     -579553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48b2c ticker_job (ticker.c:3365)
+     -572116  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -564609  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -564553  sample: masked bp=64 pm=0 in thread active=- pc=6ab52 sys_trace_idle (tracing_user.c:146)
+     -557153  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5369e ull_central_ticker_cb (ull_central.c:957)
+     -557053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47c64 mayfly_run (mayfly.c:268)
+     -549653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4831e ticker_worker (ticker.c:1420)
+     -549553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47bf8 mayfly_run (mayfly.c:192)
+     -549443  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -547553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=49954 rx_demux (ull.c:2547)
+     -531753  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -520818  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -495953  sample: masked bp=64 pm=0 in thread active=- pc=6b242 arch_cpu_idle (cpu_idle.c:62)
+     -492053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48942 ticker_job_worker_bh (ticker.c:2146)
+     -490053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=28dc2 ull_conn_done (ull_conn.c:998)
+     -463325  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -434553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4899c ticker_job_reschedule_in_window (ticker.c:2444)
+     -432553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=28dd8 ull_conn_done (ull_conn.c:1010)
+     -425343  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -425253  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=3f74e _isr_wrapper (isr_wrapper.c:88)
+     -405833  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -399053  sample: masked bp=64 pm=0 in thread active=- pc=626c6 z_reset_time_slice (timeslicing.c:73)
+     -395953  sample: masked bp=0 pm=0 in RTC1 active=RTC1 pc=33724 trace_put (diag_lab.c:447)
+     -392953  sample: masked bp=64 pm=0 in RTC1 active=RTC1 pc=620a0 should_preempt (kthread.h:216)
+     -377153  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=49198 ticker_trigger (ticker.c:3494)
+     -377053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=489d4 ticker_job_reschedule_in_window (ticker.c:2469)
+     -375053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=28eae ull_conn_done (ull_conn.c:1210)
+     -348309  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -324553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4864e ticker_job_op_cb (ticker.c:1666)
+     -319553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48b6c ticker_job_worker_bh (ticker.c:2159)
+     -295953  sample: masked bp=0 pm=0 in RTC1 active=RTC1 pc=629b6 sys_clock_announce (timeout.c:266)
+     -290816  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -262053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48b6a ticker_job_worker_bh (ticker.c:2159)
+     -260053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47cdc mayfly_run (mayfly.c:224)
+     -233324  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -216753  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=575ae cntr_cnt_get (cntr.c:149)
+     -216653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47cbe dequeue (mayfly.c:154)
+     -212853  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48084 ticker_enqueue (ticker.c:584)
+     -212453  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33d02 lab_isr_body (diag_lab.c:358)
+     -210853  sample: masked bp=64 pm=0 in thread active=- pc=61bae flag_set (work.c:30)
+     -204553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=480bc ticker_enqueue (ticker.c:592)
+     -202553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=33738 trace_put (diag_lab.c:454)
+     -202318  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -195953  sample: masked bp=64 pm=0 in RTC1 active=RTC1 pc=5c420 counter_sub (nrf_rtc_timer.c:70)
+     -192853  sample: masked bp=64 pm=0 in RTC1 active=RTC1 pc=5c384 z_nrf_rtc_timer_read (nrf_rtc_timer.c:451)
+     -184653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47bd4 mayfly_run (mayfly.c:185)
+     -184553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47cdc mayfly_run (mayfly.c:224)
+     -182553  sample: masked bp=64 pm=0 in thread active=- pc=73ab0 add_to_waitq_locked (sched.c:534)
+     -182453  sample: masked bp=64 pm=0 in thread active=- pc=626e6 z_reset_time_slice (timeslicing.c:78)
+     -175831  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -147153  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=3f736 __get_IPSR (cmsis_gcc.h:1031)
+     -147053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48236 ticker_job_list_insert (ticker.c:2949)
+     -118339  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -116359  RADIO enter
+     -116350  RADIO exit
+     -116348  RADIO enter
+     -116330  RADIO exit
+     -116326  RTC0 enter
+     -116306  RTC0 exit
+      -95947  RTC1 enter
+      -95917  RTC1 exit
+      -89663  RTC0 enter
+      -89653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4823c ticker_worker (ticker.c:1261)
+      -89553  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48b2c ticker_job (ticker.c:3365)
+      -89543  RTC0 exit
+      -89541  RTC0 enter
+      -89532  RTC0 exit
+      -87797  RADIO enter
+      -87777  RADIO exit
+      -87489  RADIO enter
+      -87467  RADIO exit
+      -87465  RADIO enter
+      -87448  RADIO exit
+      -87444  RTC0 enter
+      -87407  RTC0 exit
+      -60917  RTC0 enter
+      -60843  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+      -60803  RTC0 exit
+      -60801  RTC0 enter
+      -60792  RTC0 exit
+      -60641  RTC1 enter
+      -60611  RTC1 exit
+      -60601  thread -> sysworkq
+      -60533  RTC0 enter
+      -60526  RTC0 exit
+      -60467  thread -> sysworkq
+      -60453  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33d02 lab_isr_body (diag_lab.c:358)
+      -60437  thread -> sysworkq
+      -60417  thread -> idle
+      -58984  RADIO enter
+      -58964  RADIO exit
+      -58788  RADIO enter
+      -58768  RADIO exit
+      -58766  RADIO enter
+      -58749  RADIO exit
+      -58745  RTC0 enter
+      -58714  RTC0 exit
+      -58702  thread -> BT
+      -58681  thread -> idle
+      -32171  RTC0 enter
+      -32153  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=51220 shared_data_access_lock (ull_llcp_local.c:104)
+      -32059  RTC0 exit
+      -32057  RTC0 enter
+      -32053  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47be0 mayfly_run (mayfly.c:185)
+      -32039  RTC0 exit
+      -30299  RADIO enter
+      -30279  RADIO exit
+      -30113  RADIO enter
+      -30104  RADIO exit
+      -30102  RADIO enter
+      -30084  RADIO exit
+      -30082  RTC0 enter
+      -30062  RTC0 exit
+      -19748  RTC0 enter
+      -19653  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48b9a ticker_add_to_remainder (ticker.c:1598)
+      -19630  RTC0 exit
+      -19628  RTC0 enter
+      -19618  RTC0 exit
+      -17741  RADIO enter
+      -17718  RADIO exit
+      -17481  RADIO enter
+      -17465  RADIO exit
+      -17063  RADIO enter
+      -17038  RADIO exit
+      -17034  RTC0 enter
+      -16973  RTC0 exit
+      -16961  thread -> BT
+      -16925  thread -> BT
+      -16882  thread -> BT
+      -16853  sample: masked bp=64 pm=0 in thread active=- pc=73670 sys_sflist_peek_tail (sflist.h:267)
+      -16847  RADIO enter
+      -16828  RADIO exit
+      -16826  RTC0 enter
+      -16769  RTC0 exit
+      -16739  RNG enter
+      -16736  RNG exit
+      -16726  thread -> BT
+      -16709  thread -> BT
+      -16693  thread -> sysworkq
+      -16629  RNG enter
+      -16625  RNG exit
+      -16622  thread -> sysworkq
+      -16606  thread -> sysworkq
+      -16586  thread -> idle
+      -16472  RNG enter
+      -16468  RNG exit
+      -16346  RNG enter
+      -16342  RNG exit
+      -16242  RNG enter
+      -16238  RNG exit
+      -16119  RNG enter
+      -16116  RNG exit
+      -15973  RNG enter
+      -15969  RNG exit
+      -15877  RNG enter
+      -15873  RNG exit
+      -15781  RNG enter
+      -15778  RNG exit
+      -15678  RNG enter
+      -15675  RNG exit
+      -15602  RNG enter
+      -15599  RNG exit
+      -15471  RNG enter
+      -15467  RNG exit
+      -15393  RNG enter
+      -15388  RNG exit
+       -4706  RTC0 enter
+       -4613  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+       -4571  RTC0 exit
+       -4569  RTC0 enter
+       -4559  RTC0 exit
+       -3394  RTC0 enter
+       -3353  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4dbea mfifo_dequeue_get (mfifo.h:240)
+       -3315  RTC0 exit
+       -3313  RTC0 enter
+       -3303  RTC0 exit
+       -2741  RADIO enter
+       -2718  RADIO exit
+       -2402  RADIO enter
+       -2382  RADIO exit
+       -2168  RADIO enter
+       -2142  RADIO exit
+       -2138  RTC0 enter
+       -2116  RTC0 exit
+       -2104  thread -> BT
+       -2083  thread -> idle
+       -1941  RADIO enter
+       -1921  RADIO exit
+       -1740  RADIO enter
+       -1731  RADIO exit
+       -1729  RADIO enter
+  -- activity (1 ms ticks, run-length):
+    t=-64..-60 isr=0/0 thr=idle pc=6b260..6b260 maxlat=14 | - | arch_cpu_idle (cpu_idle.c:103)
+    t=-59..-59 isr=0/0 thr=sysworkq pc=61fd8..61fd8 maxlat=1 | - | arch_swap (kernel_arch_func.h:97)
+    t=-58..-1 isr=0/0 thr=idle pc=6b260..6b260 maxlat=15 | - | arch_cpu_idle (cpu_idle.c:103)
+
+===== crash1 =====
+ZDIAG lab crash1 seq=377 line=250 file=c/lll/lll_central.c up=4982 t=4717955 ipsr=17 iabr=2/0 pc=6b260 lr=6ab53 xpsr=41000000 thr=idle sum=ok
+  interrupted thread pc: arch_cpu_idle (cpu_idle.c:103)   lr: sys_trace_idle (tracing_user.c:146)
+  active ISRs at crash: RADIO   crashing context ipsr=17 (RADIO)
+  crash1stat max=152 over=16/0/0/0 skipped=0 nlat=16 ticker=134231 rtc0=134231 nvmc=0/1
+  crash1conn h=0 valid=1 role=1 interval=12 latency=10 lat_prep=0 lazy_prep=0 lat_ev=10 evcnt=17
+  crash1conn h=1 valid=1 role=0 interval=23 latency=7 lat_prep=0 lazy_prep=0 lat_ev=0 evcnt=174
+  crash1prepstat id=2 n=38 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5)
+  crash1prepstat id=4 n=27 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5)
+  crash1prepstat id=6 n=165 max_late=13 last_late=13 over=1 (ticks of 30.52us; conn=id-5)
+  crash1prepstat id=5 n=13 max_late=0 last_late=0 over=0 (ticks of 30.52us; conn=id-5)
+  -- connection events (ms since boot):
+    ms=3259 type=split-conn a=6 b=30
+    ms=4055 type=host-conn a=12 b=10
+    ms=4146 type=host-disc a=62 b=0
+    ms=4406 type=split-param a=23 b=7
+    ms=4572 type=host-conn a=12 b=10
+  -- printk tail:
+    |ASSERTION FAIL [0] @ WEST_TOPDIR/zephyr/subsys/bluetooth/controller/ll_sw/nordic/lll/lll_central.c:250
+    |.prepare_cb: Actual EVENT_OVERHEAD_START_US = 488
+  -- latency events (>=100 us) before the crash:
+    up=2423 lat=134 iabr=8000000/0 pc=6b260 lr=6ab53 thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+    up=2543 lat=124 iabr=8000000/0 pc=6b260 lr=6ab53 thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+    up=2663 lat=114 iabr=8000000/0 pc=6b260 lr=6ab53 thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+    up=2723 lat=100 iabr=8000000/0 pc=6b260 lr=6ab53 thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+    up=2783 lat=140 iabr=8000000/0 pc=6b260 lr=6ab53 thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+    up=2843 lat=130 iabr=8000000/0 pc=6b260 lr=6ab53 thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+    up=2963 lat=120 iabr=8000000/0 pc=6b260 lr=6ab53 thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+    up=3083 lat=100 iabr=8000000/0 pc=6b260 lr=6ab53 thr=idle -> arch_cpu_idle (cpu_idle.c:103)
+  -- prepare checks before the crash (dt us relative to the crash; late in RTC ticks, 30.52 us):
+    dt=-291009 id=6 at=124741 now=124694 late=-47 result=0
+    dt=-262277 id=6 at=125683 now=125636 late=-47 result=0
+    dt=-233522 id=6 at=126625 now=126578 late=-47 result=0
+    dt=-224425 id=5 at=126923 now=126876 late=-47 result=0
+    dt=-209354 id=5 at=127416 now=127370 late=-46 result=0
+    dt=-204771 id=6 at=127567 now=127520 late=-47 result=0
+    dt=-194377 id=5 at=127908 now=127861 late=-47 result=0
+    dt=-179355 id=5 at=128400 now=128353 late=-47 result=0
+    dt=-176027 id=6 at=128509 now=128462 late=-47 result=0
+    dt=-164334 id=5 at=128892 now=128845 late=-47 result=0
+    dt=-147278 id=6 at=129451 now=129404 late=-47 result=0
+    dt=-118536 id=6 at=130393 now=130346 late=-47 result=0
+    dt=-89787 id=6 at=131335 now=131288 late=-47 result=0
+    dt=-61044 id=6 at=132277 now=132230 late=-47 result=0
+    dt=-32278 id=6 at=133220 now=133172 late=-48 result=0
+    dt=-1679 id=6 at=134162 now=134175 late=13 result=16
+  -- timeline before the crash (dt in us, 0 = the crash):
+     -811051  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4dbe8 ll_conn_get (ull_conn.c:183)
+     -810951  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=67718 sys_trace_isr_exit_user (diag_lab.c:473)
+     -803527  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -796020  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -788513  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -781051  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5804c mayfly_prio_is_equal (mayfly.c:97)
+     -780951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33cd0 now_us (diag_lab.c:256)
+     -773551  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=514ec lr_st_active (ull_llcp_local.c:563)
+     -773451  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47a46 memq_peek (memq.c:130)
+     -766023  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -758516  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -751009  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -750951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33d02 lab_isr_body (diag_lab.c:358)
+     -743551  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5276e lp_cu_execute_fsm (ull_llcp_conn_upd.c:723)
+     -743451  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47c5a mayfly_run (mayfly.c:260)
+     -736025  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -731208  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -731151  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47c6c mayfly_run (mayfly.c:268)
+     -728551  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=58064 mayfly_pend (mayfly.c:109)
+     -721011  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -713551  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4dd38 ull_conn_tx_lll_enqueue (ull_conn.c:1450)
+     -713451  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=33728 now_us (diag_lab.c:255)
+     -706028  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -698521  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -696051  sample: masked bp=0 pm=0 in RTC1 active=RTC1 pc=5c594 atomic_and (atomic_builtin.h:105)
+     -691013  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -687651  sample: masked bp=64 pm=0 in RTC1 active=RTC1 pc=73852 notify_queue_locked (work.c:232)
+     -683551  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5802c mayfly_prio_is_equal (mayfly.c:100)
+     -683451  sample: masked bp=64 pm=0 in thread active=- pc=6ab4c sys_trace_idle (tracing_user.c:144)
+     -676030  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -668523  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -661016  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -653509  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -646033  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -638526  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -631018  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -627951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33d02 lab_isr_body (diag_lab.c:358)
+     -626951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33d02 lab_isr_body (diag_lab.c:358)
+     -626825  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -626751  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48236 ticker_job_list_insert (ticker.c:2949)
+     -626551  sample: masked bp=64 pm=0 in RNG active=RNG pc=5a55c random_byte_get (entropy_nrf5.c:111)
+     -623951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33cd6 lab_isr_body (diag_lab.c:349)
+     -623551  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -616035  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -608528  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -601021  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -593514  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -586051  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47a24 memq_enqueue (memq.c:93)
+     -585951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33ce6 lab_isr_body (diag_lab.c:350)
+     -578551  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=58040 mayfly_prio_is_equal (mayfly.c:97)
+     -578451  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4828a ticker_worker (ticker.c:1317)
+     -578351  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=489b8 ticker_job_reschedule_in_window (ticker.c:2466)
+     -549751  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48294 ticker_worker (ticker.c:1321)
+     -522843  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -521051  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=488f4 ticker_job_worker_bh (ticker.c:2098)
+     -492251  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4806c ticker_job_list_insert (ticker.c:2880)
+     -463515  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -434751  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4808a ticker_enqueue (ticker.c:590)
+     -428051  sample: masked bp=0 pm=0 in RTC1 active=RTC1 pc=738c6 work_timeout (work.c:865)
+     -427952  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33d24 lab_isr_body (diag_lab.c:365)
+     -418326  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -418251  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48d8e ticker_job_list_inquire (ticker.c:3056)
+     -414551  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=49a3e rx_demux (ull.c:2575)
+     -414451  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47c50 mayfly_run (mayfly.c:260)
+     -414351  sample: masked bp=64 pm=0 in thread active=- pc=73cd0 z_abort_timeout (timeout.c:165 (discriminator 2))
+     -413951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33d02 lab_isr_body (diag_lab.c:358)
+     -413851  sample: masked bp=64 pm=0 in thread active=- pc=61872 z_impl_k_sem_give (sem.c:110)
+     -413751  sample: masked bp=64 pm=0 in thread active=- pc=61ba8 flag_set (work.c:30)
+     -413151  sample: masked bp=0 pm=0 in RNG active=RNG pc=3f742 _isr_wrapper (isr_wrapper.c:77)
+     -406412  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -406051  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48b2c ticker_job (ticker.c:3365)
+     -400951  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=27bf4 __aeabi_uldivmod (??:?)
+     -389351  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4805c ticker_job_list_insert (ticker.c:2877)
+     -387351  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=50584 ull_cp_tx_ntf (ull_llcp.c:1886)
+     -387151  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4f308 lp_pu_execute_fsm (ull_llcp_phy.c:829)
+     -387051  sample: masked bp=64 pm=0 in thread active=- pc=73ab0 add_to_waitq_locked (sched.c:534)
+     -377245  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -348551  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5005e ull_cp_run (ull_llcp.c:549)
+     -348451  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47a38 memq_peek (memq.c:120)
+     -319751  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=4dd3c ull_conn_tx_lll_enqueue (ull_conn.c:1449)
+     -317951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=6ab3c sys_trace_isr_enter (tracing_user.c:134)
+     -317251  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=3373e trace_put (diag_lab.c:454)
+     -291051  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47b16 mayfly_enqueue (mayfly.c:77)
+     -290951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=6ab3c sys_trace_isr_enter (tracing_user.c:134)
+     -262251  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48646 ticker_job_list_manage (ticker.c:1958)
+     -262051  sample: masked bp=0 pm=0 in RTC1 active=RTC1 pc=3371c trace_put (diag_lab.c:443)
+     -261951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33d02 lab_isr_body (diag_lab.c:358)
+     -261851  sample: masked bp=64 pm=0 in thread active=- pc=62360 z_priq_dumb_yield (priority_q.h:134)
+     -233510  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -231451  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=513a4 llcp_lr_rx (ull_llcp_local.c:245)
+     -231351  sample: masked bp=64 pm=0 in thread active=- pc=61b4c queue_submit_locked (work.c:265)
+     -230951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33d02 lab_isr_body (diag_lab.c:358)
+     -230851  sample: masked bp=64 pm=0 in thread active=- pc=73cc8 __set_BASEPRI (cmsis_gcc.h:1315 (discriminator 2))
+     -224412  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -221751  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=514a6 llcp_lr_tx_ntf (ull_llcp_local.c:388)
+     -221551  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=290aa ull_conn_done (ull_conn.c:1078)
+     -221451  sample: masked bp=0 pm=0 in RNG active=RNG pc=3375c trace_put (diag_lab.c:456)
+     -220151  sample: masked bp=0 pm=0 in RNG active=RNG pc=5a7ca isr (entropy_nrf5.c:223)
+     -209342  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -204751  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=47ce8 mayfly_run (mayfly.c:224)
+     -202351  sample: masked bp=64 pm=0 in thread active=- pc=73e46 __get_BASEPRI (cmsis_gcc.h:1287)
+     -202151  sample: masked bp=64 pm=0 in thread active=- pc=73e9e __aeabi_memcpy4 (??:?)
+     -202047  sample: masked bp=64 pm=0 in thread active=- pc=619de work_queue_main (work.c:676)
+     -201951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33d02 lab_isr_body (diag_lab.c:358)
+     -200951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33d02 lab_isr_body (diag_lab.c:358)
+     -200651  sample: masked bp=64 pm=0 in thread active=- pc=5c350 z_nrf_rtc_timer_read (nrf_rtc_timer.c:425)
+     -199951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33d02 lab_isr_body (diag_lab.c:358)
+     -194351  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=575ae cntr_cnt_get (cntr.c:149)
+     -192151  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=48a18 ticker_job_compare_update (ticker.c:3144)
+     -191951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33d02 lab_isr_body (diag_lab.c:358)
+     -179343  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -176951  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=284d8 ull_drift_ticks_get (ull.c:2322)
+     -176015  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -164321  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -162351  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=61824 __set_BASEPRI_MAX (cmsis_gcc.h:1340)
+     -147251  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=488ce ticker_job_worker_bh (ticker.c:2084)
+     -145051  sample: masked bp=64 pm=0 in RTC0 active=RTC0 pc=73ca8 z_abort_timeout (timeout.c:153)
+     -118524  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+     -112151  sample: masked bp=0 pm=0 in RTC1 active=RTC1 pc=5c362 z_nrf_rtc_timer_read (nrf_rtc_timer.c:431)
+     -111951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33d02 lab_isr_body (diag_lab.c:358)
+     -110951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33d02 lab_isr_body (diag_lab.c:358)
+      -89751  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=489d0 ticker_job_reschedule_in_window (ticker.c:2469)
+      -61032  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+      -32251  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=488b0 ticker_job (ticker.c:3288)
+      -27951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33d02 lab_isr_body (diag_lab.c:358)
+      -26951  sample: masked bp=0 pm=0 in TIMER4 active=TIMER4 pc=33cee lab_isr_body (diag_lab.c:353)
+      -26451  sample: masked bp=64 pm=0 in thread active=- pc=735f6 k_cpu_idle (kernel.h:6192)
+      -16936  RADIO exit
+      -16649  RADIO enter
+      -16624  RADIO exit
+      -16455  RADIO enter
+      -16435  RADIO exit
+      -16147  RADIO enter
+      -16123  RADIO exit
+      -15954  RADIO enter
+      -15934  RADIO exit
+      -15647  RADIO enter
+      -15622  RADIO exit
+      -15453  RADIO enter
+      -15433  RADIO exit
+      -15145  RADIO enter
+      -15121  RADIO exit
+      -14952  RADIO enter
+      -14932  RADIO exit
+      -14645  RADIO enter
+      -14620  RADIO exit
+      -14451  RADIO enter
+      -14431  RADIO exit
+      -14143  RADIO enter
+      -14119  RADIO exit
+      -13950  RADIO enter
+      -13930  RADIO exit
+      -13643  RADIO enter
+      -13618  RADIO exit
+      -13449  RADIO enter
+      -13429  RADIO exit
+      -13141  RADIO enter
+      -13117  RADIO exit
+      -12948  RADIO enter
+      -12928  RADIO exit
+      -12639  RADIO enter
+      -12614  RADIO exit
+      -12447  RADIO enter
+      -12427  RADIO exit
+      -12139  RADIO enter
+      -12115  RADIO exit
+      -11946  RADIO enter
+      -11926  RADIO exit
+      -11639  RADIO enter
+      -11614  RADIO exit
+      -11445  RADIO enter
+      -11425  RADIO exit
+      -11139  RADIO enter
+      -11115  RADIO exit
+      -10944  RADIO enter
+      -10924  RADIO exit
+      -10639  RADIO enter
+      -10614  RADIO exit
+      -10443  RADIO enter
+      -10423  RADIO exit
+      -10139  RADIO enter
+      -10115  RADIO exit
+       -9943  RADIO enter
+       -9923  RADIO exit
+       -9639  RADIO enter
+       -9614  RADIO exit
+       -9441  RADIO enter
+       -9421  RADIO exit
+       -9139  RADIO enter
+       -9115  RADIO exit
+       -8941  RADIO enter
+       -8921  RADIO exit
+       -8639  RADIO enter
+       -8614  RADIO exit
+       -8439  RADIO enter
+       -8419  RADIO exit
+       -8139  RADIO enter
+       -8115  RADIO exit
+       -7941  RADIO enter
+       -7921  RADIO exit
+       -7639  RADIO enter
+       -7614  RADIO exit
+       -7439  RADIO enter
+       -7419  RADIO exit
+       -7139  RADIO enter
+       -7115  RADIO exit
+       -6941  RADIO enter
+       -6921  RADIO exit
+       -6639  RADIO enter
+       -6614  RADIO exit
+       -6439  RADIO enter
+       -6419  RADIO exit
+       -6139  RADIO enter
+       -6115  RADIO exit
+       -5941  RADIO enter
+       -5921  RADIO exit
+       -5638  RADIO enter
+       -5613  RADIO exit
+       -5439  RADIO enter
+       -5419  RADIO exit
+       -5137  RADIO enter
+       -5113  RADIO exit
+       -4941  RADIO enter
+       -4921  RADIO exit
+       -4636  RADIO enter
+       -4611  RADIO exit
+       -4439  RADIO enter
+       -4419  RADIO exit
+       -4123  RADIO enter
+       -4099  RADIO exit
+       -3941  RADIO enter
+       -3921  RADIO exit
+       -3622  RADIO enter
+       -3598  RADIO exit
+       -3580  RTC0 enter
+       -3540  sample: masked bp=0 pm=0 in RTC0 active=RTC0 pc=5809e mayfly_pend (mayfly.c:126)
+       -3501  RTC0 exit
+       -3499  RTC0 enter
+       -3489  RTC0 exit
+       -3439  RADIO enter
+       -3419  RADIO exit
+       -3121  RADIO enter
+       -3097  RADIO exit
+       -2939  RADIO enter
+       -2920  RADIO exit
+       -2620  RADIO enter
+       -2596  RADIO exit
+       -2438  RADIO enter
+       -2418  RADIO exit
+       -2119  RADIO enter
+       -2095  RADIO exit
+       -1937  RADIO enter
+       -1917  RADIO exit
+       -1739  RADIO enter
+       -1730  RADIO exit
+       -1728  RADIO enter
+  -- activity (1 ms ticks, run-length):
+    t=-64..-1 isr=0/0 thr=idle pc=6b260..6b260 maxlat=37 | - | arch_cpu_idle (cpu_idle.c:103)
